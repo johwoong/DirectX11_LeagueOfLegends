@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="98. Default">
+      <UniqueIdentifier>{8090f1bd-9605-4c9b-a66c-6a6ab6b42094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100. IMGUI">
+      <UniqueIdentifier>{3eab6330-f5f7-4433-99aa-a5637e9c037d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99. Defines">
+      <UniqueIdentifier>{7ffbf35b-e40d-436d-afa3-72c4dba54cc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100. IMGUI\Default">
+      <UniqueIdentifier>{dd2e5dcc-ddd6-4430-92ff-fb1649194f12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="100. IMGUI\Manager">
+      <UniqueIdentifier>{747acbf4-c554-40b0-b54f-2173bcc73fb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00. MainApp">
+      <UniqueIdentifier>{cd1138b9-2e20-45eb-a9e7-271b838d5fc1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Client.h">
+      <Filter>98. Default</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>98. Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>98. Default</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>98. Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imconfig.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imgui.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imgui_impl_dx11.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imgui_impl_win32.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imgui_internal.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imstb_rectpack.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imstb_textedit.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\imstb_truetype.h">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Private\Imgui_Manager.h">
+      <Filter>100. IMGUI\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Client_Defines.h">
+      <Filter>99. Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>98. Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CMainApp.h">
+      <Filter>00. MainApp</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Client.ico">
+      <Filter>98. Default</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>98. Default</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Client.rc">
+      <Filter>98. Default</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Client.cpp">
+      <Filter>98. Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\imgui.cpp">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\imgui_demo.cpp">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\imgui_draw.cpp">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\imgui_impl_dx11.cpp">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\imgui_impl_win32.cpp">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\imgui_tables.cpp">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\imgui_widgets.cpp">
+      <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Public\Imgui_Manager.cpp">
+      <Filter>100. IMGUI\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CMainApp.cpp">
+      <Filter>00. MainApp</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
