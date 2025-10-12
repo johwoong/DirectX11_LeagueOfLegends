@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\DirectX11_LeagueOfLegends\ImGui\Client\Bin\Client.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>C:\DirectX11_LeagueOfLegends\ImGui\Client\Bin\Client_Shader_Defines.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\DirectX11_LeagueOfLegends\ImGui\Client\Bin\Shader_VtxTex.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

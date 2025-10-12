@@ -1,0 +1,137 @@
+#pragma once
+
+/* 1. 여러 매니져 클래스를 들고 있다. */
+/* 2. 여러 매니져 클래스의 함수를 호출해 ㅈ눈다. */
+/* 3. 내 게임이 끝날때 알아서 매니져 정리한다. */
+/* 4. 알아서 업데이틓나다. */
+/* 4. 알아서 렌더링한다. */
+#include "Base.h"
+
+#include "PipeLine.h"
+#include "Graphic_Device.h"
+#include "Input_Device.h"
+#include "Timer_Manager.h"
+#include "Level_Manager.h"
+#include "ComponentManager.h"
+#include "Object_Manager.h"
+#include "Picking.h"
+
+NS_BEGIN(Engine)
+
+class ENGINE_DLL CGameInstance final : public CBase
+{
+	DECLARE_SINGLETON(CGameInstance)
+
+private:
+	CGameInstance();
+	virtual ~CGameInstance() = default;
+
+#pragma region Engine
+public:	
+	HRESULT Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, const GRAPHIC_DESC& GraphicDesc, ID3D11Device** ppDevice, ID3D11DeviceContext** ppContext);
+	void Update_Engine(_float fTimeDelta);
+
+	void Clear(_uint iLevelIndex);
+#pragma endregion
+
+#pragma region GrahpicDevice
+public: 
+	HRESULT Clear_BackBuffer_View(_float4 vClearColor);
+	HRESULT Clear_DepthStencil_View();
+	HRESULT Present();
+#pragma endregion GraphicDevice
+	
+#pragma region InputDevice
+public: /* For.Input_Device */
+	_char Get_DIKState(_uchar eKeyID);
+	_char Get_DIMKeyState(DIMK eMouseKeyID);
+	_long Get_DIMMoveState(DIMM eMouseMoveID);
+	_bool Key_Down(_uchar eKeyID);
+	_bool Key_Up(_uchar eKeyID);
+	_bool Key_Pressing(_uchar eKeyID);
+	_bool Mouse_Down(DIMK eMouseKeyID);
+	_bool Mouse_Up(DIMK eMouseKeyID);
+	_bool Mouse_Pressing(DIMK eMouseKeyID);
+#pragma endregion InputDevice
+
+#pragma region TIMER_MANAGER
+public:
+	HRESULT Add_Timer(const _tchar* pTimerTag);
+	_float Get_TimeDelta(const _tchar* pTimerTag);
+	void Update_TimeDelta(const _tchar* pTimerTag);
+	void Set_TimeSpeedOffset(const _tchar* pTimerTag, _float fOffset = 1.f);
+	float Get_TimeSpeedOffset(const _tchar* pTimerTag);
+#pragma endregion
+
+#pragma region LEVEL_MANAGER
+public: /* For.Level_Manager */
+	HRESULT Open_Level(unsigned int iLevelIndex, class CLevel* pNewLevel);
+	class CLevel* Get_CurrentLevel();
+	_uint Get_CurrentLevelIndex();
+	_uint Get_PastLevelIndex();
+	_uint Get_DestinationLevelIndex();
+	void Set_DestinationLevel(_uint LevelIndex);
+#pragma endregion
+
+#pragma region ObjectManager
+public: /* For.Object_Manager */
+	HRESULT Add_Prototype(const _tchar* pPrototypeTag, class CGameObject* pPrototype);
+	HRESULT Add_GameObject(const _tchar* pPrototypeTag, _uint iLevelIndex, const _tchar* pLayerTag, void* pArg = nullptr);
+	HRESULT Add_GameObject_Out(const _tchar* pPrototypeTag, _uint iLevelIndex, const _tchar* pLayerTag, OUT CGameObject*& pGameObjectOut, void* pArg = nullptr);
+	HRESULT Add_GameObjectLoad(const _tchar* pPrototypeTag, _uint iLevelIndex, const _tchar* pLayerTag, const _tchar* VIBUfferTag, void* pArg = nullptr);
+
+	class CGameObject* Clone_GameObject(const _tchar* pPrototypeTag, void* pArg = nullptr);
+	class CComponent* Get_Component(_uint iLevelIndex, const _tchar* pLayerTag, const _tchar* pComponentTag, _uint iIndex = 0);
+	class CGameObject* Get_Object(_uint iLevelIndex, const _tchar* pLayerTag, _uint iIndex = 0);
+	list<class CGameObject*>* Get_ObjectList(_uint iSceneID, const _tchar* pLayerTag);
+	void Clear_Layer(_uint iLevelIndex, const _tchar* LayerTag);
+	HRESULT Out_GameObject(_uint iLevelIndex, const _tchar* pLayerTag, class CGameObject* pGameObject);
+	HRESULT Out_GameObjectList(_uint iLevelIndex, const _tchar* pLayerTag);
+	HRESULT ReAdd_GameObject(_uint iLevelIndex, const _tchar* pLayerTag, class CGameObject* pGameObject);
+#pragma endregion 
+
+#pragma region ComponentManager
+public: /* For.Component_Manager */
+	HRESULT Add_Prototype(_uint iLevelIndex, const _tchar* pPrototypeTag, class CComponent* pPrototype);
+	class CComponent* Clone_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, void* pArg = nullptr);
+	HRESULT Find_Prototype(_int iLevelIndex, const _tchar* pPrototypeTag); // 추가
+#pragma endregion 
+
+#pragma region PipeLine
+public: /* For.PipeLine */
+	void Set_Transform(CPipeLine::TRANSFORMSTATE eState, _fmatrix TransformMatrix);
+	_matrix Get_TransformMatrix(CPipeLine::TRANSFORMSTATE  eState);
+	_float4x4 Get_TransformFloat4x4(CPipeLine::TRANSFORMSTATE  eState);
+	_float4x4 Get_TransformFloat4x4_TP(CPipeLine::TRANSFORMSTATE  eState);
+	_float4x4 Get_TransformFloat4x4_Inverse(CPipeLine::TRANSFORMSTATE eState);
+	_float4x4 Get_TransformFloat4x4_Inverse_TP(CPipeLine::TRANSFORMSTATE eState);
+	_float4 Get_CamPosition();
+	_float4x4 Get_CamWorldMatrix();
+#pragma endregion
+
+#pragma region Picking
+public: /* For Picking */
+	_vector Get_RayPos();
+	_vector Get_RayDir();
+#pragma endregion Picking
+
+public:
+	static void Release_Engine();
+
+private:
+	class CGraphic_Device*			m_pGraphic_Device =		{ nullptr };
+	class CLevel_Manager*			m_pLevel_Manager =		{ nullptr };
+	class CObject_Manager*			m_pObject_Manager =		{ nullptr };
+	class CTimer_Manager*			m_pTimer_Manager =		{ nullptr };
+	class CInput_Device*			m_pInput_Device =		{ nullptr };
+	class CComponentManager*		m_pComponent_Manager =	{ nullptr };
+	class CPipeLine*				m_pPipeLine		=		{ nullptr };
+	class CPicking*					m_pPicking =			{ nullptr };
+
+
+public:
+	virtual void Free() override;
+
+};
+
+NS_END

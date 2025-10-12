@@ -1,0 +1,516 @@
+#include "GameInstance.h"
+
+
+IMPLEMENT_SINGLETON(CGameInstance)
+
+CGameInstance::CGameInstance()
+	: m_pGraphic_Device(CGraphic_Device::GetInstance())
+	, m_pInput_Device(CInput_Device::GetInstance())
+	, m_pLevel_Manager(CLevel_Manager::GetInstance())
+	, m_pObject_Manager(CObject_Manager::GetInstance())
+	, m_pTimer_Manager(CTimer_Manager::GetInstance())
+	, m_pComponent_Manager(CComponentManager::GetInstance())
+	, m_pPipeLine(CPipeLine::GetInstance())
+	, m_pPicking(CPicking::GetInstance())
+{
+	Safe_AddRef(m_pPicking);
+	Safe_AddRef(m_pPipeLine);
+	Safe_AddRef(m_pComponent_Manager);
+	Safe_AddRef(m_pTimer_Manager);
+	Safe_AddRef(m_pObject_Manager);
+	Safe_AddRef(m_pLevel_Manager);
+	Safe_AddRef(m_pInput_Device);
+	Safe_AddRef(m_pGraphic_Device);
+}
+#pragma region Engine
+
+HRESULT CGameInstance::Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, const GRAPHIC_DESC& GraphicDesc, ID3D11Device** ppDevice, ID3D11DeviceContext** ppContext)
+{
+	if (nullptr == m_pGraphic_Device || nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	// 그래픽 디바이스 초기화
+	if (FAILED(m_pGraphic_Device->Ready_Graphic_Device(GraphicDesc.hWnd, GraphicDesc.eWindowMode, GraphicDesc.iWinSizeX, GraphicDesc.iWinSizeY, ppDevice, ppContext)))
+		return E_FAIL;
+
+	// 입력 디바이스 초기화
+	if (FAILED(m_pInput_Device->Initialize(hInst, GraphicDesc.hWnd)))
+		return E_FAIL;
+
+	// 픽킹 초기화
+	if (FAILED(m_pPicking->Initialize(GraphicDesc.hWnd, GraphicDesc.iWinSizeX, GraphicDesc.iWinSizeY, *ppDevice, *ppContext)))
+		return E_FAIL;
+
+	// 컨테이너 공간 확보
+	if (FAILED(m_pObject_Manager->Reserve_Container(iNumLevels)))
+		return E_FAIL;
+
+	if (FAILED(m_pComponent_Manager->Reserve_Container(iNumLevels)))
+		return E_FAIL;
+
+
+
+	return S_OK;
+}
+
+void CGameInstance::Update_Engine(_float fTimeDelta)
+{
+	if (nullptr == m_pLevel_Manager ||
+		nullptr == m_pObject_Manager)
+		return;
+
+	m_pInput_Device->Update();
+
+	m_pLevel_Manager->Update(fTimeDelta);
+	m_pObject_Manager->Update(fTimeDelta);
+
+	m_pPipeLine->Update();
+	m_pPicking->Update();
+
+	m_pLevel_Manager->Late_Update(fTimeDelta);
+	m_pObject_Manager->Late_Update(fTimeDelta);
+}
+
+void CGameInstance::Clear(_uint iLevelIndex)
+{
+	if (nullptr == m_pObject_Manager ||
+		nullptr == m_pComponent_Manager)
+		return;
+
+	m_pComponent_Manager->Clear(iLevelIndex);
+	m_pObject_Manager->Clear(iLevelIndex);
+}
+
+HRESULT CGameInstance::Clear_BackBuffer_View(_float4 vClearColor)
+{
+	if (nullptr == m_pGraphic_Device)
+		return E_FAIL;
+
+	m_pGraphic_Device->Clear_BackBuffer_View(vClearColor);
+
+	return S_OK;
+}
+
+HRESULT CGameInstance::Clear_DepthStencil_View()
+{
+	if (nullptr == m_pGraphic_Device)
+		return E_FAIL;
+
+	return m_pGraphic_Device->Clear_DepthStencil_View();
+}
+
+HRESULT CGameInstance::Present()
+{
+	if (nullptr == m_pGraphic_Device)
+		return E_FAIL;
+
+	return m_pGraphic_Device->Present();
+}
+#pragma endregion
+
+#pragma region Input_Device
+_char CGameInstance::Get_DIKState(_uchar eKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Get_DIKState(eKeyID);
+}
+
+_char CGameInstance::Get_DIMKeyState(DIMK eMouseKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Get_DIMKeyState(eMouseKeyID);
+}
+
+_long CGameInstance::Get_DIMMoveState(DIMM eMouseMoveID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Get_DIMMoveState(eMouseMoveID);
+}
+
+
+_bool CGameInstance::Key_Down(_uchar eKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Key_Down(eKeyID);
+}
+
+_bool CGameInstance::Key_Up(_uchar eKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Key_Up(eKeyID);
+}
+
+_bool CGameInstance::Key_Pressing(_uchar eKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Key_Pressing(eKeyID);
+}
+
+_bool CGameInstance::Mouse_Down(DIMK eMouseKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Mouse_Down(eMouseKeyID);
+}
+
+_bool CGameInstance::Mouse_Up(DIMK eMouseKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Mouse_Up(eMouseKeyID);
+}
+
+_bool CGameInstance::Mouse_Pressing(DIMK eMouseKeyID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+
+	return m_pInput_Device->Mouse_Pressing(eMouseKeyID);
+}
+#pragma endregion
+
+#pragma region TIMER_MANAGER
+
+HRESULT CGameInstance::Add_Timer(const _tchar* pTimerTag)
+{
+	if (nullptr == m_pTimer_Manager)
+		return E_FAIL;
+
+	return m_pTimer_Manager->Add_Timer(pTimerTag);
+}
+
+_float CGameInstance::Get_TimeDelta(const _tchar* pTimerTag)
+{
+	if (nullptr == m_pTimer_Manager)
+		return 0.0f;
+
+	return m_pTimer_Manager->Get_TimeDelta(pTimerTag);
+}
+
+void CGameInstance::Update_TimeDelta(const _tchar* pTimerTag)
+{
+	if (nullptr == m_pTimer_Manager)
+		return;
+
+	m_pTimer_Manager->Update(pTimerTag);
+}
+
+void CGameInstance::Set_TimeSpeedOffset(const _tchar* pTimerTag, _float fOffset)
+{
+	if (nullptr == m_pTimer_Manager)
+		return;
+
+	m_pTimer_Manager->Set_TimeSpeedOffset(pTimerTag, fOffset);
+}
+
+float CGameInstance::Get_TimeSpeedOffset(const _tchar* pTimerTag)
+{
+	if (nullptr == m_pTimer_Manager)
+		return 0.f;
+
+	return m_pTimer_Manager->Get_TimeSpeedOffset(pTimerTag);
+}
+
+#pragma endregion
+
+#pragma region LEVEL_MANAGER
+HRESULT CGameInstance::Open_Level(unsigned int iLevelIndex, CLevel* pNewLevel)
+{
+	if (nullptr == m_pLevel_Manager)
+		return E_FAIL;
+
+	return m_pLevel_Manager->Open_Level(iLevelIndex, pNewLevel);
+}
+
+CLevel* CGameInstance::Get_CurrentLevel()
+{
+	if (nullptr == m_pLevel_Manager)
+		return nullptr;
+
+	return m_pLevel_Manager->Get_CurrentLevel();
+}
+
+_uint CGameInstance::Get_CurrentLevelIndex()
+{
+	if (nullptr == m_pLevel_Manager)
+		return _uint();
+
+	return m_pLevel_Manager->Get_CurrentLevelIndex();
+}
+
+_uint CGameInstance::Get_PastLevelIndex()
+{
+	if (nullptr == m_pLevel_Manager)
+		return _uint();
+
+	return m_pLevel_Manager->Get_PastLevelIndex();
+}
+
+_uint CGameInstance::Get_DestinationLevelIndex()
+{
+	if (nullptr == m_pLevel_Manager)
+		return _uint();
+
+	return m_pLevel_Manager->Get_DestinationLevelIndex();
+}
+
+void CGameInstance::Set_DestinationLevel(_uint LevelIndex)
+{
+	if (nullptr == m_pLevel_Manager)
+		return;
+
+	m_pLevel_Manager->Set_DestinationLevel(LevelIndex);
+}
+#pragma endregion LEVEL_MANAGER
+
+#pragma region ObjectManager
+HRESULT CGameInstance::Add_Prototype(const _tchar* pPrototypeTag, CGameObject* pPrototype)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Add_Prototype(pPrototypeTag, pPrototype);
+}
+
+HRESULT CGameInstance::Add_GameObject(const _tchar* pPrototypeTag, _uint iLevelIndex, const _tchar* pLayerTag, void* pArg)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Add_GameObject(pPrototypeTag, iLevelIndex, pLayerTag, pArg);
+}
+
+HRESULT CGameInstance::Add_GameObject_Out(const _tchar* pPrototypeTag, _uint iLevelIndex, const _tchar* pLayerTag, OUT CGameObject*& pGameObjectOut, void* pArg)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Add_GameObject_Out(pPrototypeTag, iLevelIndex, pLayerTag, pGameObjectOut, pArg);
+}
+
+HRESULT CGameInstance::Add_GameObjectLoad(const _tchar* pPrototypeTag, _uint iLevelIndex, const _tchar* pLayerTag, const _tchar* VIBUfferTag, void* pArg)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Add_GameObjectLoad(pPrototypeTag, iLevelIndex, pLayerTag, VIBUfferTag, pArg);
+}
+
+CGameObject* CGameInstance::Clone_GameObject(const _tchar* pPrototypeTag, void* pArg)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Clone_GameObject(pPrototypeTag, pArg);
+}
+
+void CGameInstance::Clear_Layer(_uint iLevelIndex, const _tchar* LayerTag)
+{
+	if (nullptr == m_pObject_Manager)
+		return;
+
+	m_pObject_Manager->Clear_Layer(iLevelIndex, LayerTag);
+}
+
+HRESULT CGameInstance::Out_GameObject(_uint iLevelIndex, const _tchar* pLayerTag, CGameObject* pGameObject)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Out_GameObject(iLevelIndex, pLayerTag, pGameObject);
+}
+
+HRESULT CGameInstance::Out_GameObjectList(_uint iLevelIndex, const _tchar* pLayerTag)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Out_GameObjectList(iLevelIndex, pLayerTag);
+}
+
+HRESULT CGameInstance::ReAdd_GameObject(_uint iLevelIndex, const _tchar* pLayerTag, CGameObject* pGameObject)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->ReAdd_GameObject(iLevelIndex, pLayerTag, pGameObject);
+}
+
+CComponent* CGameInstance::Get_Component(_uint iLevelIndex, const _tchar* pLayerTag, const _tchar* pComponentTag, _uint iIndex)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Get_Component(iLevelIndex, pLayerTag, pComponentTag, iIndex);
+}
+
+CGameObject* CGameInstance::Get_Object(_uint iLevelIndex, const _tchar* pLayerTag, _uint iIndex)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Get_Objects(iLevelIndex, pLayerTag, iIndex);
+}
+
+list<CGameObject*>* CGameInstance::Get_ObjectList(_uint iSceneID, const _tchar* pLayerTag)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Get_ObjectList(iSceneID, pLayerTag);
+}
+#pragma endregion
+
+
+#pragma region ComponentManager
+HRESULT CGameInstance::Add_Prototype(_uint iLevelIndex, const _tchar* pPrototypeTag, CComponent* pPrototype)
+{
+	if (nullptr == m_pComponent_Manager)
+		return E_FAIL;
+
+	return m_pComponent_Manager->Add_Prototype(iLevelIndex, pPrototypeTag, pPrototype);
+}
+CComponent* CGameInstance::Clone_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, void* pArg)
+{
+	if (nullptr == m_pComponent_Manager)
+		return nullptr;
+
+	return m_pComponent_Manager->Clone_Component(iLevelIndex, pPrototypeTag, pArg);
+}
+HRESULT CGameInstance::Find_Prototype(_int iLevelIndex, const _tchar* pPrototypeTag)
+{
+	if (nullptr == m_pComponent_Manager)
+		return E_FAIL;
+
+	return m_pComponent_Manager->Find_Prototype(iLevelIndex, pPrototypeTag);
+}
+#pragma endregion
+
+#pragma region PipeLine
+
+void CGameInstance::Set_Transform(CPipeLine::TRANSFORMSTATE eState, _fmatrix TransformMatrix)
+{
+	if (nullptr == m_pPipeLine)
+		return;
+
+	m_pPipeLine->Set_Transform(eState, TransformMatrix);
+}
+
+_matrix CGameInstance::Get_TransformMatrix(CPipeLine::TRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return XMMatrixIdentity();
+
+	return m_pPipeLine->Get_TransformMatirx(eState);
+}
+
+_float4x4 CGameInstance::Get_TransformFloat4x4(CPipeLine::TRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return _float4x4();
+
+	return m_pPipeLine->Get_TransformFloat4x4(eState);
+}
+
+_float4x4 CGameInstance::Get_TransformFloat4x4_TP(CPipeLine::TRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return _float4x4();
+
+	return m_pPipeLine->Get_TransformFloat4x4_TP(eState);
+}
+
+_float4x4 CGameInstance::Get_TransformFloat4x4_Inverse(CPipeLine::TRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return _float4x4();
+
+	return m_pPipeLine->Get_TransformFlaot4x4_Inverse(eState);
+}
+
+_float4x4 CGameInstance::Get_TransformFloat4x4_Inverse_TP(CPipeLine::TRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return _float4x4();
+
+	return m_pPipeLine->Get_TransformFloat4x4_Inverse_TP(eState);
+}
+
+_float4 CGameInstance::Get_CamPosition()
+{
+	if (nullptr == m_pPipeLine)
+		return _float4();
+
+	return m_pPipeLine->Get_CamPosition();
+}
+
+_float4x4 CGameInstance::Get_CamWorldMatrix()
+{
+	if (nullptr == m_pPipeLine)
+		return _float4x4();
+
+	return m_pPipeLine->Get_CamWorldMatrix();
+}
+
+#pragma endregion
+
+#pragma region Picking
+
+_vector CGameInstance::Get_RayPos()
+{
+	if (nullptr == m_pPicking)
+		return _vector();
+
+	return m_pPicking->Get_RayPos();
+}
+
+_vector CGameInstance::Get_RayDir()
+{
+	if (nullptr == m_pPicking)
+		return _vector();
+
+	return m_pPicking->Get_RayDir();
+}
+
+#pragma endregion
+
+
+void CGameInstance::Release_Engine()
+{
+	auto pInstance = CGameInstance::GetInstance();
+	while (pInstance->Release() > 0)
+	{
+	}
+	CLevel_Manager::GetInstance()->DestroyInstance();
+	CObject_Manager::GetInstance()->DestroyInstance();
+	CComponentManager::GetInstance()->DestroyInstance();
+	CPipeLine::GetInstance()->DestroyInstance();
+	CTimer_Manager::GetInstance()->DestroyInstance();
+	CInput_Device::GetInstance()->DestroyInstance();
+	CGraphic_Device::GetInstance()->DestroyInstance();
+}
+
+void CGameInstance::Free()
+{	
+	Safe_Release(m_pPipeLine);
+	Safe_Release(m_pComponent_Manager);
+	Safe_Release(m_pTimer_Manager);
+	Safe_Release(m_pObject_Manager);
+	Safe_Release(m_pLevel_Manager);
+	Safe_Release(m_pInput_Device);
+	Safe_Release(m_pGraphic_Device);
+}
