@@ -64,6 +64,9 @@
     <Filter Include="04. PickingMgr">
       <UniqueIdentifier>{56215c90-503d-4a44-bef6-1fa93ae90124}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\03. AnimModel">
+      <UniqueIdentifier>{aa1c28d9-4f61-4012-a809-8fdb9cc163e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -147,6 +150,9 @@
     <ClInclude Include="..\Public\NonAnim.h">
       <Filter>02. GameObjects\02. NonAnimModel</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Anim.h">
+      <Filter>02. GameObjects\03. AnimModel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -228,12 +234,18 @@
     <ClCompile Include="..\Private\NonAnim.cpp">
       <Filter>02. GameObjects\02. NonAnimModel</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\Anim.cpp">
+      <Filter>02. GameObjects\03. AnimModel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
       <Filter>96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
+      <Filter>96. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl">
       <Filter>96. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

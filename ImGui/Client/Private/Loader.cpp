@@ -5,8 +5,11 @@
 
 #include "Camera_Dynamic.h"
 #include "BackGround.h"
+#include "Imgui_Manager.h"
+#include "ModelManager.h"
 #include "NonAnim.h"
 #include "Model.h"
+#include "Anim.h"
 
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: m_pDevice(pDevice)
@@ -97,6 +100,10 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 		CNonAnim::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Anim"),
+		CAnim::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	/*For.Prototype_GameObject_Camera_Dynamic */
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Camera_Dynamic"),
 		CCamera_Dynamic::Create(m_pDevice, m_pContext))))
@@ -118,6 +125,24 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 	m_isFinished = true;
 	Safe_Release(pGameInstance);
 	return S_OK;
+}
+
+HRESULT CLoader::Loading_ForActor()
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	CImGui_Manager* pImgui = CImGui_Manager::GetInstance();
+	if (nullptr == pGameInstance)
+		return E_FAIL;
+
+#pragma region Animation
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Nexus/Nexus.dat"))))
+		return E_FAIL;
+	
+#pragma endregion Animation
+
+	Safe_Release(pGameInstance);
+	return E_NOTIMPL;
 }
 
 CLoader* CLoader::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, LEVEL eNextLevel)

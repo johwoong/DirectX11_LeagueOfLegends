@@ -5300,8 +5300,8 @@ void ImGui::Render()
     ImGuiContext& g = *GImGui;
     IM_ASSERT(g.Initialized);
 
-    if (g.FrameCountEnded != g.FrameCount)
-        EndFrame();
+    //if (g.FrameCountEnded != g.FrameCount)
+    //    EndFrame();
     const bool first_render_of_frame = (g.FrameCountRendered != g.FrameCount);
     g.FrameCountRendered = g.FrameCount;
     g.IO.MetricsRenderWindows = 0;

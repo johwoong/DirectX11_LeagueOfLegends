@@ -37,8 +37,8 @@ HRESULT CCamera_Dynamic::Initialize(void* pArg)
 
 int CCamera_Dynamic::Update(_float fTimeDelta)
 {
-	if (CCamera_Manager::GetInstance()->Get_CamMode() != CCamera_Manager::DYNAMIC)
-		return OBJ_NOEVENT;
+	//if (CCamera_Manager::GetInstance()->Get_CamMode() != CCamera_Manager::DYNAMIC)
+	//	return OBJ_NOEVENT;
 
 	__super::Update(fTimeDelta);
 
@@ -63,8 +63,8 @@ int CCamera_Dynamic::Update(_float fTimeDelta)
 
 void CCamera_Dynamic::Late_Update(_float fTimeDelta)
 {
-	if (CCamera_Manager::GetInstance()->Get_CamMode() != CCamera_Manager::DYNAMIC)
-		return;
+	//if (CCamera_Manager::GetInstance()->Get_CamMode() != CCamera_Manager::DYNAMIC)
+	//	return;
 	__super::Late_Update(fTimeDelta);
 
 }

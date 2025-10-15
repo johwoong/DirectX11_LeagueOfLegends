@@ -1,12 +1,12 @@
-Ôªø// FbxToDat.cpp (ÏôÑÏÑ±Î≥∏)
+#define NOMINMAX
 #include <windows.h>
 #include <string>
 #include <filesystem>
 #include <vector>
-#include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
-
+#include <algorithm>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -24,176 +24,131 @@ struct VTXMODEL {
 struct FACEINDICES32 { uint32_t _0, _1, _2; };
 #pragma pack(pop)
 
-static std::string to_utf8(const std::wstring& w) {
-    if (w.empty()) return {};
-    int n = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    std::string s(n ? n - 1 : 0, '\0');
-    if (n) WideCharToMultiByte(CP_UTF8, 0, w.c_str(), -1, s.data(), n, nullptr, nullptr);
-    return s;
-}
+using namespace std;
+namespace fs = std::filesystem;
 
 static void write_n(FILE* fp, const void* p, size_t sz) {
-    size_t w = fwrite(p, 1, sz, fp);
-    if (w != sz) throw std::runtime_error("file write error");
+    if (fwrite(p, 1, sz, fp) != sz) throw runtime_error("file write error");
 }
-
-static void put_str_fixed(FILE* fp, const std::string& s) {
+static void put_str_fixed(FILE* fp, const string& s) {
     char buf[MAX_PATH]{};
-    strncpy_s(buf, s.c_str(), MAX_PATH - 1);
-    write_n(fp, buf, sizeof(buf));
+    if (!s.empty()) {
+        string fixed = s;
+        replace(fixed.begin(), fixed.end(), '/', '\\');
+        strncpy_s(buf, fixed.c_str(), MAX_PATH - 1);
+    }
+    fwrite(buf, sizeof(char), MAX_PATH, fp);
 }
 
-int wmain(int argc, wchar_t** wargv) {
+// ==============================
+// ?? Ω««‡ Ω√¿€¡°
+// ==============================
+int wmain() {
     try {
-        if (argc < 3) {
-            std::wcout << L"Usage: FbxToDat.exe <input.fbx> <output.dat> [scale]\n";
-            return 1;
-        }
-        std::wstring win = wargv[1];
-        std::wstring wout = wargv[2];
-        float scale = (argc >= 4) ? static_cast<float>(_wtof(wargv[3])) : 1.0f;
+        // 1?? FBX ∆ƒ¿œ ∞Ê∑Œ ¿⁄µø ¡ˆ¡§
+        fs::path inputFBX = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Resources\\Meshes\\Anim\\Nexus\\Nexus.fbx";
+        fs::path outModel = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Bin_Data\\Anim\\Nexus\\Nexus.dat";
+        fs::path outAnim = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Bin_Data\\Anim\\Nexus\\Nexus_Animation.dat";
 
-        std::string in_utf8 = to_utf8(win);
-
-        // ÏûÖÎ†• FBX Ï°¥Ïû¨ ÌôïÏù∏(Ïú†ÎãàÏΩîÎìú Í≤ΩÎ°ú)
-        if (!std::filesystem::exists(win)) {
-            std::wcerr << L"[ERROR] input FBX not found: " << win << L"\n";
+        // 2?? ∆ƒ¿œ ¡∏¿Á »Æ¿Œ
+        if (!fs::exists(inputFBX)) {
+            wcerr << L"[ERROR] FBX ∆ƒ¿œ¿ª √£¿ª ºˆ æ¯Ω¿¥œ¥Ÿ:\n" << inputFBX << endl;
             return 11;
         }
 
-        // Ï∂úÎ†• Ìè¥Îçî ÏÉùÏÑ±
-        std::filesystem::create_directories(std::filesystem::path(wout).parent_path());
+        fs::create_directories(outModel.parent_path());
 
+        // 3?? FBX ∑ŒµÂ
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(
-            in_utf8.c_str(),
+            inputFBX.string(),
             aiProcess_Triangulate |
             aiProcess_JoinIdenticalVertices |
             aiProcess_GenNormals |
             aiProcess_CalcTangentSpace |
-            aiProcess_OptimizeMeshes |
-            aiProcess_ValidateDataStructure
+            aiProcess_ConvertToLeftHanded |
+            aiProcess_FlipUVs
         );
         if (!scene || !scene->mRootNode) {
-            std::cerr << "[ERROR] Assimp load failed: " << importer.GetErrorString() << "\n";
+            cerr << "[ERROR] Assimp failed: " << importer.GetErrorString() << endl;
             return 2;
         }
 
+        // 4?? Model.dat ª˝º∫
         FILE* fp = nullptr;
-        if (_wfopen_s(&fp, wout.c_str(), L"wb") || !fp) {
-            std::wcerr << L"[ERROR] Cannot open output: " << wout << L"\n";
-            return 3;
-        }
+        if (_wfopen_s(&fp, outModel.c_str(), L"wb") || !fp)
+            throw runtime_error("model.dat ∆ƒ¿œ ª˝º∫ Ω«∆–");
 
-        size_t totalBytes = 0;
-        auto addBytes = [&](size_t n) { totalBytes += n; };
+        FLOAT4X4 pivot{};
+        for (int i = 0; i < 16; ++i) pivot.m[i] = (i % 5 == 0) ? 1.f : 0.f;
+        write_n(fp, &pivot, sizeof(pivot));
 
-        // 1) PivotMatrix
-        {
-            FLOAT4X4 pivot{};
-            for (int i = 0; i < 16; ++i) pivot.m[i] = (i % 5 == 0) ? 1.0f : 0.0f;
-            pivot.m[0] = pivot.m[5] = pivot.m[10] = scale;  // uniform scale
-            write_n(fp, &pivot, sizeof(pivot)); addBytes(sizeof(pivot));
-        }
+        uint32_t numMeshes = scene->mNumMeshes;
+        write_n(fp, &numMeshes, sizeof(numMeshes));
 
-        // 2) NumMeshes
-        {
-            uint32_t numMeshes = scene->mNumMeshes;
-            write_n(fp, &numMeshes, sizeof(numMeshes)); addBytes(sizeof(numMeshes));
-        }
+        for (uint32_t mi = 0; mi < numMeshes; ++mi) {
+            const aiMesh* mesh = scene->mMeshes[mi];
+            string name = mesh->mName.length ? mesh->mName.C_Str() : "Mesh";
+            put_str_fixed(fp, name);
 
-        // 3) Meshes
-        for (uint32_t mi = 0; mi < scene->mNumMeshes; ++mi) {
-            const aiMesh* m = scene->mMeshes[mi];
+            uint32_t matIndex = mesh->mMaterialIndex;
+            write_n(fp, &matIndex, sizeof(matIndex));
 
-            // 3-1) name
-            std::string meshName = (m->mName.length > 0) ? std::string(m->mName.C_Str()) : "Mesh";
-            put_str_fixed(fp, meshName); addBytes(MAX_PATH);
+            uint32_t numVerts = mesh->mNumVertices;
+            write_n(fp, &numVerts, sizeof(numVerts));
 
-            // 3-2) material idx
-            uint32_t matIndex = m->mMaterialIndex;
-            write_n(fp, &matIndex, sizeof(matIndex)); addBytes(sizeof(matIndex));
-
-            // 3-3) vertices
-            uint32_t numVertices = m->mNumVertices;
-            write_n(fp, &numVertices, sizeof(numVertices)); addBytes(sizeof(numVertices));
-
-            std::vector<VTXMODEL> verts(numVertices);
-            for (uint32_t i = 0; i < numVertices; ++i) {
-                // pos
-                if (m->HasPositions()) {
-                    verts[i].vPosition = { m->mVertices[i].x, m->mVertices[i].y, m->mVertices[i].z };
-                }
-                else { verts[i].vPosition = { 0,0,0 }; }
-                // normal
-                if (m->HasNormals()) {
-                    verts[i].vNormal = { m->mNormals[i].x, m->mNormals[i].y, m->mNormals[i].z };
-                }
-                else { verts[i].vNormal = { 0,1,0 }; }
-                // uv0
-                if (m->HasTextureCoords(0)) {
-                    verts[i].vTexUV = {
-                        (float)m->mTextureCoords[0][i].x,
-                        (float)m->mTextureCoords[0][i].y
-                    };
-                }
-                else { verts[i].vTexUV = { 0,0 }; }
-                // tangent
-                if (m->HasTangentsAndBitangents()) {
-                    verts[i].vTangent = { m->mTangents[i].x, m->mTangents[i].y, m->mTangents[i].z };
-                }
-                else { verts[i].vTangent = { 1,0,0 }; }
+            vector<VTXMODEL> verts(numVerts);
+            for (uint32_t i = 0; i < numVerts; ++i) {
+                verts[i].vPosition = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+                verts[i].vNormal = mesh->HasNormals() ? float3{ mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z } : float3{ 0,1,0 };
+                verts[i].vTexUV = mesh->HasTextureCoords(0) ? float2{ (float)mesh->mTextureCoords[0][i].x, (float)mesh->mTextureCoords[0][i].y } : float2{ 0,0 };
+                verts[i].vTangent = mesh->HasTangentsAndBitangents() ? float3{ mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z } : float3{ 1,0,0 };
             }
             write_n(fp, verts.data(), sizeof(VTXMODEL) * verts.size());
-            addBytes(sizeof(VTXMODEL) * verts.size());
 
-            // 3-4) indices
-            uint32_t numFaces = m->mNumFaces;   // == #triangles (triangulate ÌñàÏúºÎØÄÎ°ú)
-            write_n(fp, &numFaces, sizeof(numFaces)); addBytes(sizeof(numFaces));
-
-            std::vector<FACEINDICES32> faces(numFaces);
-            for (uint32_t f = 0; f < numFaces; ++f) {
-                const aiFace& face = m->mFaces[f];
-                faces[f] = { face.mIndices[0], face.mIndices[1], face.mIndices[2] };
-            }
+            uint32_t numFaces = mesh->mNumFaces;
+            write_n(fp, &numFaces, sizeof(numFaces));
+            vector<FACEINDICES32> faces(numFaces);
+            for (uint32_t f = 0; f < numFaces; ++f)
+                faces[f] = { mesh->mFaces[f].mIndices[0], mesh->mFaces[f].mIndices[1], mesh->mFaces[f].mIndices[2] };
             write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
-            addBytes(sizeof(FACEINDICES32) * faces.size());
         }
 
-        // 4) Materials (ÌÖçÏä§Ï≤ò Í≤ΩÎ°ú MAX_PATH Í≥†Ï†ï Í∏∏Ïù¥)
-        {
-            uint32_t numMaterials = scene->mNumMaterials;
-            write_n(fp, &numMaterials, sizeof(numMaterials)); addBytes(sizeof(numMaterials));
+        uint32_t numMats = scene->mNumMaterials;
+        write_n(fp, &numMats, sizeof(numMats));
 
-            std::filesystem::path fbxDir = std::filesystem::path(win).parent_path();
-            for (uint32_t mi = 0; mi < numMaterials; ++mi) {
-                aiMaterial* aimat = scene->mMaterials[mi];
-
-                for (int t = 0; t < AI_TEXTURE_TYPE_MAX; ++t) {
-                    aiTextureType type = (aiTextureType)t;
-                    aiString tex;
-                    std::string full;
-
-                    if (type == aiTextureType_DIFFUSE || type == aiTextureType_NORMALS) {
-                        if (AI_SUCCESS == aimat->GetTexture(type, 0, &tex)) {
-                            std::filesystem::path rel = std::filesystem::u8path(tex.C_Str());
-                            std::filesystem::path abs = rel.is_absolute() ? rel : (fbxDir / rel);
-                            abs = abs.lexically_normal();
-                            full = abs.u8string(); // UTF-8Î°ú Í≥†Ï†ï Í∏∏Ïù¥ Ï†ÄÏû•
-                        }
-                    }
-                    put_str_fixed(fp, full); addBytes(MAX_PATH);
-                }
-            }
+        // ∫Ì∑Á ≈ÿΩ∫√≥ ∞≠¡¶ ¡ˆ¡§
+        fs::path blueTex = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Resources\\Meshes\\Anim\\Nexus\\nexus_tx_cm_blue.png";
+        string texPath = blueTex.u8string();
+        for (uint32_t i = 0; i < numMats; ++i) {
+            put_str_fixed(fp, texPath); // diffuse
+            put_str_fixed(fp, texPath); // normal
         }
 
-        fflush(fp);
         fclose(fp);
-        std::wcout << L"[OK] wrote dat: " << wout << L"  (" << totalBytes << L" bytes)\n";
+        wcout << L"[OK] ∏µ® dat ª˝º∫ øœ∑·: " << outModel << endl;
+
+        // 5?? æ÷¥œ∏ﬁ¿Ãº«¿Ã ¿÷¿∏∏È Animation.dat √ﬂ∞° ª˝º∫
+        if (scene->mNumAnimations > 0) {
+            FILE* fa = nullptr;
+            if (_wfopen_s(&fa, outAnim.c_str(), L"wb") || !fa)
+                throw runtime_error("animation.dat ∆ƒ¿œ ª˝º∫ Ω«∆–");
+
+            uint32_t animCount = scene->mNumAnimations;
+            write_n(fa, &animCount, sizeof(animCount));
+
+            fclose(fa);
+            wcout << L"[OK] æ÷¥œ∏ﬁ¿Ãº« dat ª˝º∫ øœ∑·: " << outAnim << endl;
+        }
+        else {
+            wcout << L"[INFO] æ÷¥œ∏ﬁ¿Ãº«¿Ã æ¯¿∏π«∑Œ Animation.dat ª˝∑´" << endl;
+        }
+
+        wcout << L"[DONE] ∫Ø»Ø øœ∑·!" << endl;
         return 0;
     }
     catch (const std::exception& e) {
-        std::cerr << "[EXCEPTION] " << e.what() << "\n";
+        cerr << "[EXCEPTION] " << e.what() << endl;
         return 10;
     }
 }

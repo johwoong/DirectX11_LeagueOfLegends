@@ -1,16 +1,20 @@
 #include "pch.h"
 #include "Imgui_Manager.h"
 #include <windows.h>
-#ifdef new
-#undef new
-#endif
+#include <string.h>
 
-#include <shlobj.h> 
-
+#include <shlobj.h>
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
+
 #include "GameInstance.h"
+#include "ModelManager.h"
+#include "NonAnim.h"
+#include "Anim.h"
+#include "PickingMgr.h"
+#include "Actor.h"
+#include "Animation.h"
 
 IMPLEMENT_SINGLETON(CImGui_Manager)
 
@@ -18,152 +22,1653 @@ typedef basic_string<TCHAR> tstring;
 
 TCHAR* StringToTCHAR(string& s)
 {
-    tstring tstr;
-    const char* all = s.c_str();
-    int len = 1 + (int)strlen(all);
-    wchar_t* t = new wchar_t[len];
-    if (NULL == t) throw std::bad_alloc();
-    mbstowcs(t, all, len);
-    return (TCHAR*)t;
+	tstring tstr;
+	const char* all = s.c_str();
+	int len = 1 + (int)strlen(all);
+	wchar_t* t = new wchar_t[len];
+	if (NULL == t) throw std::bad_alloc();
+	mbstowcs(t, all, len);
+	return (TCHAR*)t;
 }
 
 string TCHARToString(const TCHAR* ptsz)
 {
-    int len = (int)wcslen((wchar_t*)ptsz);
-    char* psz = new char[2 * len + 1];
-    wcstombs(psz, (wchar_t*)ptsz, 2 * len + 1);
-    std::string s = psz;
-    delete[] psz;
-    return s;
+	int len = (int)wcslen((wchar_t*)ptsz);
+	char* psz = new char[2 * len + 1];
+	wcstombs(psz, (wchar_t*)ptsz, 2 * len + 1);
+	std::string s = psz;
+	delete[] psz;
+	return s;
 }
 
 string ToString(wstring value)
 {
-    string temp;
-    temp.assign(value.begin(), value.end());
-    return temp;
+	string temp;
+	temp.assign(value.begin(), value.end());
+	return temp;
+}
+
+vector<string> SplitPath(string path, char sep) {
+	vector<string> out;
+	stringstream stream(path);
+	string temp;
+
+	while (getline(stream, temp, sep)) {
+		out.push_back(temp);
+	}
+
+	return out;
 }
 
 string CutOnSpecificDecimalPt(string num, int pos)
 {
-    return num.substr(0, num.find('.') + pos + 1);
+	return num.substr(0, num.find('.') + pos + 1);
 }
 
 CImGui_Manager::CImGui_Manager()
+	: m_pModel_Manager(CModelManager::GetInstance())
 {
+	Safe_AddRef(m_pModel_Manager);
+
+	const char* LayerTag = "Model";
+
+	m_stLayerTags.push_back(LayerTag);
 }
 
 HRESULT CImGui_Manager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    if (m_pDevice != nullptr) // 이미 초기화됨 방지
-        return S_OK;
+	m_TempLayerTags.reserve(0);
 
-    m_pDevice = pDevice;
-    m_pContext = pContext;
-    Safe_AddRef(m_pDevice);
-    Safe_AddRef(m_pContext);
+	m_pDevice = pDevice;
+	m_pContext = pContext;
+	Safe_AddRef(m_pDevice);
+	Safe_AddRef(m_pContext);
 
-    // === IMGUI 초기화 ===
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // Win32 + DX11 바인딩
-    ImGui_ImplWin32_Init(g_hWnd);
-    ImGui_ImplDX11_Init(m_pDevice, m_pContext);
+	// Style Setting
+	io.FontDefault = io.Fonts->AddFontFromFileTTF("../../../Bin/Resources/Fonts/Quicksand-Medium.ttf", 16.0f);
+	ImGui::StyleColorsBlue();
 
-    return S_OK;
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_Init(g_hWnd);
+	ImGui_ImplDX11_Init(m_pDevice, m_pContext);
+	
+	
+	return S_OK;
 }
 
 void CImGui_Manager::Update(_float fTimeDelta)
 {
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
 
-    Update_Imgui();
+	//CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	//pGameInstance->AddRef();
+	//
 
-    // DrawData 준비까지만
-    ImGui::Render();
-}
-
-void CImGui_Manager::Update_Imgui()
-{
-    ImGui::Begin("Model Tool"); // 창 제목
-    ImGui::Text("IMGUI Initialized Successfully!");
-    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-    ImGui::Separator();
-    ImGui::Text("ToolSuccessFul");
-    ImGui::End();
+	//pGameInstance->Release();
+	Update_Imgui();
+	ImGui::EndFrame();
 }
 
 void CImGui_Manager::Render()
 {
-    ImDrawData* pData = ImGui::GetDrawData();
-    if (!pData)
-        return;
+	// Rendering
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
 
-    ImGui_ImplDX11_RenderDrawData(pData);
+void CImGui_Manager::Update_Imgui()
+{
+	// Begin 실패 시 바로 return 해야 함
+	if (!ImGui::Begin(u8"Editor", NULL,
+		ImGuiWindowFlags_MenuBar |
+		ImGuiWindowFlags_HorizontalScrollbar |
+		ImGuiWindowFlags_AlwaysVerticalScrollbar))
+	{
+		ImGui::End();
+		return;
+	}
+
+	ImGui::NewLine();
+
+	// 메뉴바
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("save"))
+				m_bSave = true;
+			ImGui::Separator();
+			if (ImGui::MenuItem("open"))
+				m_bLoad = true;
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Debug"))
+		{
+			ImGui::MenuItem("Show Mouse Pos", NULL, &m_bShowSimpleMousePos);
+			ImGui::Separator();
+			ImGui::MenuItem("Show Picked Object", NULL, &m_bShowPickedObject);
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Tools"))
+		{
+			ImGui::MenuItem("Style Editor", NULL, &m_bShow_app_style_editor);
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
+	static int iCurrentLevel = (int)m_iCurrentLevel;
+	m_iCurrentLevel = (LEVEL)iCurrentLevel;
+
+	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+	if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+	{
+		if (ImGui::BeginTabItem("Model Tool"))
+		{
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Picking for Object");
+			ImGui::SameLine();
+			ImGui::RadioButton("##Picking for Object", &m_PickingType, PICKING_MODEL);
+
+			if (ImGui::BeginTabBar("ModelsTabs", ImGuiTabBarFlags_None))
+			{
+				if (ImGui::BeginTabItem("Show Model List"))
+				{
+					Show_ModelList();
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Show Current Model List"))
+				{
+					Show_CurrentModelList();
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar(); 
+			}
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar(); 
+	}
+
+	if (m_bSave || m_bLoad)
+		BrowseForFolder();
+
+	if (m_bShowSimpleMousePos)
+		ShowSimpleMousePos(&m_bShowSimpleMousePos);
+
+	if (m_bShow_app_style_editor)
+	{
+		ImGui::Begin("Dear ImGui Style Editor", &m_bShow_app_style_editor);
+		ImGui::ShowStyleEditor();
+		ImGui::End();
+	}
+
+	ImGui::End(); // 최종 End
+
 }
 
 void CImGui_Manager::ShowSimpleMousePos(bool* p_open)
 {
+	static int location = 0;
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	if (location >= 0)
+	{
+		const float PAD = 10.0f;
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImVec2 work_pos = viewport->WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
+		ImVec2 work_size = viewport->WorkSize;
+		ImVec2 window_pos, window_pos_pivot;
+		window_pos.x = (location & 1) ? (work_pos.x + work_size.x - PAD) : (work_pos.x + PAD);
+		window_pos.y = (location & 2) ? (work_pos.y + work_size.y - PAD) : (work_pos.y + PAD);
+		window_pos_pivot.x = (location & 1) ? 1.0f : 0.0f;
+		window_pos_pivot.y = (location & 2) ? 1.0f : 0.0f;
+		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+		window_flags |= ImGuiWindowFlags_NoMove;
+	}
+	else if (location == -2)
+	{
+		// Center window
+		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+		window_flags |= ImGuiWindowFlags_NoMove;
+	}
+	ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+	if (ImGui::Begin("Mouse Debug tab", p_open, window_flags))
+	{
+		ImGui::Text("Mouse Debug");
+		ImGui::Separator();
+		if (ImGui::IsMousePosValid())
+		{
+			_float3 vPickingPos = CPickingMgr::GetInstance()->Get_PickingPos();
+			ImGui::Text("Mouse UI: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+			ImGui::Text("Mouse World: (%.1f,%.1f,%.1f)", vPickingPos.x, vPickingPos.y, vPickingPos.z);
+		}
+		else
+			ImGui::Text("Mouse Position: <invalid>");
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::MenuItem("Custom", NULL, location == -1)) location = -1;
+			if (ImGui::MenuItem("Center", NULL, location == -2)) location = -2;
+			if (ImGui::MenuItem("Top-left", NULL, location == 0)) location = 0;
+			if (ImGui::MenuItem("Top-right", NULL, location == 1)) location = 1;
+			if (ImGui::MenuItem("Bottom-left", NULL, location == 2)) location = 2;
+			if (ImGui::MenuItem("Bottom-right", NULL, location == 3)) location = 3;
+			if (p_open && ImGui::MenuItem("Close")) *p_open = false;
+			ImGui::EndPopup();
+		}
+	}
+	ImGui::End();
 }
 
 void CImGui_Manager::ShowPickedObj()
 {
+	CPickingMgr* pPickingMgr = CPickingMgr::GetInstance();
+	pPickingMgr->AddRef();
+	CGameObject* pPickedObj = pPickingMgr->Get_PickedObj();
+
+
+	if (pPickedObj != nullptr)
+	{
+		DirectX::XMStoreFloat3(&m_vPickedObjPos, dynamic_cast<CActor*>(pPickedObj)->Get_Position());
+		m_vPickedObjScale = dynamic_cast<CActor*>(pPickedObj)->Get_Scale();
+
+		if (dynamic_cast<CActor*>(pPickedObj)->Get_ObjectID() != OBJ_BACKGROUND)
+		{
+
+			m_vPickedRotAxis = dynamic_cast<CNonAnim*>(pPickedObj)->Get_ModelDesc().vRotation;
+			m_fRotAngle = dynamic_cast<CNonAnim*>(pPickedObj)->Get_ModelDesc().m_fAngle;
+		}
+
+	}
+	else
+	{
+		m_vPickedObjPos = _float3(0.f, 0.f, 0.f);
+		m_vPickedObjScale = _float3(1.f, 1.f, 1.f);
+		m_fRotAngle = 0.f;
+	}
+
+
+	ImGui::NewLine();
+	ImGui::BulletText("Position");
+	ImGui::Text("Position X");
+	ImGui::SameLine();
+	ImGui::DragFloat("##PositionX", &m_vPickedObjPos.x, 0.1f);
+
+	ImGui::Text("Position Z");
+	ImGui::SameLine();
+	ImGui::DragFloat("##PositionZ", &m_vPickedObjPos.z, 0.01f);
+
+	ImGui::Text("Position Y");
+	ImGui::SameLine();
+	ImGui::DragFloat("##PositionY", &m_vPickedObjPos.y, 0.01f);
+
+	ImGui::NewLine();
+
+	ImGui::BulletText("Scale");
+
+	static _float Pos[3] = { m_vPickedObjScale.x, m_vPickedObjScale.y,  m_vPickedObjScale.z };
+	Pos[0] = m_vPickedObjScale.x;
+	Pos[1] = m_vPickedObjScale.y;
+	Pos[2] = m_vPickedObjScale.z;
+
+	ImGui::Text("Scale");
+	ImGui::SameLine();
+	ImGui::DragFloat3("##SettingScale", Pos);
+	m_vPickedObjScale = _float3(Pos[0], Pos[1], Pos[2]);
+
+	ImGui::BulletText("Rotation");
+	static _float Rotation[3] = { m_vPickedRotAxis.x , m_vPickedRotAxis.y, m_vPickedRotAxis.z };
+	Rotation[0] = m_vPickedRotAxis.x;
+	Rotation[1] = m_vPickedRotAxis.y;
+	Rotation[2] = m_vPickedRotAxis.z;
+	ImGui::Text("Rotation axis"); ImGui::SameLine();
+
+	ImGui::DragFloat3("##Setting RotAxis", Rotation);
+	if (ImGui::Button("Random RotX"))
+	{
+
+		Rotation[0] = rand() % 180;
+	}
+
+	if (ImGui::Button("Random RotY"))
+	{
+
+		Rotation[1] = rand() % 180;
+	}
+
+	if (ImGui::Button("Random RotZ"))
+	{
+
+		Rotation[2] = rand() % 180;
+	}
+
+	m_vPickedRotAxis = _float3(Rotation[0], Rotation[1], Rotation[2]);
+
+
+
+	if (pPickedObj != nullptr && dynamic_cast<CActor*>(pPickedObj)->Get_ObjectID() == OBJ_BLOCK)
+	{
+		_vector vSettingPosition = DirectX::XMLoadFloat3(&m_vPickedObjPos);
+		vSettingPosition = XMVectorSetW(vSettingPosition, 1.f);
+		dynamic_cast<CActor*>(pPickedObj)->Set_State(CTransform::STATE_TRANSLATION, vSettingPosition);
+		dynamic_cast<CActor*>(pPickedObj)->Set_Scale(m_vPickedObjScale);
+		dynamic_cast<CNonAnim*>(pPickedObj)->Turn(m_vPickedRotAxis, 0.f);
+	}
+
+	if (ImGui::Button("Delete Object"))
+	{
+		if (pPickingMgr->Get_PickedObj() != nullptr)
+			ImGui::OpenPopup("Delete Object?");
+
+	}
+	Show_PopupBox();
+	pPickingMgr->Release();
 }
 
 void CImGui_Manager::Show_PopupBox()
 {
+	// Always center this window when appearing
+	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	bool unused_open = true;
+
+	if (ImGui::BeginPopupModal("Delete Object?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		CPickingMgr* pPickingMgr = CPickingMgr::GetInstance();
+		pPickingMgr->AddRef();
+		CGameObject* pPickedObj = pPickingMgr->Get_PickedObj();
+		CNonAnim* pNonAnim = dynamic_cast<CNonAnim*>(pPickedObj);
+		ImGui::Text("Are yoou Sure Delete This Object?\n\n");
+		ImGui::Separator();
+
+		ImGui::Text("Object Name : ");  ImGui::SameLine(); ImGui::Text(pNonAnim->Get_Modeltag());
+
+		if (ImGui::Button("OK", ImVec2(120, 0)))
+		{
+			m_iCreatedSelected = 0;
+			pPickingMgr->Set_PickedObj(nullptr);
+			m_pModel_Manager->Out_CreatedModel(pNonAnim);
+			pPickedObj->Set_Dead(true);
+			pPickingMgr->Out_PickingGroup(pNonAnim);
+
+			_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+			m_iCurrentLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+			list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(m_iCurrentLevel, LayerTag);
+			if (nullptr == plistClone || plistClone->size() == 0)
+			{
+				delete LayerTag;
+				return;
+			}
+
+			for (auto& iter : *plistClone)
+			{
+				if (iter == pNonAnim)
+				{
+					delete LayerTag;
+				}
+			}
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+		ImGui::EndPopup();
+
+		pPickingMgr->Release();
+	}
+
+
+	if (ImGui::BeginPopupModal("Delete Layer Tag?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text("All those LayerTag files will be deleted.\nThis operation cannot be undone!\n\n");
+		ImGui::Separator();
+
+		static int unused_i = 0;
+		ImGui::Combo("Combo", &unused_i, "Layer1\0Layer2\0");
+
+		static bool dont_ask_me_next_time = false;
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+		ImGui::Checkbox("Don't ask me next time", &dont_ask_me_next_time);
+		ImGui::PopStyleVar();
+
+		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+		ImGui::EndPopup();
+	}
+
+
+	if (ImGui::BeginPopupModal("Add Layer Tag", NULL, ImGuiWindowFlags_MenuBar))
+	{
+		static char LayerBuffer[MAX_PATH] = "";
+
+		ImGui::Text("Enter Layer Tag");
+		ImGui::InputText("Layer Tag", LayerBuffer, MAX_PATH);
+
+		if (ImGui::Button("Add Layer Tag"))
+		{
+			bool bFailed = false;
+
+			if (m_stLayerTags.size() != 0)
+			{
+				for (auto& iter : m_stLayerTags)
+				{
+					if (!strcmp("", LayerBuffer) || !strcmp(iter.c_str(), LayerBuffer))
+					{
+						bFailed = true;
+						ImGui::OpenPopup("Failed");
+					}
+
+				}
+			}
+			if (!bFailed)
+			{
+				string NewLayer = LayerBuffer;
+				m_stLayerTags.push_back(NewLayer);
+				ImGui::OpenPopup("Succese");
+			}
+
+		}
+
+		if (ImGui::BeginPopupModal("Failed", &unused_open))
+		{
+			ImGui::Text("Failed Add Layer Tag");
+			if (ImGui::Button("Close"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
+		if (ImGui::BeginPopupModal("Succese", &unused_open))
+		{
+			ImGui::Text("Succese");
+			if (ImGui::Button("Close"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
+
+
+		ImGui::SameLine();
+		if (ImGui::Button("Close"))  ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
 }
 
 void CImGui_Manager::Set_Object_Map()
 {
+	ImGui::NewLine();
+	ImGui::BulletText("Transform Setting");
+
+	static float Position[3] = { m_InitDesc.vPosition.x, m_InitDesc.vPosition.y, m_InitDesc.vPosition.z };
+	ImGui::Text("Position"); ImGui::SameLine();
+	ImGui::InputFloat3("##1", Position);
+	
+	static _float OffsetPos[3] = { m_vfOffset.x, m_vfOffset.y, m_vfOffset.z };
+	ImGui::Text("Offset"); ImGui::SameLine();
+	ImGui::InputFloat3("##PosOffset", OffsetPos);
+	m_vfOffset = _float3(OffsetPos[0], OffsetPos[1], OffsetPos[2]);
+	m_InitDesc.vPosition = _float3(Position[0] + OffsetPos[0], Position[1] + OffsetPos[1], Position[2] + OffsetPos[2]);
+
+	static _float Scale[3] = { m_InitDesc.vScale.x , m_InitDesc.vScale.y, m_InitDesc.vScale.z };
+	ImGui::Text("Scale"); ImGui::SameLine();
+	ImGui::InputFloat3("##Scale", Scale);
+	m_InitDesc.vScale = _float3(Scale[0], Scale[1], Scale[2]);
+
+	static _float Rotation[3] = { m_InitDesc.vRotation.x , m_InitDesc.vRotation.y, m_InitDesc.vRotation.z };
+	ImGui::Text("Rotation axis"); ImGui::SameLine();
+	ImGui::DragFloat3("##2", Rotation);
+
+	ImGui::Checkbox("RandomRotX", &m_bRandomX);
+	ImGui::Checkbox("RandomRotY", &m_bRandomY);
+	ImGui::Checkbox("RandomRotZ", &m_bRandomZ);
+
+	if (m_bRandomX == true)
+		Rotation[0] = rand() % 180;
+	if (m_bRandomY == true)
+		Rotation[1] = rand() % 180;
+	if (m_bRandomZ == true)
+		Rotation[2] = rand() % 180;
+
+	m_InitDesc.vRotation = _float3(Rotation[0], Rotation[1], Rotation[2]);
 }
 
 void CImGui_Manager::Set_LayerTag()
 {
+	//Layer tag를 만들거나, 삭제한다. 
+	ImGui::BulletText("Layer Setting");
+
+	if (ImGui::BeginCombo("Layer List", m_stLayerTags[m_iSeletecLayerNum].c_str()))
+	{
+		for (int i = 0; i < m_stLayerTags.size(); i++)
+		{
+			if (ImGui::Selectable(m_stLayerTags[i].c_str(), m_iSeletecLayerNum == i))
+				m_iSeletecLayerNum = i;
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::Button("Delete Layer Tag"))
+		ImGui::OpenPopup("Delete Layer Tag?"); ImGui::SameLine();
+
+	if (ImGui::Button("Add New Layer Tag"))
+		ImGui::OpenPopup("Add Layer Tag");
+
+	Show_PopupBox();
 }
 
 void CImGui_Manager::Set_Macro()
 {
+	vector<const _tchar*> ModelTags = m_pModel_Manager->Get_PrototypeTag();
+	ImGui::NewLine();
+	ImGui::BulletText("Macro Setting");
+	ImGui::Text("fbx size : "); ImGui::SameLine(); ImGui::Text("%d", ModelTags.size());
+
+	static int LoopOption[2]{ 0 };
+	static float fDistance[3]{ 0.f };
+	static float fPosition[3]{ 0.f };
+	static float fScale[3]{ 1.f, 1.f, 1.f };
+
+	const char* MacroTypeList[] = { "Col & Row", "Col & Aphabet" };
+	static int MacroType = 0;
+	ImGui::Combo("MacroType", &MacroType, MacroTypeList, IM_ARRAYSIZE(MacroTypeList));
+
+	switch (MacroType)
+	{
+	case 0:
+		ImGui::Text("Col & Row :"); ImGui::SameLine(); ImGui::InputInt2("##Col & Row", LoopOption);
+		break;
+	case 1:
+		ImGui::Text("Col & Aphabet :"); ImGui::SameLine(); ImGui::InputInt2("##Col & Row", LoopOption);
+		break;
+	default:
+		break;
+	}
+
+
+	ImGui::Text("DistanceXYZ :"); ImGui::SameLine(); ImGui::InputFloat3("##DistanceXYZ", fDistance);
+	ImGui::Text("PositionXYZ :"); ImGui::SameLine(); ImGui::InputFloat3("##PositionXYZ", fPosition);
+	ImGui::Text("ScaleXYZ :"); ImGui::SameLine(); ImGui::InputFloat3("##ScaleXYZ", fScale);
+
+	if (ImGui::Button("Create Macro"))
+	{
+		if (MacroType == 0)
+		{
+			for (int i = 0; i < LoopOption[0]; ++i)
+			{
+				for (int j = 0; j < LoopOption[1]; ++j)
+				{
+					_int iIndex = i * LoopOption[1] + j;
+
+					m_InitDesc.vPosition = _float3(fPosition[0] + j * fDistance[0], fPosition[1], fPosition[2] + i * fDistance[2]);
+					m_InitDesc.vScale = _float3(fScale[0], fScale[1], fScale[2]);
+					_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+					Create_Model(ModelTags[iIndex], LayerTag);
+					m_TempLayerTags.push_back(LayerTag);
+				}
+			}
+		}
+		else if (MacroType == 1)
+		{
+			_int iIndex = 0;
+			for (int i = 0; i < LoopOption[0]; ++i)
+			{
+				for (int j = 0; j < LoopOption[1]; ++j)
+				{
+					if (iIndex >= ModelTags.size())
+						continue;
+
+					_int LastAlphabet = j + 65;
+					_int LastAlphabet2 = ModelTags[iIndex][_tcslen(ModelTags[iIndex]) - 5];
+
+					if (LastAlphabet2 != LastAlphabet)
+						continue;
+
+					m_InitDesc.vPosition = _float3(fPosition[0] + j * fDistance[0], fPosition[1], fPosition[2] + i * fDistance[2]);
+					m_InitDesc.vScale = _float3(fScale[0], fScale[1], fScale[2]);
+					_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+					Create_Model(ModelTags[iIndex], LayerTag);
+					m_TempLayerTags.push_back(LayerTag);
+					iIndex++;
+
+				}
+			}
+		}
+	}
 }
 
 void CImGui_Manager::Show_ModelList()
 {
+	vector<const _tchar*> ModelTags = m_pModel_Manager->Get_PrototypeTag();
+
+	// ------------------------ Left-----------------------------------
+	static int selected = 0;
+	{
+		ImGui::BeginChild("left pane", ImVec2(200, 0), true);
+
+		int i = 0;
+
+		if (ModelTags.size() != 0)
+		{
+			for (auto& iter : ModelTags)
+			{
+				if (iter == nullptr)
+					continue;
+				char label[MAX_PATH];
+				char szLayertag[MAX_PATH] = "";
+				WideCharToMultiByte(CP_ACP, 0, iter, MAX_PATH, szLayertag, MAX_PATH, NULL, NULL);
+				sprintf(label, szLayertag);
+				if (ImGui::Selectable(label, selected == i))
+					selected = i;
+				i++;
+			}
+		}
+		ImGui::EndChild();
+	}
+	ImGui::SameLine();
+
+	// ------------------------ Right -----------------------------------
+	{
+
+		ImGui::BeginGroup();
+		ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+		char szLayertag[MAX_PATH] = "";
+		if (ModelTags.size() != 0)
+			WideCharToMultiByte(CP_ACP, 0, ModelTags[selected], MAX_PATH, szLayertag, MAX_PATH, NULL, NULL);
+		ImGui::Text("Selected :"); ImGui::SameLine();  ImGui::Text(szLayertag);
+		ImGui::Separator();
+		if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+		{
+			if (ImGui::BeginTabItem("Setting"))
+			{
+				ImGui::NewLine();
+				Set_LayerTag();
+				Set_Object_Map();
+				ImGui::EndTabItem();
+
+				if (ImGui::Button("Add_Model"))
+				{
+					_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+					Create_Model(ModelTags[selected], LayerTag);
+					m_TempLayerTags.push_back(LayerTag);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Revert"))
+				{
+					_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+					m_iCurrentLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+					list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(m_iCurrentLevel, LayerTag);
+					if (nullptr == plistClone || plistClone->size() == 0)
+					{
+						delete LayerTag;
+						return;
+					}
+
+
+					auto iter = --plistClone->end();
+					CPickingMgr::GetInstance()->Out_PickingGroup(*iter);
+					m_pModel_Manager->Out_CreatedModel(dynamic_cast<CNonAnim*>(*iter));
+					Safe_Release(*iter);
+					plistClone->erase(iter);
+
+					delete LayerTag;
+				}
+			}
+			if (ImGui::BeginTabItem("Macro"))
+			{
+				ImGui::NewLine();
+				Set_LayerTag();
+				Set_Macro();
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+
+		ImGui::EndChild();
+		ImGui::EndGroup();
+	}
+
+
+	if (m_PickingType == PICKING_MODEL && CGameInstance::GetInstance()->Key_Up(DIK_X))
+	{
+		if (CPickingMgr::GetInstance()->Picking())
+		{
+			m_InitDesc.vPosition = CPickingMgr::GetInstance()->Get_PickingPos();
+			m_InitDesc.vPosition.x += m_vfOffset.x;
+			m_InitDesc.vPosition.y += m_vfOffset.y;
+			m_InitDesc.vPosition.z += m_vfOffset.z;
+			_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+			Create_Model(ModelTags[selected], LayerTag, true);
+			m_TempLayerTags.push_back(LayerTag);
+
+		}
+	}
+
+	if (m_PickingType == PICKING_MODEL && CGameInstance::GetInstance()->Key_Up(DIK_Z))
+	{
+		_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+		m_iCurrentLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+		list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(m_iCurrentLevel, LayerTag);
+		if (nullptr == plistClone || plistClone->size() == 0)
+		{
+			delete LayerTag;
+			return;
+		}
+
+
+		auto iter = --plistClone->end();
+		CPickingMgr::GetInstance()->Out_PickingGroup(*iter);
+		CPickingMgr::GetInstance()->Set_PickedObj(nullptr);
+		m_pModel_Manager->Out_CreatedModel(dynamic_cast<CNonAnim*>(*iter));
+		Safe_Release(*iter);
+		plistClone->erase(iter);
+
+		delete LayerTag;
+	}
 }
 
 void CImGui_Manager::Show_CurrentModelList()
 {
+	//vector<class CNonAnim*> vecCreatedModel = m_pModel_Manager->Get_CreatedModel();
+	vector<class CNonAnim*> vecCreatedModel = m_pModel_Manager->Get_CreatedModel();
+
+
+	// Left
+	{
+		ImGui::BeginChild("Object List", ImVec2(150, 0), true);
+
+		int i = 0;
+
+		if (vecCreatedModel.size() != 0)
+		{
+			for (auto& iter : vecCreatedModel)
+			{
+				if (iter == nullptr)
+					continue;
+
+				char label[MAX_PATH] = "";
+				char szLayertag[MAX_PATH] = "";
+
+				string  ModelTag = iter->Get_Modeltag();
+				ModelTag = ModelTag + "_" + to_string(i);
+				_tchar* RealModelTag = StringToTCHAR(ModelTag);
+				WideCharToMultiByte(CP_ACP, 0, RealModelTag, MAX_PATH, szLayertag, MAX_PATH, NULL, NULL);
+				sprintf(label, szLayertag);
+				delete(RealModelTag);
+				if (ImGui::Selectable(label, m_iCreatedSelected == i))
+				{
+					m_iCreatedSelected = i;
+					vecCreatedModel[i]->Set_Picked();
+				}
+
+				i++;
+			}
+		}
+		ImGui::EndChild();
+	}
+	ImGui::SameLine();
+
+	// Right
+	{
+		ImGui::BeginGroup();
+		ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+		char szLayertag[MAX_PATH] = "";
+		if (vecCreatedModel.size() != 0)
+		{
+			if (vecCreatedModel[m_iCreatedSelected] != nullptr)
+				strcpy_s(szLayertag, MAX_PATH, vecCreatedModel[m_iCreatedSelected]->Get_Modeltag());
+		}
+
+		ImGui::Text(szLayertag);
+		ImGui::Separator();
+		if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+		{
+			if (ImGui::BeginTabItem("LayerList"))
+			{
+				ShowPickedObj();
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Details"))
+			{
+				ImGui::Text("ID: 0123456789");
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+		ImGui::EndChild();
+		if (ImGui::Button("Revert")) {}
+		ImGui::SameLine();
+		if (ImGui::Button("Save")) {}
+		ImGui::EndGroup();
+	}
+
+
+	if (m_PickingType == PICKING_MODEL && CGameInstance::GetInstance()->Key_Up(DIK_Z))
+	{
+		_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+		m_iCurrentLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+		list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(m_iCurrentLevel, LayerTag);
+		if (nullptr == plistClone || plistClone->size() == 0)
+		{
+			delete LayerTag;
+			return;
+		}
+
+		auto iter = --plistClone->end();
+		m_pModel_Manager->Out_CreatedModel(dynamic_cast<CNonAnim*>(*iter));
+		Safe_Release(*iter);
+		plistClone->erase(iter);
+
+		delete LayerTag;
+	}
 }
 
 void CImGui_Manager::BrowseForFolder()
 {
+	if (m_bSave)
+	{
+		OPENFILENAME OFN;
+		TCHAR filePathName[300] = L"";
+		TCHAR lpstrFile[300] = L"";
+		static TCHAR filter[] = L"데이터 파일\0*.dat\0텍스트 파일\0*.txt";
+
+		memset(&OFN, 0, sizeof(OPENFILENAME));
+		OFN.lStructSize = sizeof(OPENFILENAME);
+		OFN.hwndOwner = g_hWnd;
+		OFN.lpstrFilter = filter;
+		OFN.lpstrFile = lpstrFile;
+		OFN.nMaxFile = 300;
+		OFN.lpstrInitialDir = L".";
+		OFN.Flags = OFN_SHOWHELP | OFN_OVERWRITEPROMPT;
+
+		if (GetSaveFileName(&OFN))
+		{
+			//ERR_MSG(TEXT("save-as  '%s'\n"), ofn.lpstrFile); //경로// 파일이름.확장자
+			//ERR_MSG(TEXT("filename '%s'\n"), ofn.lpstrFile + ofn.nFileOffset); 
+
+			HANDLE hFile = 0;
+			_ulong dwByte = 0;
+			NONANIMDESC  ModelDesc;
+			_int iNum = 0;
+			_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+			m_TempLayerTags.push_back(LayerTag);
+			m_iCurrentLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+			list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(m_iCurrentLevel, LayerTag);
+			if (nullptr == plistClone)
+			{
+				m_bSave = false;
+				return;
+			}
+
+
+			iNum = (_int)plistClone->size();
+
+			hFile = CreateFile(OFN.lpstrFile, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);;
+			if (0 == hFile)
+			{
+				CloseHandle(hFile);
+				return;
+			}
+
+
+			/* 첫줄은 object 리스트의 size 받아서 갯수만큼 for문 돌리게 하려고 저장해놓음*/
+			WriteFile(hFile, &(iNum), sizeof(_int), &dwByte, nullptr);
+
+			for (auto& iter : *plistClone)
+			{
+				if (iter == nullptr)
+					continue;
+
+				ModelDesc = dynamic_cast<CNonAnim*>(iter)->Get_ModelDesc();
+				WriteFile(hFile, &ModelDesc, sizeof(NONANIMDESC), &dwByte, nullptr);
+
+			}
+
+			CloseHandle(hFile);
+
+		}
+
+		m_bSave = false;
+	}
+	else if (m_bLoad)
+	{
+		OPENFILENAME OFN;
+		TCHAR filePathName[300] = L"";
+		TCHAR lpstrFile[300] = L"";
+		static TCHAR filter[] = L"데이터 파일\0*.dat\0텍스트 파일\0*.txt";
+
+		memset(&OFN, 0, sizeof(OPENFILENAME));
+		OFN.lStructSize = sizeof(OPENFILENAME);
+		OFN.hwndOwner = g_hWnd;
+		OFN.lpstrFilter = filter;
+		OFN.lpstrFile = lpstrFile;
+		OFN.nMaxFile = 300;
+		OFN.lpstrInitialDir = L".";
+
+		if (GetOpenFileName(&OFN) != 0) {
+			wsprintf(filePathName, L"%s 파일을 열겠습니까?", OFN.lpstrFile);
+			MessageBox(g_hWnd, filePathName, L"열기 선택", MB_OK);
+
+			//ERR_MSG(TEXT("save-as  '%s'\n"), ofn.lpstrFile); //경로// 파일이름.확장자
+			//ERR_MSG(TEXT("filename '%s'\n"), ofn.lpstrFile + ofn.nFileOffset); 
+
+			HANDLE hFile = 0;
+			_ulong dwByte = 0;
+			NONANIMDESC  ModelDesc;
+			_int iNum = 0;
+			LEVEL iLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+			_matrix			PivotMatrix = XMMatrixIdentity();
+
+			_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+			m_TempLayerTags.push_back(LayerTag);
+
+			hFile = CreateFile(OFN.lpstrFile, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+			if (0 == hFile)
+			{
+				CloseHandle(hFile);
+				return;
+			}
+
+
+			/* 타일의 개수 받아오기 */
+			ReadFile(hFile, &(iNum), sizeof(_int), &dwByte, nullptr);
+
+			for (_int i = 0; i < iNum; ++i)
+			{
+				ReadFile(hFile, &(ModelDesc), sizeof(NONANIMDESC), &dwByte, nullptr);
+				m_pModel_Manager->Set_InitModelDesc(ModelDesc);
+				_tchar			szModeltag[MAX_PATH] = TEXT("");
+				MultiByteToWideChar(CP_ACP, 0, ModelDesc.pModeltag, (_int)strlen(ModelDesc.pModeltag), szModeltag, MAX_PATH);
+				m_pModel_Manager->Create_Model(iLevel, szModeltag, LayerTag, m_pDevice, m_pContext, CModel::TYPE_NONANIM, PivotMatrix);
+			}
+			CloseHandle(hFile);
+		}
+
+		m_bLoad = false;
+	}
 }
 
-void CImGui_Manager::Set_TrasureBox()
+void CImGui_Manager::Set_Animation()
 {
-}
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 
-void CImGui_Manager::Save_TrasureBox()
-{
-}
+	if (ImGui::Button("Load Model"))
+		m_isLoad = true;
+	ImGui::SameLine();
+	if (ImGui::Button("Load Second Model"))
+		m_isSecondLoad = true;
+	ImGui::SameLine();
 
-void CImGui_Manager::Load_TrasureBox()
-{
+	if (ImGui::Button("Save Animation"))
+	{
+		_tchar pAnimationDataFilePath[MAX_PATH] = TEXT("../../../Bin/Bin_Data/Anim/");
+
+		CAnim::MODELDESC Pivot;
+		CAnim::MODELDESC tempDesc =
+			((CAnim*)(pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front()))->Get_Desc();
+
+		memcpy(&Pivot, &tempDesc, sizeof(CAnim::MODELDESC));
+
+
+		switch (Pivot.eModel)
+		{
+		case MODEL_NEXUS:
+			lstrcat(pAnimationDataFilePath, TEXT("Alphen/Alphen_Animation_Add.dat"));
+			break;
+		}
+
+		CModel* pPlayerModel = (CModel*)pGameInstance->Get_Component(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Com_Model"));
+		if (nullptr != pPlayerModel)
+		{
+			_ulong dwByte = 0;
+			HANDLE hFile = CreateFile(pAnimationDataFilePath, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+			if (0 == hFile)
+			{
+				MSG_BOX("Failed to Save : Animation_Add");
+				return;
+			}
+
+			for (auto& Animation : pPlayerModel->Get_Animations())
+			{
+				vector<_float> TickPerSeconds = Animation->Get_TickPerSeconds();
+				vector<_float> ChangeTimes = Animation->Get_ChangeTickTimes();
+				vector<ANIMEVENT> AnimEvent = Animation->Get_Events();
+
+				_int TickPerSecondsSize = TickPerSeconds.size();
+				_int ChangeTimesSize = ChangeTimes.size();
+				_int EventsSize = AnimEvent.size();
+
+				_float fDuration = Animation->Get_Duration();
+				WriteFile(hFile, &fDuration, sizeof(_float), &dwByte, nullptr);
+
+				WriteFile(hFile, &TickPerSecondsSize, sizeof(_int), &dwByte, nullptr);
+				for (_int i = 0; i < TickPerSecondsSize; ++i)
+					WriteFile(hFile, &TickPerSeconds[i], sizeof(_float), &dwByte, nullptr);
+
+				WriteFile(hFile, &ChangeTimesSize, sizeof(_int), &dwByte, nullptr);
+				for (_int i = 0; i < ChangeTimesSize; ++i)
+					WriteFile(hFile, &ChangeTimes[i], sizeof(_float), &dwByte, nullptr);
+
+				WriteFile(hFile, &EventsSize, sizeof(_int), &dwByte, nullptr);
+				for (_int i = 0; i < EventsSize; ++i)
+					WriteFile(hFile, &AnimEvent[i], sizeof(ANIMEVENT), &dwByte, nullptr);
+			}
+
+			CloseHandle(hFile);
+		}
+
+		m_isSaveComplete = true;
+	}
+
+	if (m_isSaveComplete)
+	{
+		ImGui::Begin("Save Animation", &m_isSaveComplete);
+
+		ImGui::Text("Save Complete");
+
+		if (ImGui::Button("Close"))
+			m_isSaveComplete = false;
+
+		ImGui::End();
+	}
+
+	if (m_isLoad)
+	{
+		ImGui::Begin("Load", &m_isLoad);
+
+		char** pItems = new char* [m_AnimObj.size()];
+
+		for (_int i = 0; i < m_AnimObj.size(); ++i)
+			pItems[i] = m_AnimObj[i];
+
+		if (ImGui::ListBox("Load Model", &m_iLoadModel, pItems, _int(m_AnimObj.size())))
+		{
+			list<CGameObject*>* pPlayerList = pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"));
+
+			if ((nullptr != pPlayerList) && !pPlayerList->empty())
+				((CAnim*)(pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front()))->Set_Dead(true);
+
+			CAnim::MODELDESC Pivot;
+			ZeroMemory(&Pivot, sizeof(CAnim::MODELDESC));
+
+			Pivot.vPosition = _float3(0.f, 0.f, 0.f);
+			Pivot.vScale = _float3(1.f, 1.f, 1.f);
+			Pivot.vRotation = _float3(0.f, 0.f, 0.f);
+
+			Pivot.eModel = (MODEL_ID)m_iLoadModel;
+
+			if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Anim"), LEVEL_GAMEPLAY, TEXT("Layer_Player"), &Pivot)))
+				return;
+
+			if (m_iPreModel != m_iLoadModel)
+			{
+				m_iBoneChoice = -1;
+				m_iAnimationChoice = -1;
+			}
+
+			m_iPreModel = m_iLoadModel;
+		}
+
+		Safe_Delete_Array(pItems);
+
+		if (ImGui::Button("Close"))
+		{
+			m_isLoad = false;
+			m_iLoadModel = -1;
+		}
+
+		ImGui::End();
+	}
+
+	if (m_isSecondLoad)
+	{
+		ImGui::Begin("Second Load", &m_isSecondLoad);
+
+		char** pItems = new char* [m_AnimObj.size()];
+
+		for (_int i = 0; i < m_AnimObj.size(); ++i)
+			pItems[i] = m_AnimObj[i];
+
+		if (ImGui::ListBox("Load Second Model", &m_iLoadSecondModel, pItems, _int(m_AnimObj.size())))
+		{
+			list<CGameObject*>* pPlayerList = pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"));
+
+			if ((nullptr != pPlayerList) && (1 < pPlayerList->size()))
+			{
+				auto iter = pPlayerList->begin();
+				++iter;
+				(*iter)->Set_Dead(true);
+			}
+
+			CAnim::MODELDESC Pivot;
+			ZeroMemory(&Pivot, sizeof(CAnim::MODELDESC));
+
+			Pivot.vPosition = _float3(0.f, 0.f, 0.f);
+			Pivot.vScale = _float3(1.f, 1.f, 1.f);
+			Pivot.vRotation = _float3(0.f, 0.f, 0.f);
+
+			Pivot.eModel = (MODEL_ID)m_iLoadSecondModel;
+
+			if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Anim"), LEVEL_GAMEPLAY, TEXT("Layer_Player"), &Pivot)))
+				return;
+
+			if (m_iPreSecondModel != m_iLoadSecondModel)
+				m_iSecondAnimationChoice = -1;
+
+			m_iPreSecondModel = m_iLoadSecondModel;
+		}
+
+		Safe_Delete_Array(pItems);
+
+		if (ImGui::Button("Close"))
+		{
+			m_isSecondLoad = false;
+			m_iLoadSecondModel = -1;
+		}
+
+		ImGui::End();
+	}
+
+	CModel* pPlayerModel = (CModel*)pGameInstance->Get_Component(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Com_Model"));
+	CModel* pSecondPlayerModel = (CModel*)pGameInstance->Get_Component(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Com_Model"), 1);
+
+	if (nullptr != pPlayerModel)
+	{
+		ImGuiTreeNodeFlags TreeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen;
+
+		if (ImGui::CollapsingHeader("World Transform", TreeNodeFlags))
+		{
+			if (ImGui::DragFloat3("Rotation", m_Rotation, 0.01f, 0.f, 360.f))
+				((CAnim*)(pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front()))->Get_Transform()->Set_Rotation(_float3(m_Rotation[0], m_Rotation[1], m_Rotation[2]));
+			if (ImGui::DragFloat3("Position", m_Position, 0.01f))
+			{
+				_vector vPos = XMVectorSet(m_Position[0], m_Position[1], m_Position[2], 1.f);
+				((CAnim*)(pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front()))->Get_Transform()->Set_State(CTransform::STATE_TRANSLATION, vPos);
+			}
+
+			if (nullptr != pSecondPlayerModel)
+			{
+				if (ImGui::DragFloat3("Second Rotation", m_SecondRotation, 0.01f, 0.f, 360.f))
+					((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->Get_Transform()->Set_Rotation(_float3(m_SecondRotation[0], m_SecondRotation[1], m_SecondRotation[2]));
+				if (ImGui::DragFloat3("Second Position", m_SecondPosition, 0.01f))
+				{
+					_vector vPos = XMVectorSet(m_SecondPosition[0], m_SecondPosition[1], m_SecondPosition[2], 1.f);
+					((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->Get_Transform()->Set_State(CTransform::STATE_TRANSLATION, vPos);
+				}
+			}
+		}
+
+		vector<CBone*> ModelBones = pPlayerModel->Get_Bones();
+		vector<CAnimation*> ModelAnimations = pPlayerModel->Get_Animations();
+		vector<CAnimation*> SecondModelAnimations;
+		if (nullptr != pSecondPlayerModel)
+			SecondModelAnimations = pSecondPlayerModel->Get_Animations();
+
+		if (ImGui::CollapsingHeader("Bone", TreeNodeFlags))
+		{
+			char** pBoneItems = new char* [ModelBones.size()];
+
+			for (_int i = 0; i < ModelBones.size(); ++i)
+			{
+				pBoneItems[i] = new char[MAX_PATH];
+				strcpy_s(pBoneItems[i], sizeof(char) * MAX_PATH, ModelBones[i]->Get_Name());
+			}
+
+			if (ImGui::ListBox("", &m_iBoneChoice, pBoneItems, _int(ModelBones.size())))
+			{
+				_matrix BoneTransformation = ModelBones[m_iBoneChoice]->Get_TransformationMatrix();
+
+			}
+
+			for (_int i = 0; i < ModelBones.size(); ++i)
+				Safe_Delete_Array(pBoneItems[i]);
+
+			Safe_Delete_Array(pBoneItems);
+
+			if (ImGui::Button("Weapon"))
+				m_isWeaponWindow = true;
+		}
+
+		if (m_isWeaponWindow)
+		{
+			ImGui::Begin("Weapon", &m_isWeaponWindow);
+
+			char** pWeapon = new char* [m_WeaponObj.size()];
+
+			for (_int i = 0; i < m_WeaponObj.size(); ++i)
+				pWeapon[i] = m_WeaponObj[i];
+
+			if (ImGui::ListBox("Weapon List", &m_iWeaponChoice, pWeapon, m_WeaponObj.size()))
+			{
+				CModel* pPlayerModel = (CModel*)pGameInstance->Get_Component(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Com_Model"));
+				if (nullptr != pPlayerModel)
+				{
+					_tchar ModelName[MAX_PATH] = TEXT("");
+					MultiByteToWideChar(CP_ACP, 0, m_WeaponObj[m_iWeaponChoice], (int)strlen(m_WeaponObj[m_iWeaponChoice]), ModelName, MAX_PATH);
+
+					_tchar ModelTag[MAX_PATH] = TEXT("Prototype_Component_Model_");
+
+					lstrcat(ModelTag, ModelName);
+
+					vector<CBone*> ModelBones = pPlayerModel->Get_Bones();
+
+				}
+			}
+
+			Safe_Delete_Array(pWeapon);
+
+			if (ImGui::Button("Close"))
+			{
+				m_iWeaponChoice = -1;
+				m_isWeaponWindow = false;
+			}
+
+			ImGui::End();
+		}
+
+		if (ImGui::CollapsingHeader("Animation", TreeNodeFlags))
+		{
+			char** pAnimItems = new char* [ModelAnimations.size()];
+
+			for (_int i = 0; i < ModelAnimations.size(); ++i)
+			{
+				pAnimItems[i] = new char[MAX_PATH];
+				strcpy_s(pAnimItems[i], sizeof(char) * MAX_PATH, ModelAnimations[i]->Get_Name());
+			}
+			ImGui::SetNextItemWidth(600.f);
+			if (ImGui::ListBox("Animation", &m_iAnimationChoice, pAnimItems, _int(ModelAnimations.size())))
+			{
+				((CAnim*)pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front())->Set_AnimIndex(m_iAnimationChoice);
+
+				m_fAnimationDuration = ModelAnimations[m_iAnimationChoice]->Get_Duration();
+
+				m_iEventChoice = -1;
+			}
+
+			for (_int i = 0; i < ModelAnimations.size(); ++i)
+				Safe_Delete_Array(pAnimItems[i]);
+
+			Safe_Delete_Array(pAnimItems);
+
+			if (ImGui::DragFloat("Duration", &m_fAnimationDuration, 0.005f, 0.001f, 200.f))
+				ModelAnimations[m_iAnimationChoice]->Change_Duration(m_fAnimationDuration);
+			ImGui::SameLine();
+			ImGui::Checkbox("Animation Play", &m_isAnimationPlay);
+
+			if (m_isAnimationPlay)
+			{
+				if (-1 != m_iAnimationChoice)
+				{
+					((CAnim*)pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front())->StartAnim();
+					m_fAnimationTime = ModelAnimations[m_iAnimationChoice]->Get_CurrentTime();
+					if (m_fAnimationTime > m_fAnimationDuration)
+						m_fAnimationTime = 0.f;
+				}
+			}
+			else
+				((CAnim*)pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front())->StopAnim();
+
+			if (ImGui::SliderFloat("Playing", &m_fAnimationTime, 0.f, m_fAnimationDuration))
+			{
+				ModelAnimations[m_iAnimationChoice]->Reset();
+				ModelAnimations[m_iAnimationChoice]->Set_CurrentTime(m_fAnimationTime);
+				((CAnim*)pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front())->PlayAnimation();
+			}
+
+			if (ImGui::Button("Animation Edit"))
+				m_isAnimationEdit = true;
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Animation Event"))
+				m_isEventWindow = true;
+
+			/* Second */
+			if (nullptr != pSecondPlayerModel)
+			{
+				char** pAnimItems = new char* [SecondModelAnimations.size()];
+
+				for (_int i = 0; i < SecondModelAnimations.size(); ++i)
+				{
+					pAnimItems[i] = new char[MAX_PATH];
+					strcpy_s(pAnimItems[i], sizeof(char) * MAX_PATH, SecondModelAnimations[i]->Get_Name());
+				}
+				ImGui::SetNextItemWidth(600.f);
+				if (ImGui::ListBox("Second Animation", &m_iSecondAnimationChoice, pAnimItems, _int(SecondModelAnimations.size())))
+				{
+					((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->Set_AnimIndex(m_iSecondAnimationChoice);
+
+					m_fSecondAnimationDuration = SecondModelAnimations[m_iSecondAnimationChoice]->Get_Duration();
+				}
+
+				for (_int i = 0; i < SecondModelAnimations.size(); ++i)
+					Safe_Delete_Array(pAnimItems[i]);
+
+				Safe_Delete_Array(pAnimItems);
+
+				if (ImGui::DragFloat("Second Duration", &m_fSecondAnimationDuration, 0.005f, 0.001f, 200.f))
+					SecondModelAnimations[m_iSecondAnimationChoice]->Change_Duration(m_fSecondAnimationDuration);
+				ImGui::SameLine();
+				ImGui::Checkbox("Second Animation Play", &m_isSecondAnimationPlay);
+
+				if (m_isSecondAnimationPlay)
+				{
+					if (-1 != m_iSecondAnimationChoice)
+					{
+						((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->StartAnim();
+						m_fSecondAnimationTime = SecondModelAnimations[m_iSecondAnimationChoice]->Get_CurrentTime();
+						if (m_fSecondAnimationTime > m_fSecondAnimationDuration)
+							m_fSecondAnimationTime = 0.f;
+					}
+				}
+				else
+					((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->StopAnim();
+
+				if (ImGui::SliderFloat("Second Playing", &m_fSecondAnimationTime, 0.f, m_fSecondAnimationDuration))
+				{
+					SecondModelAnimations[m_iSecondAnimationChoice]->Reset();
+					SecondModelAnimations[m_iSecondAnimationChoice]->Set_CurrentTime(m_fSecondAnimationTime);
+					((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->PlayAnimation();
+				}
+
+				ImGui::Checkbox("Strike Play", &m_isStrikePlay);
+
+				if (m_isStrikePlay)
+				{
+					if (-1 != m_iAnimationChoice && -1 != m_iSecondAnimationChoice)
+					{
+						((CAnim*)pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front())->StartAnim();
+						m_fAnimationTime = ModelAnimations[m_iAnimationChoice]->Get_CurrentTime();
+
+						((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->StartAnim();
+						m_fSecondAnimationTime = SecondModelAnimations[m_iSecondAnimationChoice]->Get_CurrentTime();
+					}
+				}
+				else if (!m_isStrikePlay && !m_isAnimationPlay && !m_isSecondAnimationPlay)
+				{
+					((CAnim*)pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->front())->StopAnim();
+					((CAnim*)(*(++pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Player"))->begin())))->StopAnim();
+
+					if (-1 != m_iAnimationChoice && -1 != m_iSecondAnimationChoice)
+					{
+						ModelAnimations[m_iAnimationChoice]->Reset();
+						SecondModelAnimations[m_iSecondAnimationChoice]->Reset();
+					}
+
+					if (m_fAnimationTime > m_fAnimationDuration)
+						m_fAnimationTime = 0.f;
+
+					if (m_fSecondAnimationTime > m_fSecondAnimationDuration)
+						m_fSecondAnimationTime = 0.f;
+				}
+			}
+		}
+
+		if (m_isAnimationEdit)
+		{
+			ImGui::Begin("Animation Edit", &m_isAnimationEdit);
+
+			CModel* pPlayerModel = (CModel*)pGameInstance->Get_Component(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Com_Model"));
+			if ((nullptr != pPlayerModel) && (-1 != m_iAnimationChoice))
+			{
+				CAnimation* ChoiceModelAnimation = pPlayerModel->Get_Animations()[m_iAnimationChoice];
+
+				vector<_float> TimeVector = ChoiceModelAnimation->Get_ChangeTickTimes();
+				vector<_float> TickVector = ChoiceModelAnimation->Get_TickPerSeconds();
+
+				char** pTime = new char* [TimeVector.size()];
+				char** pTick = new char* [TickVector.size()];
+
+				for (_int i = 0; i < TimeVector.size(); ++i)
+				{
+					pTime[i] = new char[MAX_PATH];
+					snprintf(pTime[i], MAX_PATH, "%f", TimeVector[i]);
+				}
+
+				for (_int i = 0; i < TickVector.size(); ++i)
+				{
+					pTick[i] = new char[MAX_PATH];
+					snprintf(pTick[i], MAX_PATH, "%f", TickVector[i]);
+				}
+
+				if (ImGui::ListBox("Time", &m_iTimeChoice, pTime, TimeVector.size()))
+				{
+					m_iTickChoice = m_iTimeChoice;
+
+					m_fAnimationTickTime = TimeVector[m_iTimeChoice];
+					m_fAnimationTick = TickVector[m_iTimeChoice];
+				}
+
+				if (ImGui::ListBox("TickPerSecond", &m_iTickChoice, pTick, TickVector.size()))
+				{
+					m_iTimeChoice = m_iTickChoice;
+
+					m_fAnimationTickTime = TimeVector[m_iTickChoice];
+					m_fAnimationTick = TickVector[m_iTickChoice];
+				}
+
+				ImGui::DragFloat("Playing Time", &m_fAnimationTickTime, 0.05f, 0.f, m_fAnimationDuration);
+				ImGui::DragFloat("Playing TickPerSecond", &m_fAnimationTick, 0.05f, 0.f, 100.f);
+
+				_float fOriginalTickPerSecond = ChoiceModelAnimation->Get_OriginalTickPerSecond();
+				ImGui::InputFloat("Original TickPerSecond", &fOriginalTickPerSecond);
+
+				if (ImGui::Button("Add"))
+					ChoiceModelAnimation->Add_TickPerSecond(m_fAnimationTickTime, m_fAnimationTick);
+				ImGui::SameLine();
+				if (ImGui::Button("Fix"))
+					ChoiceModelAnimation->Fix_TickPerSecond(m_iTimeChoice, m_fAnimationTickTime, m_fAnimationTick);
+				ImGui::SameLine();
+				if (ImGui::Button("Delete"))
+				{
+					ChoiceModelAnimation->Delete_TickPerSecond(m_iTimeChoice);
+
+					m_fAnimationTickTime = 0.f;
+					m_fAnimationTick = 0.f;
+				}
+
+				for (_int i = 0; i < TimeVector.size(); ++i)
+					Safe_Delete_Array(pTime[i]);
+				Safe_Delete_Array(pTime);
+
+				for (_int i = 0; i < TickVector.size(); ++i)
+					Safe_Delete_Array(pTick[i]);
+				Safe_Delete_Array(pTick);
+			}
+
+			if (ImGui::Button("Close"))
+			{
+				m_iTickChoice = -1;
+				m_iTimeChoice = -1;
+
+				m_isAnimationEdit = false;
+			}
+			ImGui::End();
+		}
+
+		if (m_isEventWindow)
+		{
+			m_isEventWindow = true;
+			ImGui::Begin("Event", &m_isEventWindow);
+
+			CModel* pPlayerModel = (CModel*)pGameInstance->Get_Component(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Com_Model"));
+			if ((nullptr != pPlayerModel) && (-1 != m_iAnimationChoice))
+			{
+				CAnimation* ChoiceModelAnimation = pPlayerModel->Get_Animations()[m_iAnimationChoice];
+
+				vector<ANIMEVENT> AnimEventVector = ChoiceModelAnimation->Get_Events();
+				_int iAnimEvents = AnimEventVector.size();
+
+				char** pStartTime = new char* [iAnimEvents];
+				char** pEndTime = new char* [iAnimEvents];
+				const char** pEventType = new const char* [iAnimEvents];
+
+				for (_int i = 0; i < iAnimEvents; ++i)
+				{
+					pStartTime[i] = new char[MAX_PATH];
+					snprintf(pStartTime[i], MAX_PATH, "%f", AnimEventVector[i].fStartTime);
+				}
+
+				for (_int i = 0; i < iAnimEvents; ++i)
+				{
+					pEndTime[i] = new char[MAX_PATH];
+					snprintf(pEndTime[i], MAX_PATH, "%f", AnimEventVector[i].fEndTime);
+				}
+
+				for (_int i = 0; i < iAnimEvents; ++i)
+				{
+					switch (AnimEventVector[i].eType)
+					{
+					case ANIMEVENT::EVENT_SOUND:
+						pEventType[i] = "EVENT_SOUND";
+						break;
+					case ANIMEVENT::EVENT_EFFECT:
+						pEventType[i] = "EVENT_EFFECT";
+						break;
+					case ANIMEVENT::EVENT_COLLIDER:
+						pEventType[i] = "EVENT_COLLIDER";
+						break;
+					case ANIMEVENT::EVENT_STATE:
+						pEventType[i] = "EVENT_STATE";
+						break;
+					case ANIMEVENT::EVENT_INPUT:
+						pEventType[i] = "EVENT_INPUT";
+						break;
+					}
+				}
+
+				if (ImGui::ListBox("Event Start", &m_iEventChoice, pStartTime, iAnimEvents))
+				{
+					m_fEventStartTime = AnimEventVector[m_iEventChoice].fStartTime;
+					m_fEventEndTime = AnimEventVector[m_iEventChoice].fEndTime;
+				}
+				if (ImGui::ListBox("Event End", &m_iEventChoice, pEndTime, iAnimEvents))
+				{
+					m_fEventStartTime = AnimEventVector[m_iEventChoice].fStartTime;
+					m_fEventEndTime = AnimEventVector[m_iEventChoice].fEndTime;
+				}
+				if (ImGui::ListBox("Event Type", &m_iEventChoice, pEventType, iAnimEvents))
+				{
+					m_fEventStartTime = AnimEventVector[m_iEventChoice].fStartTime;
+					m_fEventEndTime = AnimEventVector[m_iEventChoice].fEndTime;
+				}
+
+				ImGui::DragFloat("Start Time", &m_fEventStartTime, 0.05f, 0.f, m_fAnimationDuration);
+				ImGui::DragFloat("End Time", &m_fEventEndTime, 0.05f, 0.f, m_fAnimationDuration);
+
+				static char szEventName[MAX_PATH] = "";
+				if (-1 != m_iEventChoice && m_iEventChoice < AnimEventVector.size())
+					memcpy(szEventName, AnimEventVector[m_iEventChoice].szName, sizeof(char) * MAX_PATH);
+
+				ImGui::SetNextItemWidth(175);
+				ImGui::InputText("##Event Tag", szEventName, MAX_PATH);
+
+				ImGui::RadioButton("Event_Sound", &m_iEventType, 0);
+				ImGui::SameLine();
+				ImGui::RadioButton("Event_Effect", &m_iEventType, 1);
+				ImGui::SameLine();
+				ImGui::RadioButton("Event_Collider", &m_iEventType, 2);
+				ImGui::RadioButton("Event_State", &m_iEventType, 3);
+				ImGui::SameLine();
+				ImGui::RadioButton("Event_Input", &m_iEventType, 4);
+
+				ImGui::Text("Event Name");
+				static char cEventName[MAX_PATH] = "";
+				ImGui::SetNextItemWidth(175);
+				ImGui::InputText("##InputEvent", cEventName, MAX_PATH);
+
+				if (ImGui::Button("Add"))
+				{
+					ANIMEVENT AnimEvent;
+					ZeroMemory(&AnimEvent, sizeof(ANIMEVENT));
+
+					AnimEvent.eType = (ANIMEVENT::EVENTTYPE)m_iEventType;
+					AnimEvent.fStartTime = m_fEventStartTime;
+					AnimEvent.fEndTime = m_fEventEndTime;
+					memcpy(AnimEvent.szName, cEventName, sizeof(char) * MAX_PATH);
+
+					ChoiceModelAnimation->Add_Event(AnimEvent);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Fix"))
+				{
+					ANIMEVENT AnimEvent;
+					ZeroMemory(&AnimEvent, sizeof(ANIMEVENT));
+
+					AnimEvent.eType = (ANIMEVENT::EVENTTYPE)m_iEventType;
+					AnimEvent.fStartTime = m_fEventStartTime;
+					AnimEvent.fEndTime = m_fEventEndTime;
+					memcpy(AnimEvent.szName, cEventName, sizeof(char) * MAX_PATH);
+
+					ChoiceModelAnimation->Fix_Event(m_iEventChoice, AnimEvent);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Delete"))
+				{
+					ChoiceModelAnimation->Delete_Event(m_iEventChoice);
+
+					m_fEventStartTime = 0.f;
+					m_fEventEndTime = 0.f;
+					m_iEventType = ANIMEVENT::EVENTTYPE::EVENT_END;
+					m_iEventChoice = -1;
+				}
+
+				for (_int i = 0; i < iAnimEvents; ++i)
+				{
+					Safe_Delete_Array(pStartTime[i]);
+					Safe_Delete_Array(pEndTime[i]);
+				}
+
+				Safe_Delete_Array(pStartTime);
+				Safe_Delete_Array(pEndTime);
+				Safe_Delete_Array(pEventType);
+			}
+
+			if (ImGui::Button("Close"))
+			{
+				m_isEventWindow = false;
+				m_iEventChoice = -1;
+			}
+
+			ImGui::End();
+		}
+	}
 }
 
 void CImGui_Manager::Create_Model(const _tchar* pPrototypeTag, const _tchar* pLayerTag, _bool bCreatePrototype)
 {
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	pGameInstance->AddRef();
+	m_InitDesc.vPosition.x += m_vfOffset.x;
+	m_InitDesc.vPosition.y += m_vfOffset.y;
+	m_InitDesc.vPosition.z += m_vfOffset.z;
+	XMStoreFloat4x4(&m_InitDesc.WorldMatrix, XMMatrixIdentity());
+	m_pModel_Manager->Set_InitModelDesc(m_InitDesc);
+
+	_matrix			PivotMatrix = XMMatrixIdentity();
+	LEVEL iLevel = (LEVEL)pGameInstance->Get_CurrentLevelIndex();
+	m_pModel_Manager->Create_Model(iLevel, pPrototypeTag, pLayerTag, m_pDevice, m_pContext, CModel::TYPE_NONANIM, PivotMatrix, bCreatePrototype);
+	pGameInstance->Release();
 }
 
 void CImGui_Manager::Free()
 {
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 
-    Safe_Release(m_pDevice);
-    Safe_Release(m_pContext);
+	for (auto& iter : m_TempLayerTags)
+		Safe_Delete(iter);
+	m_TempLayerTags.clear();
+	m_stLayerTags.clear();
+	Safe_Release(m_pModel_Manager);
+
+	CModelManager::GetInstance()->DestroyInstance();
+
+	Safe_Release(m_pDevice);
+	Safe_Release(m_pContext);
 }

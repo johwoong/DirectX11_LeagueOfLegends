@@ -67,7 +67,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)
 	strcpy_s(desc.pModeltag, MAX_PATH, "Prototype_Component_Model_Map01");
 
 	desc.vPosition = _float3(0.f, 0.f, 0.f);
-	desc.vScale = _float3(1.f, 1.f, 1.f);
+	desc.vScale = _float3(0.01f, 0.01f, 0.01f);
 	desc.vPosition = _float3(0.f, 0.f, 0.f);
 	desc.m_fAngle = 0.f;
 	XMStoreFloat4x4(&desc.WorldMatrix, XMMatrixIdentity());
@@ -88,7 +88,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 	CCamera_Dynamic::CAMERADESC_DERIVED				CameraDesc;
 	ZeroMemory(&CameraDesc, sizeof(CCamera_Dynamic::CAMERADESC_DERIVED));
 
-	CameraDesc.iTest = 10;
 
 	CameraDesc.CameraDesc.vEye = _float4(0.f, 10.0f, -10.f, 1.f);
 	CameraDesc.CameraDesc.vAt = _float4(0.f, 0.f, 0.f, 1.f);
@@ -96,9 +95,9 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 	CameraDesc.CameraDesc.fFov = XMConvertToRadians(60.0f);
 	CameraDesc.CameraDesc.fAspect= (_float)g_WinSizeX / g_WinSizeY;
 	CameraDesc.CameraDesc.fNear = 0.2f;
-	CameraDesc.CameraDesc.fFar = 1000.f;
+	CameraDesc.CameraDesc.fFar = 3000.f;
 
-	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 10.f;
+	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 30.f;
 	CameraDesc.CameraDesc.TransformDesc.fRotationPerSec = XMConvertToRadians(90.0f);
 
 	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Camera_Dynamic"), LEVEL_GAMEPLAY, pLayerTag, &CameraDesc)))

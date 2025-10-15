@@ -30,8 +30,6 @@ public:
 	void Clear_Layer();
 	vector<const _tchar*> Get_PrototypeTag() { return m_PrototypeTag; }
 
-
-
 private:
 	const _tchar* Find_ModelTag(const _tchar* ModelTag);
 

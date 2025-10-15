@@ -40,6 +40,7 @@ using namespace DirectX;
 #include <algorithm>
 #include <functional>
 #include <string>
+#include <sstream>
 using namespace std;
 
 #include <unordered_map>

@@ -66,6 +66,12 @@ namespace Engine
 		static const D3D11_INPUT_ELEMENT_DESC Elements[iNumElements];
 	}VTXMODEL_DECLARATION;
 
+	typedef struct ENGINE_DLL tagVertexAnimModel_Declaration
+	{
+		static const unsigned int iNumElements = 6;
+		static const D3D11_INPUT_ELEMENT_DESC Elements[iNumElements];
+	}VTXANIMMODEL_DECLARATION;
+
 	typedef struct ENGINE_DLL tagVertexPosition_Declaration
 	{
 		static const unsigned int iNumElements = 1;
