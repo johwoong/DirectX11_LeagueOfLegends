@@ -1080,7 +1080,7 @@ void CImGui_Manager::Set_Animation()
 	{
 		ImGui::Begin("Load", &m_isLoad);
 
-		char** pItems = new char* [m_AnimObj.size()];
+		const char** pItems = new const char* [m_AnimObj.size()];
 
 		for (_int i = 0; i < m_AnimObj.size(); ++i)
 			pItems[i] = m_AnimObj[i];
@@ -1128,7 +1128,7 @@ void CImGui_Manager::Set_Animation()
 	{
 		ImGui::Begin("Second Load", &m_isSecondLoad);
 
-		char** pItems = new char* [m_AnimObj.size()];
+		const char** pItems = new const char* [m_AnimObj.size()];
 
 		for (_int i = 0; i < m_AnimObj.size(); ++i)
 			pItems[i] = m_AnimObj[i];
@@ -1237,7 +1237,7 @@ void CImGui_Manager::Set_Animation()
 		{
 			ImGui::Begin("Weapon", &m_isWeaponWindow);
 
-			char** pWeapon = new char* [m_WeaponObj.size()];
+			const char** pWeapon = new const char* [m_WeaponObj.size()];
 
 			for (_int i = 0; i < m_WeaponObj.size(); ++i)
 				pWeapon[i] = m_WeaponObj[i];

@@ -98,8 +98,8 @@ public:
 	_bool m_isSecondLoad = false;
 	_bool m_isSaveComplete = false;
 
-	vector<char*> m_AnimObj;
-	vector<char*> m_WeaponObj;
+	vector<const char*> m_AnimObj;
+	vector<const char*> m_WeaponObj;
 
 	_int m_iLoadModel = -1;
 	_int m_iLoadSecondModel = -1;

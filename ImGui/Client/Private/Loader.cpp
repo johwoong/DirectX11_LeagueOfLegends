@@ -135,14 +135,18 @@ HRESULT CLoader::Loading_ForActor()
 		return E_FAIL;
 
 #pragma region Animation
+
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Nexus/Nexus.dat"))))
 		return E_FAIL;
-	
+	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Nexus"));
+	pImgui->m_AnimObj.push_back("Nexus");
+
 #pragma endregion Animation
 
+	m_isFinished = true;
 	Safe_Release(pGameInstance);
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 CLoader* CLoader::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, LEVEL eNextLevel)
