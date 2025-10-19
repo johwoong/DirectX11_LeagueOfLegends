@@ -93,6 +93,11 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxModelTool.hlsl"), VTXMODEL_DECLARATION::Elements, VTXMODEL_DECLARATION::iNumElements))))
 		return E_FAIL;
 
+	/* For.Prototype_Component_Shader_VtxModel */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Shader_VtxAnimModel"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxAnimModel.hlsl"), VTXANIMMODEL_DECLARATION::Elements, VTXANIMMODEL_DECLARATION::iNumElements))))
+		return E_FAIL;
+
 	lstrcpy(m_szLoadingText, TEXT("Loading For Prototype"));
 
 	/*For.Prototype_GameObject_Player*/
@@ -122,6 +127,9 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 		return E_FAIL;
 	}
 
+	if (FAILED(Loading_ForActor()))
+		return E_FAIL;
+
 	m_isFinished = true;
 	Safe_Release(pGameInstance);
 	return S_OK;
@@ -139,8 +147,12 @@ HRESULT CLoader::Loading_ForActor()
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Nexus/Nexus.dat"))))
 		return E_FAIL;
-	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Nexus"));
 	pImgui->m_AnimObj.push_back("Nexus");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Izreal/Izreal.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Ezreal");
 
 #pragma endregion Animation
 

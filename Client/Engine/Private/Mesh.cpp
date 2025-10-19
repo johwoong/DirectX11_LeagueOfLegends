@@ -248,20 +248,37 @@ HRESULT CMesh::Bin_Initialize(void* pArg)
 
 HRESULT CMesh::SetUp_Bones(HANDLE hFile, _ulong* pdwByte, CModel* pModel)
 {
-	if (nullptr == hFile)
+	if (!hFile)
 		return E_FAIL;
 
+	// ? 1?? MeshCount 먼저 읽기 (파일 구조의 시작)
+	static bool s_bMeshHeaderRead = false;
+	static _uint s_iMeshIndex = 0;
+	static _uint s_iMeshCount = 0;
+
+	if (!s_bMeshHeaderRead)
+	{
+		ReadFile(hFile, &s_iMeshCount, sizeof(_uint), pdwByte, nullptr);
+		s_bMeshHeaderRead = true;
+		s_iMeshIndex = 0;
+	}
+
+	// ? 2?? 이 메시에 해당하는 Bone 개수 읽기
+	_uint iNumBones = 0;
+	ReadFile(hFile, &iNumBones, sizeof(_uint), pdwByte, nullptr);
+	m_iNumBones = iNumBones;
+
+	// ? 3?? 본 데이터 읽기
 	for (_uint i = 0; i < m_iNumBones; ++i)
 	{
 		char BoneName[MAX_PATH] = "";
 		ReadFile(hFile, BoneName, sizeof(char) * MAX_PATH, pdwByte, nullptr);
 
 		CBone* pBoneNode = pModel->Get_BonePtr(BoneName);
-		if (nullptr == pBoneNode)
-			return E_FAIL;
+		if (!pBoneNode)
+			continue;
 
 		m_Bones.push_back(pBoneNode);
-
 		Safe_AddRef(pBoneNode);
 
 		_float4x4 OffsetMatrix;
@@ -270,17 +287,10 @@ HRESULT CMesh::SetUp_Bones(HANDLE hFile, _ulong* pdwByte, CModel* pModel)
 		pBoneNode->Set_OffsetMatrix(XMMatrixTranspose(XMLoadFloat4x4(&OffsetMatrix)));
 	}
 
-	if (0 == m_iNumBones)
-	{
-		CBone* pNode = pModel->Get_BonePtr(m_szName);
-		if (nullptr == pNode)
-			return S_OK;
-
-		m_iNumBones = 1;
-
-		m_Bones.push_back(pNode);
-		Safe_AddRef(pNode);
-	}
+	s_iMeshIndex++;
+	// 모든 메시에 대한 본 읽기가 끝나면 static 초기화
+	if (s_iMeshIndex >= s_iMeshCount)
+		s_bMeshHeaderRead = false;
 
 	return S_OK;
 }

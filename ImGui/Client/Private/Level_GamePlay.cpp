@@ -48,15 +48,7 @@ HRESULT CLevel_GamePlay::Ready_Lights()
 	return S_OK;
 }
 
-HRESULT CLevel_GamePlay::Ready_Layer_Player(const _tchar* pLayerTag)
-{
-	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	Safe_AddRef(pGameInstance);
 
-	
-	Safe_Release(pGameInstance);
-	return S_OK;
-}
 
 HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)
 {
@@ -95,7 +87,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 	CameraDesc.CameraDesc.fFov = XMConvertToRadians(60.0f);
 	CameraDesc.CameraDesc.fAspect= (_float)g_WinSizeX / g_WinSizeY;
 	CameraDesc.CameraDesc.fNear = 0.2f;
-	CameraDesc.CameraDesc.fFar = 3000.f;
+	CameraDesc.CameraDesc.fFar = 60000.f;
 
 	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 30.f;
 	CameraDesc.CameraDesc.TransformDesc.fRotationPerSec = XMConvertToRadians(90.0f);

@@ -194,6 +194,12 @@ void CImGui_Manager::Update_Imgui()
 			}
 			ImGui::EndTabItem();
 		}
+
+		if (ImGui::BeginTabItem("Animation Tool"))
+		{
+			Set_Animation();
+			ImGui::EndTabItem();
+		}
 		ImGui::EndTabBar(); 
 	}
 
@@ -1017,7 +1023,7 @@ void CImGui_Manager::Set_Animation()
 		switch (Pivot.eModel)
 		{
 		case MODEL_NEXUS:
-			lstrcat(pAnimationDataFilePath, TEXT("Alphen/Alphen_Animation_Add.dat"));
+			lstrcat(pAnimationDataFilePath, TEXT("Alphen/Nexus_Animation_Add.dat"));
 			break;
 		}
 

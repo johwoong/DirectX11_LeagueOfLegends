@@ -136,6 +136,11 @@ HRESULT CAnim::Ready_Components(void* pArg)
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Nexus"), (CComponent**)&m_pModelCom)))
 			return E_FAIL;
 		break;
+	case MODEL_EZREAL:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Ezreal"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+		
 	}
 
 	return S_OK;

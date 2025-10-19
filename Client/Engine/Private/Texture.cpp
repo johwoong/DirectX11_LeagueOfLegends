@@ -28,7 +28,7 @@ HRESULT CTexture::Initialize_Prototype(const _tchar* pTextureFilePath, _uint iNu
 		_tchar		szExt[MAX_PATH] = TEXT("");
 
 		/* 경로를 분해한다. */
-		_wsplitpath_s(szFullPath, nullptr, 0, nullptr, 0, nullptr, 0, szExt, MAX_PATH);
+  		_wsplitpath_s(szFullPath, nullptr, 0, nullptr, 0, nullptr, 0, szExt, MAX_PATH);
 
 		HRESULT			hr = 0;
 
@@ -69,9 +69,9 @@ CTexture* CTexture::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
 
 CComponent* CTexture::Clone(void* pArg)
 {
-	CTexture* pInstance = new CTexture(*this);
+ 	CTexture* pInstance = new CTexture(*this);
 
-	if (FAILED(pInstance->Initialize(pArg)))
+ 	if (FAILED(pInstance->Initialize(pArg)))
 	{
 		MSG_BOX("Failed to Cloned : CTexture");
 		Safe_Release(pInstance);

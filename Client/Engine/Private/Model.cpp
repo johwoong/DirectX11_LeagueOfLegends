@@ -359,6 +359,7 @@ _bool CModel::Play_Animation(_float fTimeDelta, _bool isLoop, const char* pBoneN
 
 HRESULT CModel::Render(CShader* pShader, _uint iMeshIndex, _uint iPassIndex)
 {
+
     if (TYPE_ANIM == m_eModelType)
     {
         _float4x4 Bones[400];

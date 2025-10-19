@@ -207,9 +207,6 @@
     <ClInclude Include="..\Public\Camera.h">
       <Filter>01.Utility\02. GameObjects\01. Camera</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Bone.h">
-      <Filter>01.Utility\03. Components\08. Model\00. Bone</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Mesh.h">
       <Filter>01.Utility\03. Components\08. Model\01. Mesh</Filter>
     </ClInclude>
@@ -218,9 +215,6 @@
     </ClInclude>
     <ClInclude Include="..\Public\Channel.h">
       <Filter>01.Utility\03. Components\08. Model\02. Animation\Channel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Mesh_Instance.h">
-      <Filter>01.Utility\03. Components\08. Model\03. Mesh_Instance</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\VIBuffer_Instance.h">
       <Filter>01.Utility\03. Components\02. VIBuffer\01. Instancing</Filter>
@@ -239,6 +233,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\PipeLine.h">
       <Filter>01.Utility\04. PipeLine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Bone.h">
+      <Filter>01.Utility\03. Components\08. Model\00. Bone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Mesh_Instance.h">
+      <Filter>01.Utility\03. Components\08. Model\03. Mesh_Instance</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
