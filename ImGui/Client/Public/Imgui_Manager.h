@@ -4,6 +4,7 @@
 
 #include "Level_Manager.h"
 #include "ModelManager.h"
+#include "TerrianManager.h"
 #include "NonAnim.h"
 
 NS_BEGIN(Engine)
@@ -17,6 +18,7 @@ class CImGui_Manager final : public CBase
 
 public:
     enum PICKING_TYPE {
+		PICKING_TERRAIN_TRANSFORM,
         PICKING_MODEL
     };
 
@@ -38,6 +40,12 @@ public:
 	void ShowSimpleMousePos(bool* p_open);
 	void ShowPickedObj();
 	void Show_PopupBox();
+
+	// For Terrian Tool
+	void Set_Terrian_Map();
+	void Save_Terrian();
+	void Load_Terrian();
+
 
 	/* For Model Tool */
 	void Set_Object_Map();
@@ -68,6 +76,13 @@ private:
 	LEVEL m_iCurrentLevel = LEVEL_GAMEPLAY;
 
 private:
+	// For Terrian
+	CTerrianManager* m_pTerrianManager = { nullptr };
+	CTerrianManager::TERRIANDESC		m_pTerrianDesc;
+	_bool								m_bTerrian_Show = true;
+	_bool									m_bUpdateTerrain = false;
+
+
     //  For Object
 	CModelManager* m_pModel_Manager = nullptr;
 	NONANIMDESC								m_InitDesc;
@@ -98,8 +113,8 @@ public:
 	_bool m_isSecondLoad = false;
 	_bool m_isSaveComplete = false;
 
-	vector<const char*> m_AnimObj;
-	vector<const char*> m_WeaponObj;
+	vector<string> m_AnimObj;
+	vector<string> m_WeaponObj;
 
 	_int m_iLoadModel = -1;
 	_int m_iLoadSecondModel = -1;

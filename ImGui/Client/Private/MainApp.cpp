@@ -4,6 +4,7 @@
 #include "GameInstance.h"
 #include "Level_Loading.h"
 #include "Imgui_Manager.h"
+#include "PickingMgr.h"
 
 CMainApp::CMainApp()
 	: m_pGameInstance(CGameInstance::GetInstance())
@@ -103,6 +104,15 @@ HRESULT CMainApp::Ready_Prototype_Component()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxTex.hlsl"), VTXTEX_DECLARATION::Elements, VTXTEX_DECLARATION::iNumElements))))
 		return E_FAIL;
 
+ 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNorTex"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_NorTexTerrianl.hlsl"), VTXNORTEX_DECLARATION::Elements, VTXNORTEX_DECLARATION::iNumElements))))
+		return E_FAIL;
+
+	/*For.Prototype_Component_VIBuffer_Terrain*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Terrain"),
+		CVIBuffer_Terrian::Create(m_pDevice, m_pContext, 50, 50, 1))))
+		return E_FAIL;
+
 	Safe_AddRef(m_pRenderer);
 	return S_OK;
 }
@@ -131,5 +141,10 @@ void CMainApp::Free()
 
 	CGameInstance::Release_Engine();
 
+	CModelManager::GetInstance()->DestroyInstance();
+	CPickingMgr::GetInstance()->DestroyInstance();
 	CImGui_Manager::GetInstance()->DestroyInstance();
+	CTerrianManager::GetInstance()->DestroyInstance();
+
+
 }

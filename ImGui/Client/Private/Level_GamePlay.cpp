@@ -55,18 +55,17 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
 
-	NONANIMDESC desc{};
-	strcpy_s(desc.pModeltag, MAX_PATH, "Prototype_Component_Model_Map01");
+	CTerrianManager::TERRIANDESC TerrianDesc;
+	TerrianDesc = CTerrianManager::GetInstance()->Get_TerrianDesc();
+	TerrianDesc.TerrianDesc.m_iVerticeNumX = 50;
+	TerrianDesc.TerrianDesc.m_iVerticeNumZ = 50;
+	TerrianDesc.TerrianDesc.m_iPositionX = 0.f;
+	TerrianDesc.TerrianDesc.m_iPositionZ = 0.f;
+	TerrianDesc.m_eDebugTerrian = CTerrianManager::DEBUG_SOLID;
+	TerrianDesc.m_bShowWireFrame = true;
 
-	desc.vPosition = _float3(0.f, 0.f, 0.f);
-	desc.vScale = _float3(0.01f, 0.01f, 0.01f);
-	desc.vPosition = _float3(0.f, 0.f, 0.f);
-	desc.m_fAngle = 0.f;
-	XMStoreFloat4x4(&desc.WorldMatrix, XMMatrixIdentity());
-
-	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_NonAnim"), LEVEL_GAMEPLAY, pLayerTag, &desc)))
+	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_DebugTerrian"), &TerrianDesc)))
 		return E_FAIL;
-
 
 	Safe_Release(pGameInstance);
 	return S_OK;

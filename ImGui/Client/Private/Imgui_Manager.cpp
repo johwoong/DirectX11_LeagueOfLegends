@@ -66,13 +66,15 @@ string CutOnSpecificDecimalPt(string num, int pos)
 }
 
 CImGui_Manager::CImGui_Manager()
-	: m_pModel_Manager(CModelManager::GetInstance())
+	: m_pTerrianManager(CTerrianManager::GetInstance())
+	, m_pModel_Manager(CModelManager::GetInstance())
 {
 	Safe_AddRef(m_pModel_Manager);
 
 	const char* LayerTag = "Model";
-
+	const char* LayerTag2 = "Layer_Terrain";
 	m_stLayerTags.push_back(LayerTag);
+	m_stLayerTags.push_back(LayerTag2);
 }
 
 HRESULT CImGui_Manager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -172,6 +174,15 @@ void CImGui_Manager::Update_Imgui()
 	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 	if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
 	{
+		if (ImGui::BeginTabItem("Terrian Tool"))
+		{
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Move"); ImGui::SameLine();
+			ImGui::RadioButton("##Picking for Moving Terrian", &m_PickingType, PICKING_TERRAIN_TRANSFORM); ImGui::SameLine();
+
+			Set_Terrian_Map();
+			ImGui::EndTabItem();
+		}
+
 		if (ImGui::BeginTabItem("Model Tool"))
 		{
 			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Picking for Object");
@@ -217,6 +228,7 @@ void CImGui_Manager::Update_Imgui()
 	}
 
 	ImGui::End(); // 최종 End
+
 
 }
 
@@ -503,6 +515,183 @@ void CImGui_Manager::Show_PopupBox()
 		ImGui::SameLine();
 		if (ImGui::Button("Close"))  ImGui::CloseCurrentPopup();
 		ImGui::EndPopup();
+	}
+}
+
+void CImGui_Manager::Set_Terrian_Map()
+{
+	ImGui::GetIO().NavActive = false;
+	ImGui::GetIO().WantCaptureMouse = true;
+	ImGui::CollapsingHeader("Terrian_Map");
+	
+	CTerrianManager::TERRIANDESC TerrianDesc = m_pTerrianManager->Get_TerrianDesc();
+
+	static _int iNumVertices[2] = { TerrianDesc.TerrianDesc.m_iVerticeNumX, TerrianDesc.TerrianDesc.m_iVerticeNumZ };
+	ImGui::Text("X / Z");
+	ImGui::SameLine(0, 10);
+	ImGui::InputInt2("##1", iNumVertices, 10);
+	TerrianDesc.TerrianDesc.m_iVerticeNumX = iNumVertices[0];
+	TerrianDesc.TerrianDesc.m_iVerticeNumZ = iNumVertices[1];
+
+	ImGui::Text("Position X"); ImGui::SameLine();
+	ImGui::DragInt("##PositionX", &TerrianDesc.TerrianDesc.m_iPositionX);
+
+	ImGui::Text("Position Y"); ImGui::SameLine();
+	ImGui::DragFloat("##PositionY", &TerrianDesc.TerrianDesc.m_fHeight, 0.05f);
+
+	ImGui::Text("Position Z"); ImGui::SameLine();
+	ImGui::DragInt("##PositionZ", &TerrianDesc.TerrianDesc.m_iPositionZ);
+
+
+	if (ImGui::Button("Update Terrian"))
+	{
+		m_pTerrianManager->Out_DebugTerrain();
+
+		CTerrianManager::TERRIANDESC TerrianDesc = CTerrianManager::GetInstance()->Get_TerrianDesc();
+		TerrianDesc.m_eDebugTerrian = CTerrianManager::DEBUG_SOLID;
+		TerrianDesc.m_bShowWireFrame = true;
+		CGameInstance::GetInstance()->Clear_Layer(LEVEL_GAMEPLAY, TEXT("Layer_DebugTerrian"));
+		if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_DebugTerrain"), &TerrianDesc)))
+			return;
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Create Terrian"))
+	{
+		if (FAILED(m_pTerrianManager->Create_Terrain(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"))))
+			return;
+	}
+
+	ImGui::SameLine();
+	ImGui::Checkbox("WireFrame", &TerrianDesc.m_bShowWireFrame);
+	m_pTerrianManager->Set_bWireFrame(TerrianDesc.m_bShowWireFrame);
+	ImGui::SameLine();
+	ImGui::Checkbox("Show", &m_bTerrian_Show);
+	m_pTerrianManager->Set_TerrainShow(m_bTerrian_Show);
+	ImGui::NewLine();
+
+	m_pTerrianManager->Set_TerrainDesc(&TerrianDesc);
+
+	if (m_PickingType == PICKING_TERRAIN_TRANSFORM)
+	{
+		if (CGameInstance::GetInstance()->Mouse_Down(DIMK_LBUTTON))
+			CPickingMgr::GetInstance()->Picking();
+	}
+
+	if (CGameInstance::GetInstance()->Key_Up(DIK_Z))
+	{
+		list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
+		if (nullptr == plistClone || plistClone->size() == 0)
+			return;
+
+		auto iter = --plistClone->end();
+		CPickingMgr::GetInstance()->Out_PickingGroup(*iter);
+		Safe_Release(*iter);
+		plistClone->erase(iter);
+	}
+
+
+	if (ImGui::Button("Save Terrian"))
+	{
+		Save_Terrian();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load Terrian"))
+	{
+		Load_Terrian();
+	}
+}
+
+void CImGui_Manager::Save_Terrian()
+{
+	OPENFILENAME OFN;
+	TCHAR filePathName[300] = L"";
+	TCHAR lpstrFile[300] = L"";
+	static TCHAR filter[] = L"데이터 파일\0*.dat\0텍스트 파일\0*.txt";
+
+	memset(&OFN, 0, sizeof(OPENFILENAME));
+	OFN.lStructSize = sizeof(OPENFILENAME);
+	OFN.hwndOwner = g_hWnd;
+	OFN.lpstrFilter = filter;
+	OFN.lpstrFile = lpstrFile;
+	OFN.nMaxFile = 300;
+	OFN.lpstrInitialDir = L".";
+	OFN.Flags = OFN_SHOWHELP | OFN_OVERWRITEPROMPT;
+
+	if (GetSaveFileName(&OFN))
+	{
+		HANDLE hFile = 0;
+		_ulong dwByte = 0;
+		_uint iNum = 0;
+		_float3	 vPoints[3];
+		list<CGameObject*>* pTerrainList = CGameInstance::GetInstance()->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
+
+
+		iNum = (_int)pTerrainList->size();
+
+		hFile = CreateFile(OFN.lpstrFile, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);;
+		if (0 == hFile)
+			return;
+
+		WriteFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+
+		for (auto& iter : *pTerrainList)
+		{
+			dynamic_cast<CTerrian*>(iter)->Save_Terrain(hFile, &dwByte);
+		}
+
+		CloseHandle(hFile);
+	}
+}
+
+void CImGui_Manager::Load_Terrian()
+{
+	OPENFILENAME OFN;
+	TCHAR filePathName[300] = L"";
+	TCHAR lpstrFile[300] = L"";
+	static TCHAR filter[] = L"데이터 파일\0*.dat\0텍스트 파일\0*.txt";
+
+	memset(&OFN, 0, sizeof(OPENFILENAME));
+	OFN.lStructSize = sizeof(OPENFILENAME);
+	OFN.hwndOwner = g_hWnd;
+	OFN.lpstrFilter = filter;
+	OFN.lpstrFile = lpstrFile;
+	OFN.nMaxFile = 300;
+	OFN.lpstrInitialDir = L".";
+
+	if (GetOpenFileName(&OFN) != 0) {
+		wsprintf(filePathName, L"%s 파일을 열겠습니까?", OFN.lpstrFile);
+		MessageBox(g_hWnd, filePathName, L"열기 선택", MB_OK);
+
+		//ERR_MSG(TEXT("save-as  '%s'\n"), ofn.lpstrFile); //경로// 파일이름.확장자
+		//ERR_MSG(TEXT("filename '%s'\n"), ofn.lpstrFile + ofn.nFileOffset); 
+
+		HANDLE hFile = 0;
+		_ulong dwByte = 0;
+		_uint iNum = 0;
+		_float3		vPoints[3];
+
+		hFile = CreateFile(OFN.lpstrFile, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+		if (0 == hFile)
+			return;
+
+		CGameInstance* pGameInstance = CGameInstance::GetInstance();
+		pGameInstance->AddRef();
+
+		/* 타일의 개수 받아오기 */
+		ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+
+		for (_uint i = 0; i < iNum; ++i)
+		{
+			_tchar			szFullPath[MAX_PATH] = TEXT("Prototype_Component_VIBuffer_Terrain_Load");
+
+			if (pGameInstance->Find_Prototype(LEVEL_STATIC, szFullPath) == S_OK)
+				pGameInstance->Add_Prototype(LEVEL_STATIC, szFullPath, m_pTerrianManager->Create_Terrain(m_pDevice, m_pContext, hFile, dwByte));
+			pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), szFullPath);
+		}
+		CloseHandle(hFile);
+
+		pGameInstance->Release();
 	}
 }
 
@@ -959,9 +1148,6 @@ void CImGui_Manager::BrowseForFolder()
 			wsprintf(filePathName, L"%s 파일을 열겠습니까?", OFN.lpstrFile);
 			MessageBox(g_hWnd, filePathName, L"열기 선택", MB_OK);
 
-			//ERR_MSG(TEXT("save-as  '%s'\n"), ofn.lpstrFile); //경로// 파일이름.확장자
-			//ERR_MSG(TEXT("filename '%s'\n"), ofn.lpstrFile + ofn.nFileOffset); 
-
 			HANDLE hFile = 0;
 			_ulong dwByte = 0;
 			NONANIMDESC  ModelDesc;
@@ -1022,8 +1208,87 @@ void CImGui_Manager::Set_Animation()
 
 		switch (Pivot.eModel)
 		{
-		case MODEL_NEXUS:
-			lstrcat(pAnimationDataFilePath, TEXT("Alphen/Nexus_Animation_Add.dat"));
+		case MODEL_EZREAL:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Ezreal/Ezreal_Animation_Add.dat"));
+			break;
+
+		case MODEL_BRAUM:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Braum/Braum_Animation_Add.dat"));
+			break;
+
+		case MODEL_GALIO:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Galio/Galio_Animation_Add.dat"));
+			break;
+		case MODEL_LEESIN:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Leesin/Leesin_Animation_Add.dat"));
+			break;
+		case MODEL_YASUO:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Yasuo/Yasuo_Animation_Add.dat"));
+			break;
+
+		case MODEL_GAREN:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Garen/Garen_Animation_Add.dat"));
+			break;
+		case MODEL_GWEN:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Gwen/Gwen_Animation_Add.dat"));
+			break;
+		case MODEL_LEONA:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Leona/Leona_Animation_Add.dat"));
+			break;
+		case MODEL_VI:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Vi/Vi_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_CANNON_B:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Cannon_Blue/Minion_Cannon_Blue_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_CANNON_R:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Cannon_Red/Minion_Cannon_Red_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_MELEE_B:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Melee_Blue/Minion_Melee_Blue_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_MELEE_R:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Melee_Red/Minion_Melee_Red_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_RANGE_B:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Range_Blue/Minion_Range_Blue_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_RANGE_R:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Range_Red/Minion_Range_Red_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_SUPER_B:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Super_Blue/Minion_Super_Blue_Animation_Add.dat"));
+			break;
+		case MODEL_MINION_SUPER_R:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Super_Red/Minion_Super_Red_Animation_Add.dat"));
+			break;
+		case MODEL_INHIBITOR_B:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Inhibitor_Blue/Inhibitor_Blue_Animation_Add.dat"));
+			break;
+		case MODEL_INHIBITOR_R:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Inhibitor_Red/Inhibitor_Red_Animation_Add.dat"));
+			break;
+		case MODEL_NEXUS_B:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Nexus_Blue/Nexus_Blue_Animation_Add.dat"));
+			break;
+		case MODEL_NEXUS_R:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Nexus_Red/Nexus_Red_Animation_Add.dat"));
+			break;
+
+		case TURRET_BLUE:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Turret_Blue/Turret_Blue_Animation_Add.dat"));
+			break;
+		case TURRET_RED:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Turret_Red/Turret_Red_Animation_Add.dat"));
+			break;
+		case TURRET_SHIELD:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Turret_Shield/Turret_Shield_Animation_Add.dat"));
+			break;
+		case NPC_STORE:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Npc_Store/Npc_Store_Animation_Add.dat"));
+			break;
+		case NPC_STOREKEPPER:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Npc_StoreKeeper/Npc_StoreKeeper_Animation_Add.dat"));
 			break;
 		}
 
@@ -1088,8 +1353,9 @@ void CImGui_Manager::Set_Animation()
 
 		const char** pItems = new const char* [m_AnimObj.size()];
 
+
 		for (_int i = 0; i < m_AnimObj.size(); ++i)
-			pItems[i] = m_AnimObj[i];
+			pItems[i] = m_AnimObj[i].c_str();
 
 		if (ImGui::ListBox("Load Model", &m_iLoadModel, pItems, _int(m_AnimObj.size())))
 		{
@@ -1137,7 +1403,7 @@ void CImGui_Manager::Set_Animation()
 		const char** pItems = new const char* [m_AnimObj.size()];
 
 		for (_int i = 0; i < m_AnimObj.size(); ++i)
-			pItems[i] = m_AnimObj[i];
+			pItems[i] = m_AnimObj[i].c_str();
 
 		if (ImGui::ListBox("Load Second Model", &m_iLoadSecondModel, pItems, _int(m_AnimObj.size())))
 		{
@@ -1243,29 +1509,31 @@ void CImGui_Manager::Set_Animation()
 		{
 			ImGui::Begin("Weapon", &m_isWeaponWindow);
 
-			const char** pWeapon = new const char* [m_WeaponObj.size()];
-
+			// ImGui용 const char* 배열 준비
+			vector<const char*> pWeapon(m_WeaponObj.size());
 			for (_int i = 0; i < m_WeaponObj.size(); ++i)
-				pWeapon[i] = m_WeaponObj[i];
+				pWeapon[i] = m_WeaponObj[i].c_str();
 
-			if (ImGui::ListBox("Weapon List", &m_iWeaponChoice, pWeapon, m_WeaponObj.size()))
+			if (ImGui::ListBox("Weapon List", &m_iWeaponChoice, pWeapon.data(), (int)pWeapon.size()))
 			{
 				CModel* pPlayerModel = (CModel*)pGameInstance->Get_Component(LEVEL_GAMEPLAY, TEXT("Layer_Player"), TEXT("Com_Model"));
 				if (nullptr != pPlayerModel)
 				{
 					_tchar ModelName[MAX_PATH] = TEXT("");
-					MultiByteToWideChar(CP_ACP, 0, m_WeaponObj[m_iWeaponChoice], (int)strlen(m_WeaponObj[m_iWeaponChoice]), ModelName, MAX_PATH);
+
+					// string → wchar_t 변환
+					const string& selectedWeapon = m_WeaponObj[m_iWeaponChoice];
+					MultiByteToWideChar(CP_ACP, 0,
+						selectedWeapon.c_str(),
+						(int)selectedWeapon.size(),
+						ModelName, MAX_PATH);
 
 					_tchar ModelTag[MAX_PATH] = TEXT("Prototype_Component_Model_");
-
 					lstrcat(ModelTag, ModelName);
 
 					vector<CBone*> ModelBones = pPlayerModel->Get_Bones();
-
 				}
 			}
-
-			Safe_Delete_Array(pWeapon);
 
 			if (ImGui::Button("Close"))
 			{
@@ -1275,6 +1543,7 @@ void CImGui_Manager::Set_Animation()
 
 			ImGui::End();
 		}
+
 
 		if (ImGui::CollapsingHeader("Animation", TreeNodeFlags))
 		{
@@ -1671,6 +1940,7 @@ void CImGui_Manager::Free()
 		Safe_Delete(iter);
 	m_TempLayerTags.clear();
 	m_stLayerTags.clear();
+	Safe_Release(m_pTerrianManager);
 	Safe_Release(m_pModel_Manager);
 
 	CModelManager::GetInstance()->DestroyInstance();

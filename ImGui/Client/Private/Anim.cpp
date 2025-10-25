@@ -132,15 +132,134 @@ HRESULT CAnim::Ready_Components(void* pArg)
 
 	switch (m_ModelDesc.eModel)
 	{
-	case MODEL_NEXUS:
-		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Nexus"), (CComponent**)&m_pModelCom)))
-			return E_FAIL;
-		break;
 	case MODEL_EZREAL:
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Ezreal"), (CComponent**)&m_pModelCom)))
 			return E_FAIL;
 		break;
-		
+
+	case MODEL_BRAUM:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Braum"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_GALIO:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Galio"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_LEESIN:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("LeeSin"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_RENEKTON:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Renekton"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_YASUO:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Yasuo"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_GAREN:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Garen"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_GWEN:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Gwen"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_LEONA:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Leona"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_VI:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Vi"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+	case MODEL_MINION_CANNON_B:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Blue"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_MINION_CANNON_R:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Red"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_MINION_MELEE_B:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Melee_Blue"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_MINION_MELEE_R:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Melee_Red"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_MINION_RANGE_B:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Range_Blue"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_MINION_RANGE_R:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Range_Red"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_MINION_SUPER_B:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Super_Blue"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_MINION_SUPER_R:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Super_Red"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_INHIBITOR_B:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Inhibitor_Blue"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_INHIBITOR_R:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Inhibitor_Red"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_NEXUS_B:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Nexus_Blue"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+
+	case MODEL_NEXUS_R:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Nexus_Red"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+	case TURRET_BLUE:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Turret_Blue"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+	case TURRET_RED:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Turret_Red"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+	case TURRET_SHIELD:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Turret_Shield"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+	case NPC_STORE:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Npc_Store"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+	case NPC_STOREKEPPER:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Npc_StoreKeeper"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
 	}
 
 	return S_OK;

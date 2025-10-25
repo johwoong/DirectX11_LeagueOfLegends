@@ -10,6 +10,9 @@
       <FullPath>C:\DirectX11_LeagueOfLegends\ImGui\Client\Bin\Client_Shader_Defines.cso</FullPath>
     </ContentFile>
     <ContentFile>
+      <FullPath>C:\DirectX11_LeagueOfLegends\ImGui\Client\Bin\Shader_NorTexTerrianl.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\DirectX11_LeagueOfLegends\ImGui\Client\Bin\Shader_VtxAnimModel.cso</FullPath>
     </ContentFile>
     <ContentFile>

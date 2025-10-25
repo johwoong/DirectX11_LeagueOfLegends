@@ -43,9 +43,6 @@ public:
 
 public:
 	virtual HRESULT Initialize_Prototype(TYPE eModelType, const char* pModelFilePath, _fmatrix PivotMatrix);
-	HRESULT Initialize_Prototype_FromFBX(const char* fbxPath, _fmatrix PivotMatrix = XMMatrixIdentity());
-	static CModel* CreateFromFBX(ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
-		const char* fbxPath, _fmatrix PivotMatrix = XMMatrixIdentity());
 	virtual HRESULT Instance_Initialize_Prototype(TYPE eModelType, const char* pModelFilePath, const char* pDataFilePath, _fmatrix PivotMatrix);
 	virtual HRESULT Initialize(void* pArg);
 

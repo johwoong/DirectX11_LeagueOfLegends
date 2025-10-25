@@ -223,7 +223,7 @@ _bool CAnimation::Is_Keyframe(char* pChannelName, _uint iKeyframe)
 		return false;
 	else
 	{
-		if ((*iter)->Get_CurrentKeyFrame() == iKeyframe)
+		if ((*iter)->Get_CurrentKeyframe() == iKeyframe)
 			return true;
 		else
 			return false;
@@ -241,7 +241,7 @@ _bool CAnimation::Under_Keyframe(char* pChannelName, _uint iKeyframe)
 		return false;
 	else
 	{
-		if ((*iter)->Get_CurrentKeyFrame() < iKeyframe)
+		if ((*iter)->Get_CurrentKeyframe() < iKeyframe)
 			return true;
 		else
 			return false;
@@ -259,7 +259,7 @@ _bool CAnimation::Over_Keyframe(char* pChannelName, _uint iKeyframe)
 		return false;
 	else
 	{
-		if ((*iter)->Get_CurrentKeyFrame() > iKeyframe)
+		if ((*iter)->Get_CurrentKeyframe() > iKeyframe)
 			return true;
 		else
 			return false;
@@ -277,7 +277,7 @@ _bool CAnimation::Between_Keyframe(char* pChannelName, _uint iKeyframeLower, _ui
 		return false;
 	else
 	{
-		if (((*iter)->Get_CurrentKeyFrame() >= iKeyframeLower) && ((*iter)->Get_CurrentKeyFrame() <= iKeyframeUpper))
+		if (((*iter)->Get_CurrentKeyframe() >= iKeyframeLower) && ((*iter)->Get_CurrentKeyframe() <= iKeyframeUpper))
 			return true;
 		else
 			return false;

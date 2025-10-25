@@ -11,25 +11,15 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+
 using namespace std;
 namespace fs = std::filesystem;
 
-// =============================================
-// 기본 구조체
-// =============================================
-#pragma pack(push, 1)
+// ============================= 엔진 구조 =============================
 struct float2 { float x, y; };
 struct float3 { float x, y, z; };
 struct FLOAT4X4 { float m[16]; };
-
-struct BINBONE {
-    char szName[MAX_PATH];
-    float _11, _12, _13, _14;
-    float _21, _22, _23, _24;
-    float _31, _32, _33, _34;
-    float _41, _42, _43, _44;
-    unsigned int iNumChildren;
-};
+struct FACEINDICES32 { unsigned int _0, _1, _2; };
 
 struct VTXANIMMODEL {
     float3 vPosition;
@@ -40,288 +30,246 @@ struct VTXANIMMODEL {
     float fBlendWeights[4];
 };
 
-struct FACEINDICES32 { unsigned int _0, _1, _2; };
-#pragma pack(pop)
+struct BINBONE { char szName[MAX_PATH]; FLOAT4X4 Transformation; unsigned int iNumChildren; };
+struct BINANIM { char szName[MAX_PATH]; double dbDuration; double dbTickPerSecond; int iNumChannels; };
+struct BINCHANNEL { char szName[MAX_PATH]; int iNumKeyFrames; };
+struct KEYFRAME { float fTime; float vScale[3]; float vRotation[4]; float vPosition[3]; };
 
-// =============================================
-// 애니메이션 구조체
-// =============================================
-struct BINANIM {
-    char szName[MAX_PATH];
-    double dbDuration;
-    double dbTickPerSecond;
-    int iNumChannels;
-};
-
-#pragma pack(push, 4)
-struct BINCHANNEL {
-    char szName[MAX_PATH];
-    int iNumKeyFrames;
-};
-
-struct KEYFRAME {
-    float fTime;
-    float vScale[3];
-    float vRotation[4];
-    float vPosition[3];
-};
-#pragma pack(pop)
-
-// =============================================
-// 유틸 함수
-// =============================================
+// ============================= 공통 유틸 =============================
 static void write_n(FILE* fp, const void* p, size_t sz) {
-    if (fwrite(p, 1, sz, fp) != sz)
-        throw runtime_error("file write error");
+    if (fwrite(p, 1, sz, fp) != sz) throw runtime_error("file write error");
 }
-
 static void put_str_fixed(FILE* fp, const string& s) {
     char buf[MAX_PATH]{};
     string fixed = s;
     replace(fixed.begin(), fixed.end(), '/', '\\');
     strncpy_s(buf, fixed.c_str(), MAX_PATH - 1);
-    fwrite(buf, sizeof(char), MAX_PATH, fp);
+    write_n(fp, buf, sizeof(buf));
+}
+static void ToF4x4(FLOAT4X4& out, const aiMatrix4x4& m) {
+    out.m[0]=m.a1; out.m[1]=m.a2; out.m[2]=m.a3; out.m[3]=m.a4;
+    out.m[4]=m.b1; out.m[5]=m.b2; out.m[6]=m.b3; out.m[7]=m.b4;
+    out.m[8]=m.c1; out.m[9]=m.c2; out.m[10]=m.c3; out.m[11]=m.c4;
+    out.m[12]=m.d1; out.m[13]=m.d2; out.m[14]=m.d3; out.m[15]=m.d4;
 }
 
-// =============================================
-// 루트 Bone 찾기
-// =============================================
-const aiNode* FindRootBoneNode(const aiScene* scene) {
-    if (!scene || scene->mNumMeshes == 0)
-        return scene->mRootNode;
-
-    const aiBone* firstBone = scene->mMeshes[0]->mBones[0];
-    const aiNode* node = scene->mRootNode->FindNode(firstBone->mName);
-    const aiNode* current = node;
-    while (current && current->mParent && scene->mRootNode->FindNode(current->mParent->mName))
-        current = current->mParent;
-    return current ? current : scene->mRootNode;
-}
-
-// =============================================
-// Bone 계층 저장 (스케일 중복 제거 / DirectX 행벡터 기준)
-// =============================================
-void WriteBoneRecursive(FILE* fp, const aiNode* node, const aiMatrix4x4& parentTransform)
-{
-    if (!fp || !node) return;
-
-    // ? DirectX(Row-major) 기준 → Local * Parent 순서
-    aiMatrix4x4 globalTransform = node->mTransformation * parentTransform;
-
-    BINBONE bone{};
-    strcpy_s(bone.szName, node->mName.C_Str());
-
-    // ? DirectX 호환 Transpose 저장
-    bone._11 = globalTransform.a1; bone._12 = globalTransform.b1; bone._13 = globalTransform.c1; bone._14 = globalTransform.d1;
-    bone._21 = globalTransform.a2; bone._22 = globalTransform.b2; bone._23 = globalTransform.c2; bone._24 = globalTransform.d2;
-    bone._31 = globalTransform.a3; bone._32 = globalTransform.b3; bone._33 = globalTransform.c3; bone._34 = globalTransform.d3;
-    bone._41 = globalTransform.a4; bone._42 = globalTransform.b4; bone._43 = globalTransform.c4; bone._44 = globalTransform.d4;
-
-    bone.iNumChildren = node->mNumChildren;
-    write_n(fp, &bone, sizeof(BINBONE));
-
-    cout << "[BoneWrite] " << bone.szName
-        << " Pos(" << bone._41 << ", " << bone._42 << ", " << bone._43
-        << ") Children=" << bone.iNumChildren << endl;
-
-    for (unsigned int i = 0; i < node->mNumChildren; ++i)
-        WriteBoneRecursive(fp, node->mChildren[i], globalTransform);
-}
-
-// =============================================
-// Mesh Bone Offset 저장
-// =============================================
-void WriteMeshBoneWeights(FILE* fp, const aiScene* scene) {
-    unsigned int meshCount = scene->mNumMeshes;
-    write_n(fp, &meshCount, sizeof(meshCount));
-
-    for (unsigned int m = 0; m < scene->mNumMeshes; ++m) {
-        const aiMesh* mesh = scene->mMeshes[m];
-        unsigned int numBones = mesh->mNumBones;
-        write_n(fp, &numBones, sizeof(numBones));
-
-        for (unsigned int b = 0; b < numBones; ++b) {
-            const aiBone* bone = mesh->mBones[b];
-            char name[MAX_PATH]{}; strcpy_s(name, bone->mName.C_Str());
-            write_n(fp, name, sizeof(name));
-
-            FLOAT4X4 offset{};
-            const aiMatrix4x4& mtx = bone->mOffsetMatrix;
-            offset.m[0] = mtx.a1; offset.m[1] = mtx.a2; offset.m[2] = mtx.a3; offset.m[3] = mtx.a4;
-            offset.m[4] = mtx.b1; offset.m[5] = mtx.b2; offset.m[6] = mtx.b3; offset.m[7] = mtx.b4;
-            offset.m[8] = mtx.c1; offset.m[9] = mtx.c2; offset.m[10] = mtx.c3; offset.m[11] = mtx.c4;
-            offset.m[12] = mtx.d1; offset.m[13] = mtx.d2; offset.m[14] = mtx.d3; offset.m[15] = mtx.d4;
-            write_n(fp, &offset, sizeof(FLOAT4X4));
-        }
+// ============================= 텍스처 자동 탐색 =============================
+static fs::path FindAnyTexture(const fs::path& folder) {
+    if (!fs::exists(folder) || !fs::is_directory(folder)) return {};
+    // 이름 힌트 우선 (base/albedo/diffuse)
+    vector<string> prefer = {"base","albedo","diff","diffuse","_cm","color"};
+    vector<string> exts = {".png",".dds",".jpg",".jpeg",".tga"};
+    fs::path fallback;
+    for (auto& e : fs::directory_iterator(folder)) {
+        if (!e.is_regular_file()) continue;
+        string name = e.path().filename().string();
+        string ext  = e.path().extension().string();
+        transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        if (find(exts.begin(), exts.end(), ext) == exts.end()) continue;
+        string lower = name; transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+        for (auto& key : prefer) if (lower.find(key)!=string::npos) return e.path();
+        if (fallback.empty()) fallback = e.path();
     }
+    return fallback; // 없으면 빈 경로
 }
 
-// =============================================
-// Model.dat (Pivot 스케일만 적용, 본 스케일 X)
-// =============================================
-void WriteModelData(FILE* fp, const aiScene* scene) {
-    // ? PivotMatrix: 전체 모델 단위 축소 (0.01배)
-    FLOAT4X4 pivot{};
-    for (int i = 0; i < 16; ++i)
-        pivot.m[i] = (i % 5 == 0) ? 0.01f : 0.f;
-    pivot.m[15] = 1.f;
+// ============================= Model.dat =============================
+static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDir)
+{
+    FLOAT4X4 pivot{}; pivot.m[0]=pivot.m[5]=pivot.m[10]=0.001f; pivot.m[15]=1.f;
     write_n(fp, &pivot, sizeof(pivot));
 
-    unsigned int numMeshes = scene->mNumMeshes;
+    unsigned numMeshes = scene->mNumMeshes;
     write_n(fp, &numMeshes, sizeof(numMeshes));
 
-    for (unsigned int mi = 0; mi < numMeshes; ++mi) {
+    for (unsigned mi=0; mi<numMeshes; ++mi) {
         const aiMesh* mesh = scene->mMeshes[mi];
-        string meshName = mesh->mName.length ? mesh->mName.C_Str() : ("Mesh_" + to_string(mi));
+        string meshName = mesh->mName.length ? mesh->mName.C_Str() : ("Mesh_"+to_string(mi));
         put_str_fixed(fp, meshName);
 
-        unsigned int matIndex = mesh->mMaterialIndex;
+        unsigned matIndex = mesh->mMaterialIndex;
         write_n(fp, &matIndex, sizeof(matIndex));
 
-        unsigned int numVerts = mesh->mNumVertices;
+        unsigned numVerts = mesh->mNumVertices;
         write_n(fp, &numVerts, sizeof(numVerts));
 
         vector<VTXANIMMODEL> verts(numVerts);
-        for (unsigned int v = 0; v < numVerts; ++v) {
+        for (unsigned v=0; v<numVerts; ++v) {
             verts[v].vPosition = { mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z };
-            verts[v].vNormal = mesh->HasNormals() ? float3{ mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z } : float3{ 0,1,0 };
-            verts[v].vTexUV = mesh->HasTextureCoords(0) ? float2{ (float)mesh->mTextureCoords[0][v].x, 1.f - (float)mesh->mTextureCoords[0][v].y } : float2{ 0,0 };
-            verts[v].vTangent = mesh->HasTangentsAndBitangents() ? float3{ mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z } : float3{ 1,0,0 };
+            verts[v].vNormal   = mesh->HasNormals() ? float3{mesh->mNormals[v].x,mesh->mNormals[v].y,mesh->mNormals[v].z} : float3{0,1,0};
+            verts[v].vTexUV    = mesh->HasTextureCoords(0) ? float2{ (float)mesh->mTextureCoords[0][v].x, (float)mesh->mTextureCoords[0][v].y } : float2{0,0};
+            verts[v].vTangent  = mesh->HasTangentsAndBitangents() ? float3{mesh->mTangents[v].x,mesh->mTangents[v].y,mesh->mTangents[v].z} : float3{1,0,0};
+            for(int i=0;i<4;++i){ verts[v].iBlendIndices[i]=0; verts[v].fBlendWeights[i]=0.f; }
         }
-        write_n(fp, verts.data(), sizeof(VTXANIMMODEL) * verts.size());
+        // 본 가중치 기록
+        for (unsigned b=0; b<mesh->mNumBones; ++b) {
+            const aiBone* bone = mesh->mBones[b];
+            for (unsigned w=0; w<bone->mNumWeights; ++w) {
+                unsigned vId = bone->mWeights[w].mVertexId;
+                float weight = bone->mWeights[w].mWeight;
+                for (int i=0;i<4;++i) if (verts[vId].fBlendWeights[i]==0.f) { verts[vId].iBlendIndices[i]=b; verts[vId].fBlendWeights[i]=weight; break; }
+            }
+        }
+        write_n(fp, verts.data(), sizeof(VTXANIMMODEL)*verts.size());
 
-        unsigned int numBones = mesh->mNumBones;
-        write_n(fp, &numBones, sizeof(numBones));
+        unsigned numBones = mesh->mNumBones; write_n(fp, &numBones, sizeof(numBones));
 
-        unsigned int numFaces = mesh->mNumFaces;
-        write_n(fp, &numFaces, sizeof(numFaces));
-
+        unsigned numFaces = mesh->mNumFaces; write_n(fp, &numFaces, sizeof(numFaces));
         vector<FACEINDICES32> faces(numFaces);
-        for (unsigned int f = 0; f < numFaces; ++f)
+        for (unsigned f=0; f<numFaces; ++f)
             faces[f] = { mesh->mFaces[f].mIndices[0], mesh->mFaces[f].mIndices[1], mesh->mFaces[f].mIndices[2] };
-        write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
+        write_n(fp, faces.data(), sizeof(FACEINDICES32)*faces.size());
     }
 
-    // ? 머티리얼 경로 저장
-    unsigned int numMaterials = scene->mNumMaterials;
-    write_n(fp, &numMaterials, sizeof(numMaterials));
+    // 머티리얼: 머티리얼에 텍스처 있으면 그거, 없으면 폴더에서 자동 검색
+    unsigned numMats = scene->mNumMaterials; write_n(fp, &numMats, sizeof(numMats));
+    fs::path autoTex = FindAnyTexture(texDir);
+    string autoTexStr = autoTex.empty() ? (texDir / L"default_diffuse.png").string() : autoTex.string();
 
-    for (unsigned int mi = 0; mi < numMaterials; ++mi) {
+    for(unsigned mi=0; mi<numMats; ++mi){
         aiMaterial* mat = scene->mMaterials[mi];
-        auto writeTex = [&](aiTextureType type) {
-            aiString path;
-            char fullPath[MAX_PATH]{};
-
-            if (mat->GetTexture(type, 0, &path) == AI_SUCCESS) {
-                fs::path texPath = fs::u8path(path.C_Str());
-                if (!texPath.is_absolute())
-                    texPath = fs::path("C:\\DirectX11_LeagueOfLegends\\Bin\\Resources\\Meshes\\Anim\\Champion\\Ezreal") / texPath.filename();
-                strncpy_s(fullPath, texPath.string().c_str(), MAX_PATH - 1);
+        for(int t=0; t<AI_TEXTURE_TYPE_MAX; ++t){
+            aiString tex; char path[MAX_PATH]{};
+            if (mat->GetTexture((aiTextureType)t, 0, &tex) == AI_SUCCESS) {
+                fs::path texFile = texDir / fs::path(tex.C_Str()).filename();
+                strncpy_s(path, texFile.string().c_str(), MAX_PATH-1);
+            } else {
+                strncpy_s(path, autoTexStr.c_str(), MAX_PATH-1);
             }
-            write_n(fp, fullPath, sizeof(fullPath));
-            };
-        writeTex(aiTextureType_DIFFUSE);
-        writeTex(aiTextureType_NORMALS);
-    }
-}
-
-// =============================================
-// Animation.dat
-// =============================================
-void WriteAnimations(FILE* fp, const aiScene* scene) {
-    unsigned int animCount = scene->mNumAnimations;
-    fwrite(&animCount, sizeof(unsigned int), 1, fp);
-
-    for (unsigned int i = 0; i < animCount; ++i) {
-        const aiAnimation* anim = scene->mAnimations[i];
-        BINANIM animHeader{};
-        strcpy_s(animHeader.szName, anim->mName.length ? anim->mName.C_Str() : ("Anim_" + to_string(i)).c_str());
-        animHeader.dbDuration = static_cast<double>(anim->mDuration);
-        animHeader.dbTickPerSecond = (anim->mTicksPerSecond != 0.0) ? static_cast<double>(anim->mTicksPerSecond) : 30.0;
-        animHeader.iNumChannels = static_cast<int>(anim->mNumChannels);
-        fwrite(&animHeader, sizeof(BINANIM), 1, fp);
-
-        for (int c = 0; c < animHeader.iNumChannels; ++c) {
-            const aiNodeAnim* channel = anim->mChannels[c];
-            BINCHANNEL ch{};
-            strcpy_s(ch.szName, channel->mNodeName.C_Str());
-            ch.iNumKeyFrames = static_cast<int>(max({
-                channel->mNumPositionKeys,
-                channel->mNumRotationKeys,
-                channel->mNumScalingKeys }));
-            fwrite(&ch, sizeof(BINCHANNEL), 1, fp);
-
-            for (int k = 0; k < ch.iNumKeyFrames; ++k) {
-                KEYFRAME frame{};
-                frame.fTime = (k < (int)channel->mNumPositionKeys)
-                    ? static_cast<float>(channel->mPositionKeys[k].mTime)
-                    : 0.f;
-                if (k < (int)channel->mNumScalingKeys) {
-                    frame.vScale[0] = channel->mScalingKeys[k].mValue.x;
-                    frame.vScale[1] = channel->mScalingKeys[k].mValue.y;
-                    frame.vScale[2] = channel->mScalingKeys[k].mValue.z;
-                }
-                else frame.vScale[0] = frame.vScale[1] = frame.vScale[2] = 1.f;
-                if (k < (int)channel->mNumRotationKeys) {
-                    frame.vRotation[0] = channel->mRotationKeys[k].mValue.x;
-                    frame.vRotation[1] = channel->mRotationKeys[k].mValue.y;
-                    frame.vRotation[2] = channel->mRotationKeys[k].mValue.z;
-                    frame.vRotation[3] = channel->mRotationKeys[k].mValue.w;
-                }
-                else frame.vRotation[3] = 1.f;
-                if (k < (int)channel->mNumPositionKeys) {
-                    frame.vPosition[0] = channel->mPositionKeys[k].mValue.x;
-                    frame.vPosition[1] = channel->mPositionKeys[k].mValue.y;
-                    frame.vPosition[2] = channel->mPositionKeys[k].mValue.z;
-                }
-                fwrite(&frame, sizeof(KEYFRAME), 1, fp);
-            }
+            write_n(fp, path, sizeof(path));
         }
     }
 }
 
-// =============================================
-// Main
-// =============================================
-int wmain() {
-    try {
-        fs::path inputFBX = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Resources\\Meshes\\Anim\\Champion\\Ezreal\\IzrealBase.fbx";
-        fs::path outModel = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Bin_Data\\Anim\\Champion\\Izreal\\Izreal.dat";
-        fs::path outAnim = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Bin_Data\\Anim\\Champion\\Izreal\\Izreal_Animation.dat";
-
-        Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(
-            inputFBX.string(),
-            aiProcess_Triangulate |
-            aiProcess_JoinIdenticalVertices |
-            aiProcess_GenNormals |
-            aiProcess_CalcTangentSpace |
-            aiProcess_ConvertToLeftHanded
-        );
-        if (!scene) throw runtime_error(importer.GetErrorString());
-
-        FILE* fp = nullptr;
-        _wfopen_s(&fp, outModel.c_str(), L"wb");
-        WriteModelData(fp, scene);
-        fclose(fp);
-
-        FILE* fa = nullptr;
-        _wfopen_s(&fa, outAnim.c_str(), L"wb");
-        const aiNode* root = FindRootBoneNode(scene);
-        aiMatrix4x4 identity;
-        WriteBoneRecursive(fa, root, identity);
-        WriteMeshBoneWeights(fa, scene);
-        WriteAnimations(fa, scene);
-        fclose(fa);
-
-        cout << "[OK] 변환 완료 ? sizeof(KEYFRAME)=" << sizeof(KEYFRAME) << endl;
-        return 0;
-    }
-    catch (exception& e) {
-        cerr << "[ERROR] " << e.what() << endl;
-        return 1;
+// ============================= Animation.dat =============================
+static void WriteBonesRecursive(FILE* fp, const aiNode* node){
+    BINBONE bone{}; strncpy_s(bone.szName, node->mName.C_Str(), MAX_PATH-1);
+    ToF4x4(bone.Transformation, node->mTransformation);
+    bone.iNumChildren = node->mNumChildren;
+    write_n(fp, &bone, sizeof(bone));
+    for(unsigned i=0;i<node->mNumChildren;++i) WriteBonesRecursive(fp, node->mChildren[i]);
+}
+static void WriteMeshBoneOffsets(FILE* fp, const aiScene* scene){
+    for(unsigned m=0; m<scene->mNumMeshes; ++m){
+        const aiMesh* mesh = scene->mMeshes[m];
+        for(unsigned b=0; b<mesh->mNumBones; ++b){
+            const aiBone* bone = mesh->mBones[b];
+            char name[MAX_PATH]{}; strncpy_s(name, bone->mName.C_Str(), MAX_PATH-1); write_n(fp, name, sizeof(name));
+            FLOAT4X4 offset{}; ToF4x4(offset, bone->mOffsetMatrix); write_n(fp, &offset, sizeof(offset));
+        }
     }
 }
+static void WriteAnimations(FILE* fp, const aiScene* scene){
+    unsigned animCount = scene->mNumAnimations; write_n(fp, &animCount, sizeof(animCount));
+    for(unsigned a=0; a<animCount; ++a){
+        const aiAnimation* anim = scene->mAnimations[a];
+        BINANIM ba{}; strncpy_s(ba.szName, anim->mName.C_Str(), MAX_PATH-1);
+        ba.dbDuration = anim->mDuration; ba.dbTickPerSecond = anim->mTicksPerSecond!=0.0?anim->mTicksPerSecond:30.0;
+        ba.iNumChannels = (int)anim->mNumChannels; write_n(fp, &ba, sizeof(ba));
+        for(unsigned c=0;c<anim->mNumChannels;++c){
+            const aiNodeAnim* ch = anim->mChannels[c];
+            BINCHANNEL bc{}; strncpy_s(bc.szName, ch->mNodeName.C_Str(), MAX_PATH-1);
+            bc.iNumKeyFrames = max({ (int)ch->mNumPositionKeys, (int)ch->mNumRotationKeys, (int)ch->mNumScalingKeys });
+            write_n(fp, &bc, sizeof(bc));
+            for(int i=0;i<bc.iNumKeyFrames;++i){
+                KEYFRAME kf{}; kf.fTime = (i < (int)ch->mNumPositionKeys) ? (float)ch->mPositionKeys[i].mTime : 0.f;
+                if(i < (int)ch->mNumScalingKeys){ kf.vScale[0]=(float)ch->mScalingKeys[i].mValue.x; kf.vScale[1]=(float)ch->mScalingKeys[i].mValue.y; kf.vScale[2]=(float)ch->mScalingKeys[i].mValue.z; }
+                else { kf.vScale[0]=kf.vScale[1]=kf.vScale[2]=1.f; }
+                if(i < (int)ch->mNumRotationKeys){ kf.vRotation[0]=(float)ch->mRotationKeys[i].mValue.x; kf.vRotation[1]=(float)ch->mRotationKeys[i].mValue.y; kf.vRotation[2]=(float)ch->mRotationKeys[i].mValue.z; kf.vRotation[3]=(float)ch->mRotationKeys[i].mValue.w; }
+                else { kf.vRotation[0]=kf.vRotation[1]=kf.vRotation[2]=0.f; kf.vRotation[3]=1.f; }
+                if(i < (int)ch->mNumPositionKeys){ kf.vPosition[0]=(float)ch->mPositionKeys[i].mValue.x; kf.vPosition[1]=(float)ch->mPositionKeys[i].mValue.y; kf.vPosition[2]=(float)ch->mPositionKeys[i].mValue.z; }
+                write_n(fp, &kf, sizeof(kf));
+            }
+        }
+    }
+}
+static void WriteAnimationData(FILE* fp, const aiScene* scene){
+    WriteBonesRecursive(fp, scene->mRootNode);
+    WriteMeshBoneOffsets(fp, scene);
+    WriteAnimations(fp, scene);
+}
+
+// ============================= 메인: Champion 하위 전부 자동 변환 =============================
+int wmain()
+{
+    try {
+        fs::path srcRoot = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Resources\\Meshes\\Anim\\Champion";
+        fs::path dstRoot = L"C:\\DirectX11_LeagueOfLegends\\Bin\\Bin_Data\\Anim\\Champion";
+        if (!fs::exists(srcRoot)) throw runtime_error("Champion directory not found!");
+
+        for (const auto& entry : fs::recursive_directory_iterator(srcRoot)) {
+            if (!entry.is_directory()) continue;
+
+            // 이 폴더에서 FBX 하나 찾기
+            fs::path fbx;
+            for (const auto& f : fs::directory_iterator(entry.path())) {
+                auto ext = f.path().extension().wstring();
+                if (ext==L".fbx" || ext==L".FBX") { fbx = f.path(); break; }
+            }
+            if (fbx.empty()) continue;
+
+            // 출력 경로는 원본과 동일한 서브 폴더 구조 유지
+            fs::path relative = fs::relative(entry.path(), srcRoot);
+            fs::path outDir   = dstRoot / relative;
+            fs::create_directories(outDir);
+
+            fs::path baseName = entry.path().filename(); // 폴더명 기준
+            fs::path outModel = outDir / (baseName.wstring() + L".dat");
+            fs::path outAnim  = outDir / (baseName.wstring() + L"_Animation.dat");
+
+            // 이미 있으면 스킵
+            if (fs::exists(outModel) && fs::exists(outAnim)) {
+                wcout << L"[SKIP] " << relative << L" (이미 존재)\n";
+                continue;
+            }
+
+            // FBX 로드
+            Assimp::Importer imp;
+            const aiScene* scene = imp.ReadFile(
+                fbx.string(),
+                aiProcess_Triangulate |
+                aiProcess_JoinIdenticalVertices |
+                aiProcess_GenNormals |
+                aiProcess_CalcTangentSpace |
+                aiProcess_ConvertToLeftHanded
+            );
+            if (!scene) { cerr << "[ERROR] " << imp.GetErrorString() << " (" << fbx.string() << ")\n"; continue; }
+
+            // 모델 dat
+            if (!fs::exists(outModel)) {
+                FILE* fm = nullptr; _wfopen_s(&fm, outModel.c_str(), L"wb");
+                if (!fm) { cerr << "[ERROR] cannot open model for write\n"; continue; }
+                WriteModelData(fm, scene, fbx.parent_path());
+                fclose(fm);
+            }
+
+            // 애니메이션 dat
+            if (!fs::exists(outAnim)) {
+                FILE* fa = nullptr; _wfopen_s(&fa, outAnim.c_str(), L"wb");
+                if (!fa) { cerr << "[ERROR] cannot open anim for write\n"; continue; }
+                WriteAnimationData(fa, scene);
+                fclose(fa);
+            }
+
+            wcout << L"[OK] " << relative << L" → " << outDir << L" (생성 완료)\n";
+        }
+
+        wcout << L"\n=== Champion 하위 전체 자동 변환 완료 (기존 파일은 스킵) ===\n";
+    }
+    catch (const exception& e) {
+        cerr << "[ERROR] " << e.what() << endl;
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
+
 
 
 

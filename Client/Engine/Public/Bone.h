@@ -11,7 +11,10 @@ private:
 	virtual ~CBone() = default;
 
 public:
-	const char* Get_Name() const { return m_szName; }
+	const char* Get_Name() const {
+		return m_szName;
+	}
+	// 추가
 	const char* Get_ParentName() const {
 		if (nullptr == m_pParent)
 			return "";
@@ -29,53 +32,56 @@ public:
 	}
 	_matrix Get_TransformationMatrix(void) const { return XMLoadFloat4x4(&m_TransformationMatrix); }
 	_matrix Get_CombinedTransformationMatrix() const {
-		return XMLoadFloat4x4(&m_CombinedTransformationMatirx);
+		return XMLoadFloat4x4(&m_CombinedTransformationMatrix);
 	}
-
-	XMFLOAT4X4 Get_OffsetMatrixXM() {
+	// 추가
+	XMFLOAT4X4 Get_OffSetMatrixXM() {
 		return m_OffsetMatrix;
 	}
-	_float4x4 Get_OriTransformationMatrix() { return m_OriTransfomationMatrix; }
+	// 추가
+	_float4x4 Get_OriTransformationMatrix() { return m_OriTransformationMatrix; }
+	// 추가
 	CBone* Get_Parent() { return m_pParent; }
 
-	// 루트노드 함수 - 이동 행렬, 회전 행렬 반환
+	// 루트노드 위한 함수들 - 이동 행렬, 회전 행렬 반환
 	_vector Get_Translation(void) { return m_vecTranslation; }
-	_float	Get_RotationRadian(void) { return m_fRotationRaidan; }
-	void	Set_Translation(_vector vTranslation) { m_vecTranslation = vTranslation; }
+	_float Get_RotationRadian(void) { return m_fRotationRadian; }
+	void Set_Translation(_vector vTranslation) { m_vecTranslation = vTranslation; }
 
 public:
 	HRESULT Initialize(BINBONE tBone, CBone* pParent);
-	HRESULT Bin_Initialize(DATA_BINNODE* pNode);
-	void	Invaliddate_CombiendTransformationmatrix(const char* pBoneName);
-	void	Set_FindParent(CBone* pNode);
+	HRESULT Bin_Initialize(DATA_BINNODE* pNode); // 추가
+	void Invalidate_CombinedTransformationmatrix(const char* pBoneName);
+	void Set_FindParent(CBone* pNode); // 추가
 
 private:
-	char	m_szName[MAX_PATH] = "";
-	char	m_szParentName[MAX_PATH] = "";
+	char				m_szName[MAX_PATH] = "";
+	char				m_szParentName[MAX_PATH] = ""; // 추가
 	CBone* m_pParent = nullptr;
 
-	// 기본은 항등 메시 안에서 aiBoneㄱ밧을 채움
-	_float4x4	m_OffsetMatrix;
-	_float4x4	m_OriTransfomationMatrix;
+	/* 기본은 항등, 메시안에서(aiBone) 값을 채워준다. */
+	_float4x4			m_OffsetMatrix;
+	_float4x4			m_OriTransformationMatrix; // 추가
 
-	_float4x4	m_TransformationMatrix;
+	_float4x4			m_TransformationMatrix;
 
-	_float4x4	m_CombinedTransformationMatirx;
+	_float4x4			m_CombinedTransformationMatrix;
 
-	// 이동, 회전갑 살리기
+	/* 이동, 회전값 살리기 위한 매트릭스 */
 	_vector m_vecTranslation;
-	_float m_fRotationRaidan;
-	_matrix m_PreTransformationMatrix;
+	_float m_fRotationRadian;
+	_matrix m_PreTransforamtionMatrix;
 	_matrix m_FirstTransformMatrix;
 
 private:
-	// 루트 본 이동 값제거, 루트 본이동, 회전행렬 저장 함수
+	/* 루트 본 이동 값 제거, 루트 본 이동, 회전 행렬 저장 함수 */
 	void Set_RootMotionMatrix(const char* pBoneName);
 
 public:
+	//static CHierarchyNode* Create(const aiNode* pNode, CHierarchyNode* pParent);
 	static CBone* Create(BINBONE tBone, CBone* pParent);
-	static CBone* Bin_Create(DATA_BINNODE* pNode);
-	virtual void Free();
+	static CBone* Bin_Create(DATA_BINNODE* pNode); // 추가
+	virtual void Free() override;
 
 };
 NS_END

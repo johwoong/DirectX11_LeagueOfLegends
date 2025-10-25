@@ -61,7 +61,7 @@ void CPicking::Update()
 	ViewMatrixInv = pGameInstance->Get_TransformMatrix(CPipeLine::D3DTS_VIEW);
 	ViewMatrixInv = XMMatrixInverse(nullptr, ViewMatrixInv);
 	vecRayPos = XMVector3TransformCoord(vecRayPos, ViewMatrixInv);
-	vecRayDir = XMVector3TransformCoord(vecRayDir, ViewMatrixInv);
+	vecRayDir = XMVector3TransformNormal(vecRayDir, ViewMatrixInv);
 	vecRayDir = XMVector3Normalize(vecRayDir);
 
 	XMStoreFloat3(&m_vRayPos, vecRayPos);

@@ -43,7 +43,7 @@ HRESULT CChannel::Bin_Initialize(DATA_BINCHANNEL* pAIChannel, CModel* pModel)
 
 	for (_uint i = 0; i < m_iNumKeyframes; ++i)
 	{
-		KEYFRAME	KeyFrame;
+		KEYFRAME			KeyFrame;
 		ZeroMemory(&KeyFrame, sizeof(KEYFRAME));
 
 		KeyFrame = pAIChannel->pKeyFrames[i];
@@ -59,8 +59,8 @@ HRESULT CChannel::Bin_Initialize(DATA_BINCHANNEL* pAIChannel, CModel* pModel)
 
 void CChannel::Invalidate_TransformationMatrix(_float fCurrentTime, const char* pBoneName)
 {
-	// 던져진 시간에 맞는 뼈의 상태를 만듬
-	// 만들면 모델이 가지고 있는 뼈에 때려박음
+	/* 던져진 시간에 맞는 뼈의 상태를 만들거야.
+	만들면 모델이 가지고 있는 뼈에 던질꺼야. */
 	_vector			vScale, vRotation, vPosition;
 
 	KEYFRAME		LastKeyframe = m_KeyFrames.back();

@@ -181,6 +181,8 @@
     <ClInclude Include="..\Public\ModelManager.h" />
     <ClInclude Include="..\Public\NonAnim.h" />
     <ClInclude Include="..\Public\PickingMgr.h" />
+    <ClInclude Include="..\Public\Terrian.h" />
+    <ClInclude Include="..\Public\TerrianManager.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Client_Defines.h" />
     <ClInclude Include="framework.h" />
@@ -231,6 +233,8 @@
     <ClCompile Include="..\Private\ModelManager.cpp" />
     <ClCompile Include="..\Private\NonAnim.cpp" />
     <ClCompile Include="..\Private\PickingMgr.cpp" />
+    <ClCompile Include="..\Private\Terrian.cpp" />
+    <ClCompile Include="..\Private\TerrianManager.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -246,6 +250,7 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Client_Shader_Defines.hlsl" />
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_NorTexTerrianl.hlsl" />
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl" />
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl" />
   </ItemGroup>

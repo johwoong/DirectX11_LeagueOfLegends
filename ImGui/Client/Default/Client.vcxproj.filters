@@ -67,6 +67,12 @@
     <Filter Include="02. GameObjects\03. AnimModel">
       <UniqueIdentifier>{aa1c28d9-4f61-4012-a809-8fdb9cc163e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\04. Terrian">
+      <UniqueIdentifier>{bbeef7d0-28d4-4a4c-842f-4d96fceaf7be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. ToolManager\02. TerrianManager">
+      <UniqueIdentifier>{79715700-86d8-4c31-a4ec-07dd228a6d0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -153,6 +159,12 @@
     <ClInclude Include="..\Public\Anim.h">
       <Filter>02. GameObjects\03. AnimModel</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Terrian.h">
+      <Filter>02. GameObjects\04. Terrian</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\TerrianManager.h">
+      <Filter>03. ToolManager\02. TerrianManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -237,6 +249,12 @@
     <ClCompile Include="..\Private\Anim.cpp">
       <Filter>02. GameObjects\03. AnimModel</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\Terrian.cpp">
+      <Filter>02. GameObjects\04. Terrian</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\TerrianManager.cpp">
+      <Filter>03. ToolManager\02. TerrianManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
@@ -246,6 +264,9 @@
       <Filter>96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl">
+      <Filter>96. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_NorTexTerrianl.hlsl">
       <Filter>96. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>
