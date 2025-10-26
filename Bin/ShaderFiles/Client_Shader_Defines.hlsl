@@ -42,14 +42,7 @@ RasterizerState RS_SkyBox
     FrontCounterClockwise = false;
 };
 
-//BOOL BlendEnable;
-//D3D11_BLEND SrcBlend;
-//D3D11_BLEND DestBlend;
-//D3D11_BLEND_OP BlendOp;
-//D3D11_BLEND SrcBlendAlpha;
-//D3D11_BLEND DestBlendAlpha;
-//D3D11_BLEND_OP BlendOpAlpha;
-//UINT8 RenderTargetWriteMask;
+
 
 BlendState BS_Default
 {
@@ -75,10 +68,6 @@ BlendState BS_AddBlending
 };
 
 
-// D3D11_COMPARISON_FUNC
-//BOOL DepthEnable;
-//D3D11_DEPTH_WRITE_MASK DepthWriteMask;
-//D3D11_COMPARISON_FUNC DepthFunc;
 
 DepthStencilState DSS_Default
 {

@@ -10,6 +10,8 @@ class CTransform;
 class CVIBuffer_Rect;
 NS_END
 
+NS_BEGIN(Client)
+
 class CUI_Base abstract :public CGameObject
 {
 public:
@@ -62,4 +64,6 @@ public:
 public:
 	virtual void Free() override;
 };
+
+NS_END
 

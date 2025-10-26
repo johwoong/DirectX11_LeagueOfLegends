@@ -2,8 +2,8 @@
 #pragma warning (disable : 4996)
 namespace Client
 {
-	const unsigned int g_WinSizeX = 1280;
-	const unsigned int g_WinSizeY = 720;
+	const unsigned int g_WinSizeX = 1920;
+	const unsigned int g_WinSizeY = 1080;
 
 	enum LEVEL { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
 
@@ -12,7 +12,7 @@ namespace Client
 }
 
 #include <process.h>
-
+#include <time.h>
 #include "Windows.h"
 extern HWND g_hWnd;
 extern HINSTANCE g_hInst;

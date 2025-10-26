@@ -24,6 +24,13 @@ HRESULT CBackGround::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
+    m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, 2.f);
+    m_pTransformCom->Set_Scale(CTransform::STATE_UP, 2.f);
+
+    m_pTransformCom->Set_State(
+        CTransform::STATE_TRANSLATION,
+        XMVectorSet(0.f, 0.f, 0.f, 1.f)
+    );
 
     return S_OK;
 }
@@ -89,12 +96,10 @@ HRESULT CBackGround::SetUp_ShaderResources()
     if (nullptr == m_pShaderCom)
         return E_FAIL;
 
-    // [1] World (Transform에서 가져오기)
     _float4x4 WorldMatrixTP = m_pTransformCom->Get_World_TP();
     if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &WorldMatrixTP, sizeof(_float4x4))))
         return E_FAIL;
 
-    // [2] View, Proj 임시 단위행렬 세팅 (카메라 없음)
     _float4x4 Identity;
     XMStoreFloat4x4(&Identity, XMMatrixIdentity());
 

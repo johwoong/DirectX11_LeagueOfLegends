@@ -15,25 +15,6 @@ private:
 	virtual ~CLoader() = default;
 
 public:
-	LEVEL Get_LoadingID() const {
-		return m_eLoadingLevelID;
-	}
-
-	CRITICAL_SECTION Get_CriticalSection() {
-		return m_CriticalSection;
-	}
-
-	_bool Get_Finished() const {
-		return m_isFinished;
-	}
-
-	const _tchar* Get_LoadingText() const {
-		return m_szLoadingText;
-	}
-
-	void Set_Finished(_bool tof) { m_isFinished = tof; }
-
-public:
 	HRESULT Initialize(LEVEL eLoadingLevelID);
 	HRESULT Loading();
 
@@ -41,19 +22,22 @@ public:
 		return m_isFinished;
 	}
 
+	void Output() {
+		SetWindowText(g_hWnd, m_szFPS);
+	}
 
 private:
-	ID3D11Device*			m_pDevice = { nullptr };
-	ID3D11DeviceContext*	m_pContext = { nullptr };
+	ID3D11Device* m_pDevice = { nullptr };
+	ID3D11DeviceContext* m_pContext = { nullptr };
+	CGameInstance* m_pGameInstance = { nullptr };
 	LEVEL					m_eLoadingLevelID = { LEVEL::LEVEL_END };
-	_tchar					m_szLoadingText[MAX_PATH] = TEXT("");
-	_bool					m_isFinished = { false };
-	CGameInstance*			m_pGameInstance = { nullptr };
 
 private:
 	HANDLE				m_hThread = {};
 	CRITICAL_SECTION	m_CriticalSection = {};
 
+	_bool				m_isFinished = { false };
+	_tchar				m_szFPS[MAX_PATH] = {};
 
 private:
 	HRESULT Loading_For_Logo();

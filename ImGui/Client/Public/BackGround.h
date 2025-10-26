@@ -32,10 +32,7 @@ private:
 	CRenderer*				m_pRendererCom = { nullptr };
 	CVIBuffer_Rect*			m_pVIBufferCom = { nullptr };
 	CTransform*				m_pTransformCom = { nullptr };
-
-private:
-	_float3		m_vPosition = _float3(0.f, 0.f, 0.f);
-	_float3		m_vDirection = _float3(1.f, 0.f, 0.f);
+	_float2					m_fPosition, m_fSize;
 
 private:
 	HRESULT Ready_Components();

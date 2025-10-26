@@ -42,7 +42,9 @@ void CMainApp::Update(_float fTimeDelta)
 	/* 내 게임의 반복적인 갱신  */
 	m_pGameInstance->Update_Engine(fTimeDelta);
 
+	//#ifdef _DEBUG
 	m_fTimeAcc += fTimeDelta;
+	//#endif // _DEBUG
 }
 
 HRESULT CMainApp::Render()
@@ -74,7 +76,7 @@ HRESULT CMainApp::Start_Level(LEVEL eLevelID)
 	if (nullptr == m_pGameInstance)
 		return E_FAIL;
 
-	CLevel_Loading* pLevel_Loading = CLevel_Loading::Create(m_pDevice, m_pContext, eLevelID);
+ 	CLevel_Loading* pLevel_Loading = CLevel_Loading::Create(m_pDevice, m_pContext, eLevelID);
 	if (nullptr == pLevel_Loading)
 		return E_FAIL;
 
@@ -88,21 +90,22 @@ HRESULT CMainApp::Ready_Prototype_Component()
  	if (nullptr == m_pGameInstance)
 		return E_FAIL;
 
-	/* For.Prototype_Component_Renderer */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Renderer"), m_pRenderer = CRenderer::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_Component_VIBuffer_Rect */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Rect"), CVIBuffer_Rect::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_Component_Transform */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Transform"), CTransform::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* For.Prototype_Component_Shader_VtxTex*/
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxTex.hlsl"), VTXTEX_DECLARATION::Elements, VTXTEX_DECLARATION::iNumElements))))
+		return E_FAIL;
+
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_UI"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Shaderfiles/Shader_UI.hlsl"), VTXTEX_DECLARATION::Elements, VTXTEX_DECLARATION::iNumElements))))
 		return E_FAIL;
 
 	Safe_AddRef(m_pRenderer);

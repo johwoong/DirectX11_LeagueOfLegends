@@ -30,16 +30,16 @@ HRESULT CVIBuffer_Rect::Initialize_Prototype()
 
 	VTXTEX* pVertices = new VTXTEX[m_iNumVertices];
 
-	pVertices[0].vPosition = _float3(-1.f, 1.f, 0.f);
+	pVertices[0].vPosition = _float3(-0.5f, 0.5f, 0.f);
 	pVertices[0].vTexture = _float2(0.f, 0.f);
 
-	pVertices[1].vPosition = _float3(1.f, 1.f, 0.f);
+	pVertices[1].vPosition = _float3(0.5f, 0.5f, 0.f);
 	pVertices[1].vTexture = _float2(1.f, 0.f);
 
-	pVertices[2].vPosition = _float3(1.f, -1.f, 0.f);
+	pVertices[2].vPosition = _float3(0.5f, -0.5f, 0.f);
 	pVertices[2].vTexture = _float2(1.f, 1.f);
 
-	pVertices[3].vPosition = _float3(-1.f, -1.f, 0.f);
+	pVertices[3].vPosition = _float3(-0.5f, -0.5f, 0.f);
 	pVertices[3].vTexture = _float2(0.f, 1.f);
 
 	ZeroMemory(&m_SubResourceData, sizeof(D3D11_SUBRESOURCE_DATA));

@@ -1,6 +1,6 @@
 ﻿// Client.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
-
+#include "stdafx.h"
 #include "framework.h"
 #include "Client.h"
 
@@ -127,7 +127,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CLIENT));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_CLIENT);
+    wcex.lpszMenuName = nullptr;
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 

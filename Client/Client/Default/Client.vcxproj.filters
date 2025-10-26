@@ -37,6 +37,9 @@
     <ClInclude Include="..\Public\UI_BackGround.h">
       <Filter>02. GameObjects\02. UI\UI_BackGround</Filter>
     </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -89,6 +92,9 @@
     <Filter Include="02. GameObjects\02. UI\UI_BackGround">
       <UniqueIdentifier>{1b572ae8-7a2d-45c3-b31f-7cd2acf8d6c8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="97. ShaderFiles">
+      <UniqueIdentifier>{acceb22e-8979-4f7a-939e-28cc06a5a476}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -115,10 +121,33 @@
     <ClCompile Include="..\Private\UI_BackGround.cpp">
       <Filter>02. GameObjects\02. UI\UI_BackGround</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>98.Default</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc">
       <Filter>98.Default</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_NorTexTerrianl.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxModelTool.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_UI.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

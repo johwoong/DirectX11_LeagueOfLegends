@@ -2,12 +2,13 @@
 #include "UI_Base.h"
 
 
-class UI_BackGround final : public CUI_Base
+NS_BEGIN(Client)
+class CUI_BackGround final : public CUI_Base
 {
 private:
-	UI_BackGround(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	UI_BackGround(const UI_BackGround& rhs);
-	virtual ~UI_BackGround() = default;
+	CUI_BackGround(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CUI_BackGround(const CUI_BackGround& rhs);
+	virtual ~CUI_BackGround() = default;
 
 
 public:
@@ -24,8 +25,8 @@ private:
 	CTexture* m_pTextureCom = nullptr;
 
 public:
-	static UI_BackGround* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CUI_BackGround* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr);
 	virtual void Free() override;
 };
-
+NS_END
