@@ -3,13 +3,35 @@
 #include "Client_Defines.h"
 #include "Base.h"
 
-NS_BEGIN(Client)
+NS_BEGIN(Engine)
+class CGameInstance;
+NS_END
 
+NS_BEGIN(Client)
 class CLoader final : public CBase
 {
 private:
 	CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual ~CLoader() = default;
+
+public:
+	LEVEL Get_LoadingID() const {
+		return m_eLoadingLevelID;
+	}
+
+	CRITICAL_SECTION Get_CriticalSection() {
+		return m_CriticalSection;
+	}
+
+	_bool Get_Finished() const {
+		return m_isFinished;
+	}
+
+	const _tchar* Get_LoadingText() const {
+		return m_szLoadingText;
+	}
+
+	void Set_Finished(_bool tof) { m_isFinished = tof; }
 
 public:
 	HRESULT Initialize(LEVEL eLoadingLevelID);
@@ -19,21 +41,19 @@ public:
 		return m_isFinished;
 	}
 
-	void Output() {
-		SetWindowText(g_hWnd, m_szFPS);
-	}
 
 private:
 	ID3D11Device*			m_pDevice = { nullptr };
 	ID3D11DeviceContext*	m_pContext = { nullptr };
-	LEVEL					m_eLoadingLevelID = { LEVEL::END };
+	LEVEL					m_eLoadingLevelID = { LEVEL::LEVEL_END };
+	_tchar					m_szLoadingText[MAX_PATH] = TEXT("");
+	_bool					m_isFinished = { false };
+	CGameInstance*			m_pGameInstance = { nullptr };
 
 private:
 	HANDLE				m_hThread = {};
 	CRITICAL_SECTION	m_CriticalSection = {};
 
-	_bool				m_isFinished = { false };
-	_tchar				m_szFPS[MAX_PATH] = {};
 
 private:
 	HRESULT Loading_For_Logo();

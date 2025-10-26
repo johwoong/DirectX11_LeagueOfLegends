@@ -26,9 +26,6 @@ void CAnim::PlayAnimation(void)
 }
 
 
-
-
-
 HRESULT CAnim::Initialize_Prototype(void)
 {
 	return S_OK;

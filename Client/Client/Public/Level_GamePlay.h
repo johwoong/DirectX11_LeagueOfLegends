@@ -15,7 +15,12 @@ private:
 public:
 	virtual HRESULT Initialize() override;
 	virtual void Update(_float fTimeDelta) override;
-	virtual HRESULT Render() override;
+	virtual void Late_Update(_float fTimeDelta) override;
+
+
+public:
+	HRESULT Ready_Layer_BackGround(const _tchar* pLayerTag);
+	HRESULT Ready_Layer_Player(const _tchar* pLayerTag);
 
 private:
 	ID3D11Device* m_pDevice = { nullptr };

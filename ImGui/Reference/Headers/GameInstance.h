@@ -13,6 +13,7 @@
 #include "Timer_Manager.h"
 #include "Level_Manager.h"
 #include "ComponentManager.h"
+#include "Target_Manager.h"
 #include "Object_Manager.h"
 #include "Picking.h"
 
@@ -115,6 +116,12 @@ public: /* For Picking */
 	_vector Get_RayDir();
 #pragma endregion Picking
 
+
+#pragma region Target
+public: /* For.Target_Manager */
+	ID3D11ShaderResourceView* Get_BackBufferCopySRV();
+	HRESULT Bind_RenderTarget_SRV(const _tchar* pTargetTag, class CShader* pShader, const char* pConstantName);
+#pragma endregion 
 public:
 	static void Release_Engine();
 
@@ -127,7 +134,7 @@ private:
 	class CComponentManager*		m_pComponent_Manager =	{ nullptr };
 	class CPipeLine*				m_pPipeLine		=		{ nullptr };
 	class CPicking*					m_pPicking =			{ nullptr };
-
+	class CTarget_Manager*			m_pTarget_Manager =				{ nullptr };
 
 public:
 	virtual void Free() override;

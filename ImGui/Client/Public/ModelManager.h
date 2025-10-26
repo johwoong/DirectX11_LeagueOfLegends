@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Client_Defines.h"
 #include "Model.h"
+#include "NonAnim.h"
 
 NS_BEGIN(Client)
 

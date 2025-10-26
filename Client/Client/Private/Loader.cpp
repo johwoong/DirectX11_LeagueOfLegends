@@ -1,9 +1,13 @@
 #include "Loader.h"
 
+#include "GameInstance.h"
+
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: m_pDevice { pDevice }
 	, m_pContext { pContext }
+	, m_pGameInstance(CGameInstance::GetInstance())
 {
+	Safe_AddRef(m_pGameInstance);
 	Safe_AddRef(m_pDevice);
 	Safe_AddRef(m_pContext);
 }
@@ -42,10 +46,10 @@ HRESULT CLoader::Loading()
 
 	switch (m_eLoadingLevelID)
 	{
-	case LEVEL::LOGO:
+	case LEVEL::LEVEL_LOGO:
 		hr = Loading_For_Logo();
 		break;
-	case LEVEL::GAMEPLAY:
+	case LEVEL::LEVEL_GAMEPLAY:
 		hr = Loading_For_GamePlay();
 		break;
 	}
@@ -60,59 +64,18 @@ HRESULT CLoader::Loading()
 
 HRESULT CLoader::Loading_For_Logo()
 {	
-	lstrcpy(m_szFPS, TEXT("텍스쳐를 로딩 중 입니다."));
-	for (size_t i = 0; i < 888899999; i++)
-	{
-		int a = 10;
-	}
-	lstrcpy(m_szFPS, TEXT("모델을(를) 로딩 중 입니다."));
-	for (size_t i = 0; i < 88899999; i++)
-	{
-		int a = 10;
-	}
-	lstrcpy(m_szFPS, TEXT("ㅅㅖ이더을(를) 로딩 중 입니다."));
-	for (size_t i = 0; i < 88899999; i++)
-	{
-		int a = 10;
-	}
-	lstrcpy(m_szFPS, TEXT("객체원형을(를) 로딩 중 입니다."));
-	for (size_t i = 0; i < 88899999; i++)
-	{
-		int a = 10;
-	}
+	if (m_pGameInstance == nullptr)
+		return E_FAIL;
 
-	lstrcpy(m_szFPS, TEXT("로딩이 완료되었슴니다."));
-
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOGO, TEXT("Prototype_Component_Texture_Logo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Logo/BackGround.dds"), 1))))
+		return E_FAIL;
 	m_isFinished = true;
-
 	return S_OK;
 }
 
 HRESULT CLoader::Loading_For_GamePlay()
 {
-	lstrcpy(m_szFPS, TEXT("텍스쳐를 로딩 중 입니다."));
-	for (size_t i = 0; i < 88899999; i++)
-	{
-		int a = 10;
-	}
-	lstrcpy(m_szFPS, TEXT("모델을(를) 로딩 중 입니다."));
-	for (size_t i = 0; i < 88889999; i++)
-	{
-		int a = 10;
-	}
-	lstrcpy(m_szFPS, TEXT("ㅅㅖ이더을(를) 로딩 중 입니다."));
-	for (size_t i = 0; i < 88889999; i++)
-	{
-		int a = 10;
-	}
-	lstrcpy(m_szFPS, TEXT("객체원형을(를) 로딩 중 입니다."));
-	for (size_t i = 0; i < 88899999; i++)
-	{
-		int a = 10;
-	}
-
-	lstrcpy(m_szFPS, TEXT("로딩이 완료되었슴니다."));
-
 	m_isFinished = true;
 
 	return S_OK;
@@ -140,6 +103,7 @@ void CLoader::Free()
 
 	CloseHandle(m_hThread);
 
+	Safe_Release(m_pGameInstance);
 	Safe_Release(m_pDevice);
 	Safe_Release(m_pContext);
 

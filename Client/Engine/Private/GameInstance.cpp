@@ -11,9 +11,11 @@ CGameInstance::CGameInstance()
 	, m_pTimer_Manager(CTimer_Manager::GetInstance())
 	, m_pComponent_Manager(CComponentManager::GetInstance())
 	, m_pPipeLine(CPipeLine::GetInstance())
+	, m_pTarget_Manager(CTarget_Manager::GetInstance())
 	, m_pPicking(CPicking::GetInstance())
 {
 	Safe_AddRef(m_pPicking);
+	Safe_AddRef(m_pTarget_Manager);
 	Safe_AddRef(m_pPipeLine);
 	Safe_AddRef(m_pComponent_Manager);
 	Safe_AddRef(m_pTimer_Manager);
@@ -491,6 +493,22 @@ _vector CGameInstance::Get_RayDir()
 
 #pragma endregion
 
+#pragma region TargetManager
+ID3D11ShaderResourceView* CGameInstance::Get_BackBufferCopySRV()
+{
+	if (nullptr == m_pTarget_Manager)
+		return nullptr;
+
+	return m_pTarget_Manager->Get_BackBufferCopySRV();
+}
+HRESULT CGameInstance::Bind_RenderTarget_SRV(const _tchar* pTargetTag, CShader* pShader, const char* pConstantName)
+{
+	if (nullptr == m_pTarget_Manager)
+		return E_FAIL;
+
+	return m_pTarget_Manager->Bind_ShaderResource(pTargetTag, pShader, pConstantName);
+}
+#pragma endregion
 
 void CGameInstance::Release_Engine()
 {
@@ -504,6 +522,7 @@ void CGameInstance::Release_Engine()
 	CPipeLine::GetInstance()->DestroyInstance();
 	CTimer_Manager::GetInstance()->DestroyInstance();
 	CInput_Device::GetInstance()->DestroyInstance();
+	CTarget_Manager::GetInstance()->DestroyInstance();
 	CPicking::GetInstance()->DestroyInstance();
 	CGraphic_Device::GetInstance()->DestroyInstance();
 }
@@ -511,6 +530,7 @@ void CGameInstance::Release_Engine()
 void CGameInstance::Free()
 {	
 	Safe_Release(m_pPicking);
+	Safe_Release(m_pTarget_Manager);
 	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pComponent_Manager);
 	Safe_Release(m_pTimer_Manager);

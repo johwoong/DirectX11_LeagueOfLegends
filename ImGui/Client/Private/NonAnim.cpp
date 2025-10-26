@@ -32,7 +32,10 @@ HRESULT CNonAnim::Initialize(void* pArg)
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
 
+	if (strcmp(m_ModelDesc.pModeltag, "Picking_Symbol"))
+		CPickingMgr::GetInstance()->Add_PickingGroup(this);
 
+	m_eObjectID = OBJ_BLOCK;
 
 	if (pArg != nullptr)
 	{
@@ -46,8 +49,9 @@ HRESULT CNonAnim::Initialize(void* pArg)
 
 		if (m_ModelDesc.m_fAngle != 0)
 			m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(m_ModelDesc.m_fAngle));
-
 	}
+	
+	CModelManager::GetInstance()->Add_CreatedModel(this);
 
 	return S_OK;
 }
@@ -64,6 +68,7 @@ void CNonAnim::Late_Update(_float fTimeDelta)
 {
 	if (nullptr != m_pRenderCom)
 		m_pRenderCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
+
 	XMStoreFloat3(&m_ModelDesc.vPosition, Get_Position());
 	m_ModelDesc.vScale = Get_Scale();
 	m_ModelDesc.WorldMatrix = m_pTransformCom->Get_World();
@@ -130,31 +135,28 @@ HRESULT CNonAnim::Render()
 
 _bool CNonAnim::Picking(_float3* PickingPoint)
 {
+	CImGui_Manager::PICKING_TYPE PickingType = CImGui_Manager::GetInstance()->Get_PickingType();
+	if (PickingType == CImGui_Manager::PICKING_TERRAIN_TRANSFORM)
+		return false;
 
-	//CImgui_Manager::PICKING_TYPE PickingType = CImgui_Manager::Get_Instance()->Get_PickingType();
-	//if (PickingType == CImgui_Manager::PICKING_TERRAIN_BRUSH ||
-	//	PickingType == CImgui_Manager::PICKING_TERRAIN_TRANSFORM ||
-	//	PickingType == CImgui_Manager::PICKING_TERRAIN_SHAPE)
-	//	return false;
-
+	if (m_pModelCom->Picking(m_pTransformCom, PickingPoint))
+		return true;
 
 	return false;
 }
 
 void CNonAnim::PickingTrue()
 {
-	//CImgui_Manager::PICKING_TYPE ePickingtype = CImgui_Manager::Get_Instance()->Get_PickingType();
+	CImGui_Manager::PICKING_TYPE ePickingtype = CImGui_Manager::GetInstance()->Get_PickingType();
 
-	//switch (ePickingtype)
-	//{
-	//case Client::CImgui_Manager::PICKING_MODEL:
-	//	Set_Picked();
-	//	break;
-	//case Client::CImgui_Manager::PICKING_TERRAIN_SHAPE:
-	//	break;
-	//default:
-	//	break;
-	//}
+	switch (ePickingtype)
+	{
+	case Client::CImGui_Manager::PICKING_MODEL:
+		Set_Picked();
+		break;
+	default:
+		break;
+	}
 }
 
 void CNonAnim::Set_Picked()
@@ -220,22 +222,15 @@ HRESULT CNonAnim::SetUp_ShaderResources()
 {
 	if (!m_pShaderCom) return E_FAIL;
 
-	// World
-	_float4x4 world = m_pTransformCom->Get_World();
-	if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &world, sizeof(_float4x4))))
+	const _float4x4& worldTP = m_pTransformCom->Get_World_TP();
+	if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &worldTP, sizeof(_float4x4))))
 		return E_FAIL;
 
-	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-
-	// View
-	_float4x4 view = pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
-	if (FAILED(m_pShaderCom->Set_RawValue("g_ViewMatrix", &view, sizeof(_float4x4))))
-		return E_FAIL;
-
-	// Proj
-	_float4x4 proj = pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
-	if (FAILED(m_pShaderCom->Set_RawValue("g_ProjMatrix", &proj, sizeof(_float4x4))))
-		return E_FAIL;
+	CGameInstance* pGI = CGameInstance::GetInstance();
+	const _float4x4& viewTP = pGI->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
+	const _float4x4& projTP = pGI->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
+	if (FAILED(m_pShaderCom->Set_RawValue("g_ViewMatrix", &viewTP, sizeof(_float4x4)))) return E_FAIL;
+	if (FAILED(m_pShaderCom->Set_RawValue("g_ProjMatrix", &projTP, sizeof(_float4x4)))) return E_FAIL;
 
 	return S_OK;
 }

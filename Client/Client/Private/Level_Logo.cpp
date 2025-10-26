@@ -3,6 +3,8 @@
 
 #include "Level_Loading.h"
 
+
+
 CLevel_Logo::CLevel_Logo(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
 {
@@ -10,6 +12,8 @@ CLevel_Logo::CLevel_Logo(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 
 HRESULT CLevel_Logo::Initialize()
 {
+	if (FAILED(Ready_Layer_BackGround(TEXT("Layer_BackGround"))))
+		return E_FAIL;
 
 
     return S_OK;
@@ -19,19 +23,22 @@ void CLevel_Logo::Update(_float fTimeDelta)
 {
 	if (GetKeyState(VK_SPACE) & 0x8000)
 	{
-		if (FAILED(m_pGameInstance->Change_Level(ENUM_TO_UINT(LEVEL::LOADING), CLevel_Loading::Create(m_pDevice, m_pContext, LEVEL::GAMEPLAY))))
+		if (FAILED(m_pGameInstance->Open_Level(LEVEL_LOADING, CLevel_Loading::Create(m_pDevice, m_pContext, LEVEL_GAMEPLAY))))
 			return;
 	}
 
 }
 
-HRESULT CLevel_Logo::Render()
+void CLevel_Logo::Late_Update(_float fTimeDelta)
 {
-#ifdef _DEBUG
-	SetWindowText(g_hWnd, TEXT("로고레벨입니다."));
-#endif
+	__super::Late_Update(fTimeDelta);
+	
+	SetWindowText(g_hWnd, TEXT("로고 레벨"));
+}
 
-    return S_OK;
+HRESULT CLevel_Logo::Ready_Layer_BackGround(const _tchar* pLayerTag)
+{
+	return S_OK;
 }
 
 CLevel_Logo* CLevel_Logo::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

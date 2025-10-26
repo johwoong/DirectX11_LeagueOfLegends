@@ -5,6 +5,7 @@
 
 NS_BEGIN(Engine)
 class CGameInstance;
+class CRenderer;
 NS_END
 
 NS_BEGIN(Client)
@@ -22,12 +23,21 @@ public:
 	HRESULT Render();
 
 private:
-	ID3D11Device* m_pDevice = { nullptr };
-	ID3D11DeviceContext* m_pContext = { nullptr };
-	CGameInstance* m_pGameInstance = { nullptr };
+	ID3D11Device* m_pDevice =				{ nullptr };
+	ID3D11DeviceContext* m_pContext =		{ nullptr };
+	CGameInstance* m_pGameInstance =		{ nullptr };
+	CRenderer* m_pRenderer =				{ nullptr };
+
+
+
+private:
+	_uint					m_iNumRender = 0;
+	_tchar					m_szFPS[MAX_PATH] = TEXT("");
+	_float					m_fTimeAcc = 0.f;
 
 private:
 	HRESULT Start_Level(LEVEL eLevelID);
+	HRESULT Ready_Prototype_Component();
 
 public:
 	static CMainApp* Create();

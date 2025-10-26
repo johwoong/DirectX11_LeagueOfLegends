@@ -40,7 +40,6 @@ void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 {
 	__super::Late_Update(fTimeDelta);
 	CImGui_Manager::GetInstance()->Render();
-	SetWindowText(g_hWnd, TEXT("게임플레이레벨입니다/"));
 }
 
 HRESULT CLevel_GamePlay::Ready_Lights()

@@ -73,18 +73,22 @@ static fs::path FindAnyTexture(const fs::path& folder) {
     return fallback; // 없으면 빈 경로
 }
 
-// ============================= Model.dat =============================
+
 static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDir)
 {
-    FLOAT4X4 pivot{}; pivot.m[0]=pivot.m[5]=pivot.m[10]=0.001f; pivot.m[15]=1.f;
+    // ?? Pivot (모델 크기 정상화)
+    FLOAT4X4 pivot{};
+    pivot.m[0] = pivot.m[5] = pivot.m[10] = 0.001f; // ? 0.05로 확대
+    pivot.m[15] = 1.f;
     write_n(fp, &pivot, sizeof(pivot));
 
-    unsigned numMeshes = scene->mNumMeshes;
+    unsigned numMeshes = scene->mNumMeshes; 
     write_n(fp, &numMeshes, sizeof(numMeshes));
 
-    for (unsigned mi=0; mi<numMeshes; ++mi) {
+    for (unsigned mi = 0; mi < numMeshes; ++mi)
+    {
         const aiMesh* mesh = scene->mMeshes[mi];
-        string meshName = mesh->mName.length ? mesh->mName.C_Str() : ("Mesh_"+to_string(mi));
+        string meshName = mesh->mName.length ? mesh->mName.C_Str() : ("Mesh_" + to_string(mi));
         put_str_fixed(fp, meshName);
 
         unsigned matIndex = mesh->mMaterialIndex;
@@ -94,49 +98,100 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
         write_n(fp, &numVerts, sizeof(numVerts));
 
         vector<VTXANIMMODEL> verts(numVerts);
-        for (unsigned v=0; v<numVerts; ++v) {
+        for (unsigned v = 0; v < numVerts; ++v)
+        {
             verts[v].vPosition = { mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z };
-            verts[v].vNormal   = mesh->HasNormals() ? float3{mesh->mNormals[v].x,mesh->mNormals[v].y,mesh->mNormals[v].z} : float3{0,1,0};
-            verts[v].vTexUV    = mesh->HasTextureCoords(0) ? float2{ (float)mesh->mTextureCoords[0][v].x, (float)mesh->mTextureCoords[0][v].y } : float2{0,0};
-            verts[v].vTangent  = mesh->HasTangentsAndBitangents() ? float3{mesh->mTangents[v].x,mesh->mTangents[v].y,mesh->mTangents[v].z} : float3{1,0,0};
-            for(int i=0;i<4;++i){ verts[v].iBlendIndices[i]=0; verts[v].fBlendWeights[i]=0.f; }
+            verts[v].vNormal = mesh->HasNormals() ? float3{ mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z } : float3{ 0,1,0 };
+            verts[v].vTexUV = mesh->HasTextureCoords(0) ? float2{ (float)mesh->mTextureCoords[0][v].x, (float)mesh->mTextureCoords[0][v].y } : float2{ 0,0 };
+            verts[v].vTangent = mesh->HasTangentsAndBitangents() ? float3{ mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z } : float3{ 1,0,0 };
+
+            for (int i = 0; i < 4; ++i)
+            {
+                verts[v].iBlendIndices[i] = 0;
+                verts[v].fBlendWeights[i] = 0.f;
+            }
         }
-        // 본 가중치 기록
-        for (unsigned b=0; b<mesh->mNumBones; ++b) {
+
+        // ?? 본 가중치
+        for (unsigned b = 0; b < mesh->mNumBones; ++b)
+        {
             const aiBone* bone = mesh->mBones[b];
-            for (unsigned w=0; w<bone->mNumWeights; ++w) {
+            for (unsigned w = 0; w < bone->mNumWeights; ++w)
+            {
                 unsigned vId = bone->mWeights[w].mVertexId;
                 float weight = bone->mWeights[w].mWeight;
-                for (int i=0;i<4;++i) if (verts[vId].fBlendWeights[i]==0.f) { verts[vId].iBlendIndices[i]=b; verts[vId].fBlendWeights[i]=weight; break; }
+
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (verts[vId].fBlendWeights[i] == 0.f)
+                    {
+                        verts[vId].iBlendIndices[i] = b;
+                        verts[vId].fBlendWeights[i] = weight;
+                        break;
+                    }
+                }
             }
         }
-        write_n(fp, verts.data(), sizeof(VTXANIMMODEL)*verts.size());
 
-        unsigned numBones = mesh->mNumBones; write_n(fp, &numBones, sizeof(numBones));
+        write_n(fp, verts.data(), sizeof(VTXANIMMODEL) * verts.size());
 
-        unsigned numFaces = mesh->mNumFaces; write_n(fp, &numFaces, sizeof(numFaces));
+        unsigned numBones = mesh->mNumBones;
+        write_n(fp, &numBones, sizeof(numBones));
+
+        unsigned numFaces = mesh->mNumFaces;
+        write_n(fp, &numFaces, sizeof(numFaces));
+
         vector<FACEINDICES32> faces(numFaces);
-        for (unsigned f=0; f<numFaces; ++f)
+        for (unsigned f = 0; f < numFaces; ++f)
             faces[f] = { mesh->mFaces[f].mIndices[0], mesh->mFaces[f].mIndices[1], mesh->mFaces[f].mIndices[2] };
-        write_n(fp, faces.data(), sizeof(FACEINDICES32)*faces.size());
+        write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
     }
 
-    // 머티리얼: 머티리얼에 텍스처 있으면 그거, 없으면 폴더에서 자동 검색
-    unsigned numMats = scene->mNumMaterials; write_n(fp, &numMats, sizeof(numMats));
-    fs::path autoTex = FindAnyTexture(texDir);
-    string autoTexStr = autoTex.empty() ? (texDir / L"default_diffuse.png").string() : autoTex.string();
+    // ?? 머티리얼 (AI_TEXTURE_TYPE_MAX 구조 유지)
+    unsigned numMats = scene->mNumMaterials;
+    write_n(fp, &numMats, sizeof(numMats));
 
-    for(unsigned mi=0; mi<numMats; ++mi){
+    fs::path autoTex = FindAnyTexture(texDir);
+    if (!autoTex.empty() && (autoTex.extension() == ".png" || autoTex.extension() == ".jpg" || autoTex.extension() == ".jpeg" || autoTex.extension() == ".tga"))
+        autoTex.replace_extension(".dds");
+    string autoTexStr = autoTex.empty()
+        ? (texDir / L"default_diffuse.dds").string()
+        : autoTex.string();
+
+    for (unsigned mi = 0; mi < numMats; ++mi)
+    {
         aiMaterial* mat = scene->mMaterials[mi];
-        for(int t=0; t<AI_TEXTURE_TYPE_MAX; ++t){
-            aiString tex; char path[MAX_PATH]{};
-            if (mat->GetTexture((aiTextureType)t, 0, &tex) == AI_SUCCESS) {
+        for (int t = 0; t < AI_TEXTURE_TYPE_MAX; ++t)
+        {
+            aiString tex;
+            char path[MAX_PATH]{};
+
+            if (mat->GetTexture((aiTextureType)t, 0, &tex) == AI_SUCCESS)
+            {
                 fs::path texFile = texDir / fs::path(tex.C_Str()).filename();
-                strncpy_s(path, texFile.string().c_str(), MAX_PATH-1);
-            } else {
-                strncpy_s(path, autoTexStr.c_str(), MAX_PATH-1);
+
+                // ? 확장자 강제 .dds
+                texFile.replace_extension(".dds");
+
+                // ? 없으면 png fallback
+                if (!fs::exists(texFile))
+                {
+                    fs::path alt = texDir / fs::path(tex.C_Str()).filename();
+                    alt.replace_extension(".png");
+                    if (fs::exists(alt))
+                        texFile = alt;
+                    else if (!autoTex.empty())
+                        texFile = autoTex;
+                }
+
+                strncpy_s(path, texFile.string().c_str(), MAX_PATH - 1);
             }
-            write_n(fp, path, sizeof(path));
+            else
+            {
+                strncpy_s(path, autoTexStr.c_str(), MAX_PATH - 1);
+            }
+
+            write_n(fp, path, sizeof(path)); // ? 반드시 AI_TEXTURE_TYPE_MAX번 기록
         }
     }
 }

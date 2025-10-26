@@ -1,21 +1,24 @@
 #pragma once
+#pragma warning (disable : 4996)
+namespace Client
+{
+	const unsigned int g_WinSizeX = 1280;
+	const unsigned int g_WinSizeY = 720;
 
-#include <windows.h>
+	enum LEVEL { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
+
+
+
+}
+
 #include <process.h>
 
+#include "Windows.h"
 extern HWND g_hWnd;
 extern HINSTANCE g_hInst;
 
-namespace Client
-{
-	static const unsigned int g_iWinSizeX = 1280;
-	static const unsigned int g_iWinSizeY = 720;
-
-	enum class LEVEL { STATIC, LOADING, LOGO, GAMEPLAY, END };
-}
-
-using namespace std;
 using namespace Client;
+using namespace std;
 
 
 

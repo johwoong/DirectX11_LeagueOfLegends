@@ -165,6 +165,7 @@
     <ClInclude Include="..\Public\BackGround.h" />
     <ClInclude Include="..\Public\Anim.h" />
     <ClInclude Include="..\Public\imgui.h" />
+    <ClInclude Include="..\Public\ImGuizmo.h" />
     <ClInclude Include="..\Public\MainApp.h" />
     <ClInclude Include="..\Public\imconfig.h" />
     <ClInclude Include="..\Public\imgui_impl_dx11.h" />
@@ -196,6 +197,7 @@
     <ClCompile Include="..\Private\Camera_Manager.cpp" />
     <ClCompile Include="..\Private\BackGround.cpp" />
     <ClCompile Include="..\Private\Anim.cpp" />
+    <ClCompile Include="..\Private\ImGuizmo.cpp" />
     <ClCompile Include="..\Private\MainApp.cpp" />
     <ClCompile Include="..\Private\imgui.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</CompileAs>

@@ -3,7 +3,6 @@
 #include "GameInstance.h"
 #include "Model.h"
 #include "GameObject.h"
-#include "Actor.h"
 #include <filesystem>
 
 
@@ -59,8 +58,8 @@ void CModelManager::Add_FileName(const _tchar* Layertag, const _tchar* FileName)
 
 void CModelManager::Set_AllPickedFalse()
 {
-    //for (auto& pGameObject : m_CreatedModel)
-    //    dynamic_cast<CActor*>(pGameObject)->Set_Picked(false);
+    for (auto& pGameObject : m_CreatedModel)
+        dynamic_cast<CActor*>(pGameObject)->Set_Picked(false);
 }
 
 const _tchar* CModelManager::Find_ModelTag(const _tchar* ModelTag)

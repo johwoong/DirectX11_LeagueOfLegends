@@ -46,8 +46,20 @@ void CMainApp::Update(_float fTimeDelta)
 
 	m_pGameInstance->Update_Engine(fTimeDelta);
 
+
 #ifdef _DEBUG
+	// 누적 시간 계산 (1초당 FPS 갱신)
 	m_fTimeAcc += fTimeDelta;
+	m_iNumRender++;
+
+	if (m_fTimeAcc >= 1.0f)
+	{
+		swprintf_s(m_szFPS, L"FPS : %d", m_iNumRender);
+		SetWindowText(g_hWnd, m_szFPS);
+
+		m_fTimeAcc = 0.f;
+		m_iNumRender = 0;
+	}
 #endif
 
 }

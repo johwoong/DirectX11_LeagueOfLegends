@@ -41,6 +41,7 @@ using namespace DirectX;
 #include <algorithm>
 #include <functional>
 #include <string>
+#include <iostream>
 #include <sstream>
 using namespace std;
 

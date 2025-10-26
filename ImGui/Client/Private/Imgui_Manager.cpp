@@ -349,23 +349,6 @@ void CImGui_Manager::ShowPickedObj()
 	ImGui::Text("Rotation axis"); ImGui::SameLine();
 
 	ImGui::DragFloat3("##Setting RotAxis", Rotation);
-	if (ImGui::Button("Random RotX"))
-	{
-
-		Rotation[0] = rand() % 180;
-	}
-
-	if (ImGui::Button("Random RotY"))
-	{
-
-		Rotation[1] = rand() % 180;
-	}
-
-	if (ImGui::Button("Random RotZ"))
-	{
-
-		Rotation[2] = rand() % 180;
-	}
 
 	m_vPickedRotAxis = _float3(Rotation[0], Rotation[1], Rotation[2]);
 
@@ -719,17 +702,6 @@ void CImGui_Manager::Set_Object_Map()
 	ImGui::Text("Rotation axis"); ImGui::SameLine();
 	ImGui::DragFloat3("##2", Rotation);
 
-	ImGui::Checkbox("RandomRotX", &m_bRandomX);
-	ImGui::Checkbox("RandomRotY", &m_bRandomY);
-	ImGui::Checkbox("RandomRotZ", &m_bRandomZ);
-
-	if (m_bRandomX == true)
-		Rotation[0] = rand() % 180;
-	if (m_bRandomY == true)
-		Rotation[1] = rand() % 180;
-	if (m_bRandomZ == true)
-		Rotation[2] = rand() % 180;
-
 	m_InitDesc.vRotation = _float3(Rotation[0], Rotation[1], Rotation[2]);
 }
 
@@ -968,7 +940,6 @@ void CImGui_Manager::Show_ModelList()
 
 void CImGui_Manager::Show_CurrentModelList()
 {
-	//vector<class CNonAnim*> vecCreatedModel = m_pModel_Manager->Get_CreatedModel();
 	vector<class CNonAnim*> vecCreatedModel = m_pModel_Manager->Get_CreatedModel();
 
 

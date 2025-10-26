@@ -96,9 +96,6 @@ private:
 	_int									m_iBmpTerrainNum = 0;
 	_float									m_fDist = 1.f;
 	_float3									m_vfOffset = _float3(0.f, 0.f, 0.f);
-	_bool									m_bRandomX = false;
-	_bool									m_bRandomY = false;
-	_bool									m_bRandomZ = false;
 
 	/* For Picking */
 	_float3									m_vPickedObjPos = _float3(1.f, 1.f, 1.f);
@@ -170,6 +167,12 @@ public:
 	_uint m_iSelectedColorCurve = 0, m_iSelectedVelocityCurve = 0, m_iSelectedSizeCurve = 0, m_iSelectedScaleCurve = 0, m_iSelectedAlphaCurve = 0,
 		m_iSelectedTurnVelocityCurve = 0, m_iSelectedNoisePowerCurve = 0, m_iSelectedDistortPowerCurve = 0;
 	_float m_fEditorAlpha = 0.9f;
+	private:
+		bool m_bShowGizmo = true;
+		bool m_bShowConsole = true;
+		bool m_bShowHierarchy = true;
+		bool m_bShowInspector = true;
+
 public:
 	virtual void Free() override;
 };
