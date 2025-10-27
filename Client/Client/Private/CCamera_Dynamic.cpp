@@ -99,9 +99,77 @@ void CCamera_Dynamic::Set_CamMode(CAM_MODE eCamMode)
 	m_vInitPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
 }
 
+void CCamera_Dynamic::Debug_Camera(_float fTimeDelta)
+{
+	if (m_pGameInstance->Key_Pressing(DIK_UP))
+		m_pTransformCom->Move_Straight(fTimeDelta * 2);
+	if (m_pGameInstance->Key_Pressing(DIK_DOWN))
+		m_pTransformCom->Move_BackWard(fTimeDelta * 2);
+	if (m_pGameInstance->Key_Pressing(DIK_LEFT))
+		m_pTransformCom->Move_Left(fTimeDelta * 2);
+	if (m_pGameInstance->Key_Pressing(DIK_RIGHT))
+		m_pTransformCom->Move_Right(fTimeDelta * 2);
+
+	_long MouseMove = 0;
+	if (MouseMove = m_pGameInstance->Get_DIMMoveState(DIMM_X))
+		m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), fTimeDelta * MouseMove * 0.1f);
+	if (MouseMove = m_pGameInstance->Get_DIMMoveState(DIMM_Y))
+		m_pTransformCom->Turn(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), fTimeDelta * MouseMove * 0.1f);
+}
+
+void CCamera_Dynamic::Game_Camera(_float fTimeDelta)
+{
+
+}
+
 void CCamera_Dynamic::Set_Position(_vector vPosition)
 {
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
-	
+	m_OriginPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
 }
+
+void CCamera_Dynamic::Set_Zoom(_bool type, _float fZoomDistance, _float fZoomSpeed)
+{
+	m_bZoom = type;
+	
+	if (m_bZoom)
+	{
+		m_fZoomDistance = fZoomDistance;
+		m_fZoomSpeed = fZoomSpeed;
+	}
+}
+
+CCamera_Dynamic* CCamera_Dynamic::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+{
+	CCamera_Dynamic* pInstance = new CCamera_Dynamic(pDevice, pContext);
+
+	if (FAILED(pInstance->Initialize_Prototype()))
+	{
+		MSG_BOX("Failed to Created : CCamera_Dynamic");
+		Safe_Release(pInstance);
+	}
+
+	return pInstance;
+}
+
+CGameObject* CCamera_Dynamic::Clone(void* pArg)
+{
+	CCamera_Dynamic* pInstance = new CCamera_Dynamic(*this);
+
+	if (FAILED(pInstance->Initialize(pArg)))
+	{
+		MSG_BOX("Failed to Cloned : CCamera_Dynamic");
+		Safe_Release(pInstance);
+	}
+
+	return pInstance;
+}
+
+void CCamera_Dynamic::Free()
+{
+	__super::Free();
+}
+
+
+
 

@@ -29,6 +29,10 @@ public:
 	virtual HRESULT Render();
 
 public:
+	virtual _bool Picking(_float3* PickingPoint) { return false; }
+	virtual void PickingTrue() {};
+
+public:
 	_float3 Get_Scale() { return m_vScale; }
 	CTransform* Get_Transform() { return m_pTransformCom; }
 	_vector Get_TransformState(CTransform::STATE eState);

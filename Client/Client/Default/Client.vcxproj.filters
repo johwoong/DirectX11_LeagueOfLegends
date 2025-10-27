@@ -59,7 +59,13 @@
       <Filter>02. GameObjects\01. Player\00. Champion\00. Ezreal</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\CCamera_Dynamic.h">
-      <Filter>02. GameObjects\05. Camera</Filter>
+      <Filter>03. Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Terrian.h">
+      <Filter>02. GameObjects\03. NonAnim\01. Terrian</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PickingManager.h">
+      <Filter>04. PickingManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,8 +134,14 @@
     <Filter Include="02. GameObjects\01. Player\00. Champion\00. Ezreal">
       <UniqueIdentifier>{18ee8c1c-af76-425b-a0ed-e2c6943e11c9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\05. Camera">
+    <Filter Include="02. GameObjects\03. NonAnim\01. Terrian">
+      <UniqueIdentifier>{70e15da3-4527-4ac8-b978-c4a99f1515a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Camera">
       <UniqueIdentifier>{dc9ab2b6-d073-4443-a7b4-952dd9fb10ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. PickingManager">
+      <UniqueIdentifier>{1902d77a-0c7c-4b48-b91c-40a48938c7e5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -179,7 +191,13 @@
       <Filter>02. GameObjects\01. Player\00. Champion\00. Ezreal</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp">
-      <Filter>02. GameObjects\05. Camera</Filter>
+      <Filter>03. Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Terrian.cpp">
+      <Filter>02. GameObjects\03. NonAnim\01. Terrian</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PickingManager.cpp">
+      <Filter>04. PickingManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

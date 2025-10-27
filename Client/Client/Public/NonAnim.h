@@ -24,7 +24,6 @@ public:
 	const NONANIMDESC Get_ModelDesc() { return m_ModelDesc; }
 
 
-
 protected:
 	CModel* m_pModelCom = { nullptr };
 	NONANIMDESC m_ModelDesc;

@@ -62,6 +62,11 @@ private:
 
 	_vector		m_vInitPos = { 0.f, 0.f, 0.f, 0.f };
 
+	// Zoom
+	_bool m_bZoom = false;
+	_float m_fZoomOffset = 0.f;
+	_float m_fZoomDistance = 0.f;
+	_float m_fZoomSpeed = 0.f;
 
 public:
 	static CCamera_Dynamic* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

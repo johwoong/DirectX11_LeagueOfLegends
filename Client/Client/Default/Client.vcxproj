@@ -162,6 +162,7 @@
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
     <ClInclude Include="..\Public\Champion.h" />
     <ClInclude Include="..\Public\Ezreal.h" />
+    <ClInclude Include="..\Public\PickingManager.h" />
     <ClInclude Include="..\Public\Player.h" />
     <ClInclude Include="..\Public\Anim.h" />
     <ClInclude Include="..\Public\Actor.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="..\public\Loader.h" />
     <ClInclude Include="..\public\MainApp.h" />
     <ClInclude Include="..\Public\NonAnim.h" />
+    <ClInclude Include="..\Public\Terrian.h" />
     <ClInclude Include="..\Public\UI_BackGround.h" />
     <ClInclude Include="..\Public\UI_Base.h" />
     <ClInclude Include="Client.h" />
@@ -184,6 +186,7 @@
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
     <ClCompile Include="..\Private\Champion.cpp" />
     <ClCompile Include="..\Private\Ezreal.cpp" />
+    <ClCompile Include="..\Private\PickingManager.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />
     <ClCompile Include="..\Private\Anim.cpp" />
     <ClCompile Include="..\Private\Actor.cpp" />
@@ -193,6 +196,7 @@
     <ClCompile Include="..\private\Loader.cpp" />
     <ClCompile Include="..\private\MainApp.cpp" />
     <ClCompile Include="..\Private\NonAnim.cpp" />
+    <ClCompile Include="..\Private\Terrian.cpp" />
     <ClCompile Include="..\Private\UI_BackGround.cpp" />
     <ClCompile Include="..\Private\UI_Base.cpp" />
     <ClCompile Include="Client.cpp" />
