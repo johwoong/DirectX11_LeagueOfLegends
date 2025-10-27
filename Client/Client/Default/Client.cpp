@@ -65,6 +65,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_60"))))
         return FALSE;
+    if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_Camera"))))
+        return FALSE;
 
     // 기본 메시지 루프입니다:
     _float          fTimeAcc = { };
@@ -90,6 +92,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         if (fTimeAcc >= 1.f / 60.0f)
         {
             pGameInstance->Update_TimeDelta(TEXT("Timer_60"));
+            pGameInstance->Update_TimeDelta(TEXT("Timer_Camera"));
 
             pMainApp->Update(pGameInstance->Get_TimeDelta(TEXT("Timer_60")));
             pMainApp->Render();

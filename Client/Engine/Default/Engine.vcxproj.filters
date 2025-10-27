@@ -269,9 +269,6 @@
     <ClCompile Include="..\private\Level.cpp">
       <Filter>01.Utility\01.Levels</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\GameObject.cpp">
-      <Filter>01.Utility\02. GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Component.cpp">
       <Filter>01.Utility\03. Components</Filter>
     </ClCompile>
@@ -355,6 +352,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Terrian.cpp">
       <Filter>01.Utility\03. Components\02. VIBuffer\03. Terrian</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\GameObject.cpp">
+      <Filter>01.Utility\02. GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

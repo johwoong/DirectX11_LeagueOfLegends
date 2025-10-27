@@ -1,0 +1,107 @@
+#include "CCamera_Dynamic.h"
+#include "GameInstance.h"
+#include "Player.h"
+
+
+CCamera_Dynamic::CCamera_Dynamic(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+	: CCamera(pDevice, pContext)
+{
+
+}
+
+CCamera_Dynamic::CCamera_Dynamic(const CCamera_Dynamic& rhs)
+	: CCamera(rhs)
+{
+
+}
+
+HRESULT CCamera_Dynamic::Initialize_Prototype()
+{
+	if (FAILED(__super::Initialize_Prototype()))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CCamera_Dynamic::Initialize(void* pArg)
+{
+	if (FAILED(__super::Initialize(&((CAMERADESC_DERIVED*)pArg)->CameraDesc)))
+		return E_FAIL;
+
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, XMLoadFloat4(&((CAMERADESC_DERIVED*)pArg)->InitPostion));
+	m_OriginPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	return S_OK;
+}
+
+int CCamera_Dynamic::Update(_float fTimeDelta)
+{
+	__super::Update(fTimeDelta);
+	
+	_float fTime = CGameInstance::GetInstance()->Get_TimeDelta(TEXT("Timer_Camera"));
+
+	__super::Update(fTime);
+
+	if (CGameInstance::GetInstance()->Key_Up(DIK_F1))
+	{
+		if (m_eCamMode != CAM_DEBUG)
+		{
+			m_ePreCamMode = m_eCamMode;
+			m_eCamMode = CAM_DEBUG;
+		}
+		else
+		{
+			m_eCamMode = m_ePreCamMode;
+			m_ePreCamMode = CAM_DEBUG;
+		}
+	}
+
+	switch (m_eCamMode)
+	{
+	case Client::CCamera_Dynamic::CAM_GAME:
+		Game_Camera(fTime);
+		break;
+	case Client::CCamera_Dynamic::CAM_DEBUG:
+		Debug_Camera(fTime);
+		break;
+	}
+
+	if (FAILED(Bind_OnPipeLine()))
+		return E_FAIL;
+}
+
+void CCamera_Dynamic::Late_Update(_float fTimeDelta)
+{
+	_float fTime = CGameInstance::GetInstance()->Get_TimeDelta(TEXT("Timer_Camera"));
+
+
+	__super::Late_Update(fTime);
+}
+
+HRESULT CCamera_Dynamic::Render()
+{
+	if (FAILED(__super::Render()))
+		return E_FAIL;
+
+
+	return S_OK;
+}
+
+void CCamera_Dynamic::Set_CamMode(CAM_MODE eCamMode)
+{
+	if (m_eCamMode == eCamMode)
+		return;
+
+	if (m_ePreCamMode != m_eCamMode)
+		m_ePreCamMode = m_eCamMode;
+
+	// 플레이어와 카메라의 위치 계산
+	m_eCamMode = eCamMode;
+	m_vInitPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+}
+
+void CCamera_Dynamic::Set_Position(_vector vPosition)
+{
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
+	
+}
+

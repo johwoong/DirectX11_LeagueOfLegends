@@ -45,7 +45,7 @@ public:
 	virtual HRESULT Initialize_Prototype(TYPE eModelType, const char* pModelFilePath, _fmatrix PivotMatrix);
 	virtual HRESULT Instance_Initialize_Prototype(TYPE eModelType, const char* pModelFilePath, const char* pDataFilePath, _fmatrix PivotMatrix);
 	virtual HRESULT Initialize(void* pArg);
-
+	 
 public:
 	HRESULT SetUp_Material(class CShader* pShader, const char* pConstantName, _uint iMeshIndex, aiTextureType eType, _uint TextureNum = 0);
 	_bool Play_Animation(_float fTimeDelta, _bool isLoop = true, const char* pBoneName = nullptr, _float fInterpolatonTime = 0.2f);

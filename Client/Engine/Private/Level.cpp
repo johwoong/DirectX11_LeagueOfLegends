@@ -12,7 +12,7 @@ CLevel::CLevel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 HRESULT CLevel::Initialize()
 {
 	return S_OK;
-}
+} 
 
 void CLevel::Update(_float fTimeDelta)
 {

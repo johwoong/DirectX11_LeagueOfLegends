@@ -1,5 +1,8 @@
 #include "UI_BackGround.h"
 #include "GameInstance.h"
+#include "Champion.h"
+#include "NonAnim.h"
+
 
 CUI_BackGround::CUI_BackGround(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CUI_Base(pDevice, pContext)
@@ -10,6 +13,7 @@ CUI_BackGround::CUI_BackGround(const CUI_BackGround& rhs)
     : CUI_Base(rhs)
 {
 }
+
 
 HRESULT CUI_BackGround::Initialize_Prototype()
 {
@@ -70,6 +74,7 @@ HRESULT CUI_BackGround::Render()
     return S_OK;
 }
 
+
 HRESULT CUI_BackGround::Ready_Components(void* pArg)
 {
     // Renderer
@@ -128,6 +133,7 @@ CUI_BackGround* CUI_BackGround::Create(ID3D11Device* pDevice, ID3D11DeviceContex
     return pInstance;
 }
 
+
 CGameObject* CUI_BackGround::Clone(void* pArg)
 {
     CUI_BackGround* pInstance = new CUI_BackGround(*this);
@@ -138,6 +144,8 @@ CGameObject* CUI_BackGround::Clone(void* pArg)
     }
     return pInstance;
 }
+
+
 
 void CUI_BackGround::Free()
 {

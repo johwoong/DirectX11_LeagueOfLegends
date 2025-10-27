@@ -65,6 +65,9 @@ void CUI_Base::SetUp_BillBoard()
 	m_pTransformCom->Set_State(CTransform::STATE_LOOK, XMVector3Normalize(vLook) * Get_Scale_float3().z);
 }
 
+
+
+
 void CUI_Base::Set_Scale(_float3 vScale)
 {
 	m_vScale = vScale;

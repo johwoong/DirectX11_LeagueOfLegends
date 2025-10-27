@@ -7,8 +7,10 @@ namespace Client
 
 	enum LEVEL { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
 
+	// SHADER 
+	enum SHADER_NONANIMID {SHADER_NOANIM_DEFAULT};
 
-
+	
 }
 
 #include <process.h>

@@ -54,17 +54,17 @@ HRESULT CMainApp::Render()
 
 	m_pRenderer->Render_GameObjects();
 
-	//++m_iNumRender;
-	//if (m_fTimeAcc > 1.0f)
-	//{
-	//	wchar_t szText[128];
-	//	swprintf_s(szText, L"FPS : %d", m_iNumRender);
+	++m_iNumRender;
+	if (m_fTimeAcc > 1.0f)
+	{
+		wchar_t szText[128];
+		swprintf_s(szText, L"FPS : %d", m_iNumRender);
 
-	//	SetWindowText(g_hWnd, szText);
+		SetWindowText(g_hWnd, szText);
 
-	//	m_fTimeAcc = 0.f;
-	//	m_iNumRender = 0;
-	//}
+		m_fTimeAcc = 0.f;
+		m_iNumRender = 0;
+	}
 
 	m_pGameInstance->Present();
 

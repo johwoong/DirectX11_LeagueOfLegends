@@ -40,6 +40,27 @@
     <ClInclude Include="stdafx.h">
       <Filter>98.Default</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Actor.h">
+      <Filter>02. GameObjects\00. Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Player.h">
+      <Filter>02. GameObjects\01. Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\NonAnim.h">
+      <Filter>02. GameObjects\03. NonAnim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Anim.h">
+      <Filter>02. GameObjects\04. Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Champion.h">
+      <Filter>02. GameObjects\01. Player\00. Champion</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Ezreal.h">
+      <Filter>02. GameObjects\01. Player\00. Champion\00. Ezreal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CCamera_Dynamic.h">
+      <Filter>02. GameObjects\05. Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -77,12 +98,6 @@
     <Filter Include="02. GameObjects">
       <UniqueIdentifier>{b45ac153-307b-40b1-b011-4acca8f3a12f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\00. Base">
-      <UniqueIdentifier>{cd51af7c-274a-4ffa-b8cf-1aa2c30dabc1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\01. Actor">
-      <UniqueIdentifier>{da7f9dda-c879-4f5a-a024-72d064905f87}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects\02. UI">
       <UniqueIdentifier>{29eeaa24-460e-4799-8f0b-2763223bd21e}</UniqueIdentifier>
     </Filter>
@@ -94,6 +109,27 @@
     </Filter>
     <Filter Include="97. ShaderFiles">
       <UniqueIdentifier>{acceb22e-8979-4f7a-939e-28cc06a5a476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\03. NonAnim">
+      <UniqueIdentifier>{72368801-c3a9-419f-8476-3a10cea71ca2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\04. Anim">
+      <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor">
+      <UniqueIdentifier>{cd51af7c-274a-4ffa-b8cf-1aa2c30dabc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\01. Player">
+      <UniqueIdentifier>{da7f9dda-c879-4f5a-a024-72d064905f87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\01. Player\00. Champion">
+      <UniqueIdentifier>{0f1584be-ac7f-4f7c-a7c2-a983b529044a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\01. Player\00. Champion\00. Ezreal">
+      <UniqueIdentifier>{18ee8c1c-af76-425b-a0ed-e2c6943e11c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Camera">
+      <UniqueIdentifier>{dc9ab2b6-d073-4443-a7b4-952dd9fb10ea}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +159,27 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>98.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Actor.cpp">
+      <Filter>02. GameObjects\00. Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Player.cpp">
+      <Filter>02. GameObjects\01. Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\NonAnim.cpp">
+      <Filter>02. GameObjects\03. NonAnim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Anim.cpp">
+      <Filter>02. GameObjects\04. Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Champion.cpp">
+      <Filter>02. GameObjects\01. Player\00. Champion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Ezreal.cpp">
+      <Filter>02. GameObjects\01. Player\00. Champion\00. Ezreal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CCamera_Dynamic.cpp">
+      <Filter>02. GameObjects\05. Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -20,7 +20,6 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 {
-	SetWindowText(g_hWnd, TEXT("¼ÒÈ¯»çÀÇ Çù°î"));
 }
 
 HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)

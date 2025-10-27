@@ -81,7 +81,7 @@ void CPicking::Transform_ToLocalSpace(CTransform* pTransform)
 	vRayPos = XMVector3TransformCoord(vRayPos, WorldMatrixInverse);
 	vRayDir = XMVector3TransformNormal(vRayDir, WorldMatrixInverse); // 방향은 Normal 변환!
 	vRayDir = XMVector3Normalize(vRayDir);
-
+	 
 	XMStoreFloat3(&m_vRayPos_Local, vRayPos);
 	XMStoreFloat3(&m_vRayDir_Local, vRayDir);
 }
