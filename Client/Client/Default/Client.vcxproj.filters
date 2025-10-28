@@ -160,9 +160,6 @@
     <ClCompile Include="..\Private\Level_Loading.cpp">
       <Filter>01.Levles\Loading</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\Loader.cpp">
-      <Filter>01.Levles\Loading\Loader</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\UI_Base.cpp">
       <Filter>02. GameObjects\02. UI\Base</Filter>
     </ClCompile>
@@ -198,6 +195,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\PickingManager.cpp">
       <Filter>04. PickingManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Loader.cpp">
+      <Filter>01.Levles\Loading\Loader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

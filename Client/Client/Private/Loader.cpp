@@ -6,12 +6,16 @@
 // UI
 #include "UI_BackGround.h"
 
+#include "Terrian.h"
+#include "CCamera_Dynamic.h"
+
+
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: m_pDevice { pDevice }
+	: m_pGameInstnace(CGameInstance::GetInstance())
+	, m_pDevice { pDevice }
 	, m_pContext { pContext }
-	, m_pGameInstance(CGameInstance::GetInstance())
 {
-	Safe_AddRef(m_pGameInstance);
+	Safe_AddRef(m_pGameInstnace);
 	Safe_AddRef(m_pDevice);
 	Safe_AddRef(m_pContext);
 }
@@ -20,15 +24,29 @@ unsigned int APIENTRY ThreadMain(void* pArg)
 {
 	CLoader* pLoader = static_cast<CLoader*>(pArg);
 
-	if (FAILED(pLoader->Loading()))
-		return 1;
+	
+	EnterCriticalSection(&pLoader->Get_CriticalSection());
+
+	switch (pLoader->Get_NextLevelID())
+	{
+	case LEVEL_LOGO:
+		pLoader->Loading_For_Logo();
+		break;
+	case LEVEL_GAMEPLAY:
+		pLoader->Loading_For_GamePlay();
+		break;
+	}
+
+ 	LeaveCriticalSection(&pLoader->Get_CriticalSection());
 
 	return 0;
 }
 
-HRESULT CLoader::Initialize(LEVEL eLoadingLevelID)
+HRESULT CLoader::Initialize(LEVEL eNextLevel)
 {
-	m_eLoadingLevelID = eLoadingLevelID;
+	CoInitializeEx(nullptr, 0);
+
+	m_eNextLevel = eNextLevel;
 
 	InitializeCriticalSection(&m_CriticalSection);
 
@@ -36,65 +54,74 @@ HRESULT CLoader::Initialize(LEVEL eLoadingLevelID)
 	if (0 == m_hThread)
 		return E_FAIL;
 
-
-	return S_OK;
-}
-
-HRESULT CLoader::Loading()
-{
-	EnterCriticalSection(&m_CriticalSection);
-
-	CoInitializeEx(nullptr, 0);
-
-	HRESULT		hr = {};
-
-	switch (m_eLoadingLevelID)
-	{
-	case LEVEL::LEVEL_LOGO:
-		hr = Loading_For_Logo();
-		break;
-	case LEVEL::LEVEL_GAMEPLAY:
-		hr = Loading_For_GamePlay();
-		break;
-	}
-
-	LeaveCriticalSection(&m_CriticalSection);
-
-	if (FAILED(hr))
-		return E_FAIL;
-
-
-
 	return S_OK;
 }
 
 
 HRESULT CLoader::Loading_For_Logo()
 {	
-	if (m_pGameInstance == nullptr)
+ 	if (m_pGameInstnace == nullptr)
 		return E_FAIL;
 
-	lstrcpy(m_szFPS, TEXT("텍스쳐 로딩 중 "));
+	lstrcpy(m_szLoadingText, TEXT("텍스쳐 로딩 중 "));
 
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOGO, TEXT("Prototype_Component_Texture_Logo"),
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_LOGO, TEXT("Prototype_Component_Texture_Logo"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Logo/BackGround.dds")))))
 		return E_FAIL;
 
 
-	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_BackGround_Logo"),
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_BackGround_Logo"),
 		CUI_BackGround::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 
-	lstrcpy(m_szFPS, TEXT("로딩이 완료되었슴니다."));
+	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었슴니다."));
 	m_isFinished = true;
 	return S_OK;
 }
 
 HRESULT CLoader::Loading_For_GamePlay()
 {
-	lstrcpy(m_szFPS, TEXT("로딩이 완료되었슴니다."));
+	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었슴니다."));
+
+#pragma region 셰이더 로딩
+	lstrcpy(m_szLoadingText, TEXT("원본 셰이더 로딩 중"));
+	// For Prototype Component Shader VtxNorTex
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNorTex"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_NorTexTerrianl.hlsl"), VTXNORTEX_DECLARATION::Elements, VTXNORTEX_DECLARATION::iNumElements))))
+		return E_FAIL;
+#pragma region 셰이더 로딩
+
+
+
+#pragma region 원본객체 로딩
+	lstrcpy(m_szLoadingText, TEXT("원본 객체 로딩 중"));
+	// For Prototype Object Terrian 
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Terrian"),
+		CTerrian::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	// For Prototype Object CameraDynamic 
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Camera_Dynamic"),
+		CCamera_Dynamic::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+#pragma endregion
+
+#pragma region
+
+	lstrcpy(m_szLoadingText, TEXT("버퍼 로딩 중"));
+
+	HANDLE hFile = 0;
+	_ulong dwByte = 0;
+	_uint iNum = 0;
+	hFile = CreateFile(TEXT("../../../Bin/Bin_Data/NonAnim/Map/MapTest.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+	if(FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Summoners_Rift"), CVIBuffer_Terrian::Create(m_pDevice, m_pContext, hFile, dwByte))))
+		return E_FAIL;
+
+#pragma endregion 
+
 	m_isFinished = true;
 
 	return S_OK;
@@ -114,17 +141,14 @@ CLoader* CLoader::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, L
 
 void CLoader::Free()
 {
-	__super::Free();
-
 	WaitForSingleObject(m_hThread, INFINITE);
-
-	DeleteCriticalSection(&m_CriticalSection);
 
 	CloseHandle(m_hThread);
 
-	Safe_Release(m_pGameInstance);
-	Safe_Release(m_pDevice);
-	Safe_Release(m_pContext);
+	DeleteCriticalSection(&m_CriticalSection);
+
+	Safe_Release(m_pGameInstnace);
+
 
 
 }

@@ -23,6 +23,9 @@ public:
 	const char* Get_ModelTag() { return m_ModelDesc.pModeltag; }
 	const NONANIMDESC Get_ModelDesc() { return m_ModelDesc; }
 
+public:
+	virtual _bool Picking(_float3* PickingPoint) override { return true; };
+	virtual void PickingTrue() override {};
 
 protected:
 	CModel* m_pModelCom = { nullptr };

@@ -36,24 +36,19 @@ public:
 
 private:
 	virtual HRESULT Ready_Components(void* pArg)override;
-	virtual HRESULT SetUp_ShaderID()override;
 	virtual HRESULT SetUp_ShaderResources()override;
 
 public:
 	void Set_Picked();
-	void Save_Terrain(HANDLE hFile, _ulong* dwByte);
 
 private:
-	CTexture* m_pTextureCom[TYPE_END] = { nullptr };
 	CVIBuffer_Terrian* m_pVIBufferCom = { nullptr };
-	_uint* pPixel = { nullptr };
-
-	_float3* pPixelColor = { nullptr };
 
 	_bool m_bFirst = false;
 	_bool	m_bWireFrame = false;
 	_bool	m_bDebugShow = true;
 	TERRIAN_DEBUG_TYPE m_eDebugtype = DEBUG_NONE;
+	_float3 m_vMousePickPos;
 
 public:
 	static CTerrian* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

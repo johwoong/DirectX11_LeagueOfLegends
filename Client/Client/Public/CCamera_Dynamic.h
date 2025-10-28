@@ -40,7 +40,6 @@ public:
 	void Set_TargetPosition(_vector vPosition) { m_vTargetPos = vPosition; }
 	void Set_Zoom(_bool type, _float fZoomDistance = 0.f, _float fZoomSpeed = 0.f);
 	CActor* Get_Target() { return m_pTarget; }
-	void					Set_CamMode(CAM_MODE eMode);
 	_uint					Get_CamMode() { return m_eCamMode; }
 
 

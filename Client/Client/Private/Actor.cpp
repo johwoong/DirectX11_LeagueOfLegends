@@ -22,14 +22,15 @@ HRESULT CActor::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-
-
 	return S_OK;
 }
 
 int CActor::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
+
+	if (!m_bDead)
+		return OBJ_DEAD;
 
 	return OBJ_NOEVENT;
 }

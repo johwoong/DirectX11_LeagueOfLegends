@@ -55,6 +55,10 @@ public:
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render();
 
+public:
+	virtual _bool Picking(_float3* PickingPoint)override;
+	virtual void PickingTrue() override;
+
 protected:
 	void UpdateLevelStats();
 

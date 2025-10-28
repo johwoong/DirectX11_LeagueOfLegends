@@ -15,38 +15,47 @@ private:
 	virtual ~CLoader() = default;
 
 public:
-	HRESULT Initialize(LEVEL eLoadingLevelID);
-	HRESULT Loading();
+	HRESULT Initialize(LEVEL eNextLevel);
+	LEVEL Get_NextLevelID() const {
+		return m_eNextLevel;
+	}
 
-	_bool isFinished() const {
+	CRITICAL_SECTION& Get_CriticalSection() {
+		return m_CriticalSection;
+	}
+
+	_bool Get_Finished() const {
 		return m_isFinished;
 	}
 
-	void Output() {
-		SetWindowText(g_hWnd, m_szFPS);
+	const _tchar* Get_LoadingText() const {
+		return m_szLoadingText;
 	}
 
-private:
-	ID3D11Device* m_pDevice = { nullptr };
-	ID3D11DeviceContext* m_pContext = { nullptr };
-	CGameInstance* m_pGameInstance = { nullptr };
-	LEVEL					m_eLoadingLevelID = { LEVEL::LEVEL_END };
+	void Set_Finished(_bool tof) { m_isFinished = tof; }
 
-private:
-	HANDLE				m_hThread = {};
-	CRITICAL_SECTION	m_CriticalSection = {};
 
-	_bool				m_isFinished = { false };
-	_tchar				m_szFPS[MAX_PATH] = {};
-
-private:
+public:
 	HRESULT Loading_For_Logo();
 	HRESULT Loading_For_GamePlay();
+
+private:
+	LEVEL					m_eNextLevel = LEVEL_END;
+	_bool					m_isFinished = false;
+	_tchar					m_szLoadingText[MAX_PATH] = TEXT("");
+
+private:
+	ID3D11Device* m_pDevice				=			{ nullptr };	
+	ID3D11DeviceContext* m_pContext		=			{ nullptr };
+	CGameInstance* m_pGameInstnace		=			{ nullptr };
+
+private:
+	HANDLE					m_hThread = 0;
+	CRITICAL_SECTION		m_CriticalSection;
 
 public:
 	static CLoader* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, LEVEL eLoadingLevelID);
 	virtual void Free() override;
-
 };
 
 NS_END

@@ -63,6 +63,15 @@ HRESULT CChampion::Render()
 	return S_OK;
 }
 
+_bool CChampion::Picking(_float3* PickingPoint)
+{
+	return _bool();
+}
+
+void CChampion::PickingTrue()
+{
+}
+
 void CChampion::UpdateLevelStats()
 {
 

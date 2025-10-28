@@ -38,6 +38,7 @@ public:
 	_vector Get_TransformState(CTransform::STATE eState);
 	void Set_State(CTransform::STATE eState, _fvector vState);
 	void Set_Scale(_float3 vScale);
+	void Set_Picked(_bool type) { m_bPicked = type; }
 
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
@@ -54,6 +55,7 @@ protected:
 	_uint	m_eShaderID = SHADER_NOANIM_DEFAULT;
 	_float3 m_vScale = _float3(1.f, 1.f, 1.f);
 	_float3 m_vMousePickedPos;
+	_bool m_bPicked = false;
 	_float m_fAlpha = 1.f;
 
 public:

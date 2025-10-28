@@ -17,13 +17,11 @@ private:
 public:
 	virtual HRESULT Initialize(LEVEL eNextLevelID);
 	virtual void Update(_float fTimeDelta) override;
+	virtual void Late_Update(_float fTimeDelta) override;
 
 private:
 	class CLoader* m_pLoader = { nullptr };
 	LEVEL			m_eNextLevelID = { LEVEL::LEVEL_END };
-
-private:
-	HRESULT Ready_Layer_UI();
 
 public:
 	static CLevel_Loading* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, LEVEL eNextLevelID);

@@ -20,9 +20,6 @@ public:
 public:
 	HRESULT Ready_Layer_BackGround(const _tchar* pLayerTag);
 
-private:
-	ID3D11Device* m_pDevice = { nullptr };
-	ID3D11DeviceContext* m_pContext = { nullptr };
 
 public:
 	static CLevel_Logo* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

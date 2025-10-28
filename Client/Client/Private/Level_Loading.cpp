@@ -13,17 +13,15 @@ CLevel_Loading::CLevel_Loading(ID3D11Device* pDevice, ID3D11DeviceContext* pCont
 
 HRESULT CLevel_Loading::Initialize(LEVEL eNextLevelID)
 {
+	if (FAILED(__super::Initialize()))
+		return E_FAIL;
+
 	m_eNextLevelID = eNextLevelID;
 
 	/* 다음레벨에 대한 자원들을 준비한다.(추가스레드) */
 	m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID);
 	if (nullptr == m_pLoader)
 		return E_FAIL;
-
-	/* 자원을 준비하는 동안 로딩 장면을 렌더링 해준다.(메인스레드) */
-	if (FAILED(Ready_Layer_UI()))
-		return E_FAIL;
-
 
 	return S_OK;
 }
@@ -32,7 +30,7 @@ void CLevel_Loading::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
 
-	if (true == m_pLoader->isFinished())
+	if (true == m_pLoader->Get_Finished())
 	{
 		CLevel* pNewLevel = { nullptr };
 
@@ -52,13 +50,15 @@ void CLevel_Loading::Update(_float fTimeDelta)
 		if (SUCCEEDED(m_pGameInstance->Open_Level(ENUM_TO_UINT(m_eNextLevelID), pNewLevel)))
 			return;
 	}
-	m_pLoader->Output();
 }
 
-HRESULT CLevel_Loading::Ready_Layer_UI()
+void CLevel_Loading::Late_Update(_float fTimeDelta)
 {
-	return S_OK;
+	__super::Late_Update(fTimeDelta);
+
+	SetWindowText(g_hWnd, m_pLoader->Get_LoadingText());
 }
+
 
 CLevel_Loading* CLevel_Loading::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, LEVEL eNextLevelID)
 {
