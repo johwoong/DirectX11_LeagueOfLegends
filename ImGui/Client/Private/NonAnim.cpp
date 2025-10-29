@@ -275,6 +275,5 @@ void CNonAnim::Free()
 
 	Safe_Release(m_pTransformCom);
 	Safe_Release(m_pShaderCom);
-	Safe_Release(m_pRenderCom);
 	Safe_Release(m_pModelCom);
 }

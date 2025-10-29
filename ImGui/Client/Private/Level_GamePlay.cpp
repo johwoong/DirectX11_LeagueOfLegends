@@ -31,9 +31,6 @@ HRESULT CLevel_GamePlay::Initialize()
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
-
-	CImGui_Manager::GetInstance()->Update(fTimeDelta);
-
 }
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)

@@ -71,9 +71,13 @@ HRESULT CMainApp::Render()
 
 	m_pRenderer->Render_GameObjects();
 
+
 	// GamePlay 레벨일 때만 IMGUI 렌더
 	if (CGameInstance::GetInstance()->Get_CurrentLevelIndex() == LEVEL_GAMEPLAY)
+	{
+		CImGui_Manager::GetInstance()->Update(0.1f);
 		CImGui_Manager::GetInstance()->Render();
+	}
 
 	m_pGameInstance->Present();
 	return S_OK;
