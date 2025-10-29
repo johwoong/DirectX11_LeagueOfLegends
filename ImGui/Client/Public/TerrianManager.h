@@ -25,11 +25,8 @@ private:
 	virtual ~CTerrianManager() = default;
 
 public:
-	void Add_DebugTerrain(class CTerrian* pTerrain) { m_pTerrian = pTerrain; }
 	CVIBuffer_Terrian* Create_Terrain(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, HANDLE hFile, _ulong& dwByte);
 	HRESULT Create_Terrain(LEVEL eLevel, const _tchar* pLayerTag, const _tchar* pTerrainTag = nullptr);
-	void Out_DebugTerrain();
-
 public:
 	void Set_TerrainDesc(TERRIANDESC* eTerrainDesc) { memcpy(&m_pTerrianDesc, eTerrainDesc, sizeof(TERRIANDESC)); }
 	void Set_bWireFrame(_bool type) { m_pTerrianDesc.m_bShowWireFrame = type; }
@@ -46,7 +43,6 @@ public:
 	void Add_PrototypeTag(_tchar* TempTag);
 
 private:
-	class CTerrian* m_pTerrian = { nullptr };
 	TERRIANDESC m_pTerrianDesc;
 	_bool m_bTerrianShow = true;
 	_float3 m_vMousePickPos = _float3(0, 0, 0);

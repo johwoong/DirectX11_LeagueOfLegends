@@ -13,9 +13,7 @@ class CTerrian final :
     public CActor
 {
 public:
-	enum SHADERID { DEFAULLT, WIRE, PICKED, SPLATTING };
-	enum TERRIAN_DEBUG_TYPE { DEBUG_SOLID, DEBUG_WIRE, DEBUG_NONE };
-	enum TEXTURE { TYPE_DIFFUSE, TYPE_END };
+	enum TERRAIN_DEBUG_TYPE { DEBUG_SOLID, DEBUG_WIRE, DEBUG_NONE };
 
 private:
 	CTerrian(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -24,31 +22,21 @@ private:
 
 public:
 	virtual HRESULT Initialize_Prototype() override;
-	virtual HRESULT Initialize(void* pArg)override;
+	virtual HRESULT Initialize(void* pArg) override;
 	HRESULT Initialize_Load(const _tchar* VIBufferTag, void* pArg);
-	virtual int Update(_float fTimeDelta)override;
-	virtual void Late_Update(_float fTimeDelta)override;
+	virtual int Update(_float fTimeDelta) override;
+	virtual void Late_Update(_float fTimeDelta) override;
 	virtual HRESULT Render() override;
 
-public:
-	virtual _bool Picking(_float3* PickingPoint);
-	virtual void PickingTrue();
+private:
+	HRESULT Ready_Components(void* pArg);
+	HRESULT SetUp_ShaderResources();
 
 private:
-	virtual HRESULT Ready_Components(void* pArg)override;
-	virtual HRESULT SetUp_ShaderResources()override;
+	CVIBuffer_Terrian* m_pVIBufferCom = nullptr;
 
-public:
-	void Set_Picked();
-
-private:
-	CVIBuffer_Terrian* m_pVIBufferCom = { nullptr };
-
-	_bool m_bFirst = false;
-	_bool	m_bWireFrame = false;
-	_bool	m_bDebugShow = true;
-	TERRIAN_DEBUG_TYPE m_eDebugtype = DEBUG_NONE;
-	_float3 m_vMousePickPos;
+	_bool m_bWireFrame = false;
+	TERRAIN_DEBUG_TYPE m_eDebugtype = DEBUG_SOLID;
 
 public:
 	static CTerrian* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

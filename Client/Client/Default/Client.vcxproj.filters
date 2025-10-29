@@ -209,19 +209,16 @@
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_NorTexTerrianl.hlsl">
-      <Filter>97. ShaderFiles</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl">
-      <Filter>97. ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxModelTool.hlsl">
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_UI.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl">
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

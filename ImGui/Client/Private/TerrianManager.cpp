@@ -13,15 +13,6 @@ CVIBuffer_Terrian* CTerrianManager::Create_Terrain(ID3D11Device* pDevice, ID3D11
     return CVIBuffer_Terrian::Create(pDevice, pContext, hFile, dwByte);
 }
 
-void CTerrianManager::Out_DebugTerrain()
-{
-	if (m_pTerrian == nullptr)
-		return;
-
-	CPickingMgr::GetInstance()->Out_PickingGroup(m_pTerrian);
-	m_pTerrian->Set_Dead(true);
-	m_pTerrian = nullptr;
-}
 
 HRESULT CTerrianManager::Create_Terrain(LEVEL eLevel, const _tchar* pLayerTag, const _tchar* pTerrainTag)
 {

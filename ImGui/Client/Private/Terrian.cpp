@@ -31,10 +31,6 @@ HRESULT CTerrian::Initialize(void* pArg)
     if (FAILED(Ready_Components(pArg)))
         return E_FAIL;
 
-    if (m_eDebugtype == DEBUG_SOLID)
-    {
-        CTerrianManager::GetInstance()->Add_DebugTerrain(this);
-    }
 
     CPickingMgr::GetInstance()->Add_PickingGroup(this);
 
@@ -92,6 +88,7 @@ int CTerrian::Update(_float fTimeDelta)
     if (m_bDead)
         return OBJ_DEAD;
 
+    m_bDebugShow = CTerrianManager::GetInstance()->Get_TerrianShow();
     if (m_eDebugtype == DEBUG_SOLID)
     {
         CTerrianManager::TERRIANDESC TerrainDesc = CTerrianManager::GetInstance()->Get_TerrianDesc();
@@ -113,11 +110,15 @@ void CTerrian::Late_Update(_float fTimeDelta)
 
 HRESULT CTerrian::Render()
 {
-    if (m_eDebugtype == DEBUG_SOLID && !m_bDebugShow)
+    // ?? 전역 Show off면 Terrain 렌더 스킵
+    if (!CTerrianManager::GetInstance()->Get_TerrianShow())
         return S_OK;
 
-    if (nullptr == m_pShaderCom ||
-        nullptr == m_pVIBufferCom)
+    // ?? 로컬 Terrain이 디버그 모드거나 숨김 상태면 스킵
+    if (!m_bDebugShow)
+        return S_OK;
+
+    if (nullptr == m_pShaderCom || nullptr == m_pVIBufferCom)
         return E_FAIL;
 
     if (FAILED(SetUp_ShaderID()))
@@ -127,7 +128,6 @@ HRESULT CTerrian::Render()
         return E_FAIL;
 
     m_pShaderCom->Begin(m_eShaderID);
-
     m_pVIBufferCom->Render();
 
     return S_OK;
@@ -151,17 +151,7 @@ _bool CTerrian::Picking(_float3* PickingPoint)
 
 void CTerrian::PickingTrue()
 {
-    CImGui_Manager::PICKING_TYPE ePickingType = CImGui_Manager::GetInstance()->Get_PickingType();
-
-    switch (ePickingType)
-    {
-    case Client::CImGui_Manager::PICKING_TERRAIN_TRANSFORM:
-        Set_Picked();
-        break;
-    default:
-        break;
-    }
-        
+    
 }
 
 HRESULT CTerrian::Ready_Components(void* pArg)
@@ -220,15 +210,6 @@ HRESULT CTerrian::SetUp_ShaderID()
 
     switch (m_eDebugtype)
     {
-    case Client::CTerrian::DEBUG_SOLID:
-        if (m_bWireFrame)
-            m_eShaderID = WIRE;
-        else
-            m_eShaderID = DEFAULLT;
-        break;
-    case Client::CTerrian::DEBUG_WIRE:
-        m_eShaderID = WIRE;
-        break;
     case Client::CTerrian::DEBUG_NONE:
         if (m_bWireFrame)
             m_eShaderID = WIRE;
@@ -285,7 +266,20 @@ void CTerrian::Set_Picked()
 
 void CTerrian::Save_Terrain(HANDLE hFile, _ulong* dwByte)
 {
+    // 1?? 버텍스 데이터 저장
     m_pVIBufferCom->Save_VertexPosition(hFile, dwByte);
+
+    // 2?? Transform 데이터 저장
+    _float3 vPos, vRot;
+
+    XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION));
+    vRot = _float3(
+        m_pTransformCom->Get_CurrentRotationX(),
+        m_pTransformCom->Get_CurrentRotationY(),
+        m_pTransformCom->Get_CurrentRotationZ());
+
+    WriteFile(hFile, &vPos, sizeof(_float3), dwByte, nullptr);
+    WriteFile(hFile, &vRot, sizeof(_float3), dwByte, nullptr);
 }
 
 CTerrian* CTerrian::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -331,6 +325,7 @@ void CTerrian::Free()
 {
     __super::Free();
 
+    CPickingMgr::GetInstance()->Out_PickingGroup(this);
     Safe_Delete_Array(pPixel);
     Safe_Delete_Array(pPixelColor);
 

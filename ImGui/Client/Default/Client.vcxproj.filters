@@ -153,9 +153,6 @@
     <ClInclude Include="..\Public\ModelManager.h">
       <Filter>03. ToolManager\01. ModelManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\NonAnim.h">
-      <Filter>02. GameObjects\02. NonAnimModel</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Anim.h">
       <Filter>02. GameObjects\03. AnimModel</Filter>
     </ClInclude>
@@ -167,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\ImGuizmo.h">
       <Filter>100. IMGUI\Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\NonAnim.h">
+      <Filter>02. GameObjects\02. NonAnimModel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

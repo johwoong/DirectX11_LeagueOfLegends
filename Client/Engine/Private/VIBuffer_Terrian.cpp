@@ -345,7 +345,7 @@ HRESULT CVIBuffer_Terrian::Save_VertexPosition(HANDLE hFile, _ulong* dwByte)
 		{
 			_uint	iIndex = i * m_pTerrianDesc.m_iVerticeNumX + j;
 
-			WriteFile(hFile, &pVertices[iIndex], sizeof(VTXNORTEX), dwByte, nullptr);
+			WriteFile(hFile, &pVertices[iIndex], sizeof(VTXNORTEX), dwByte, nullptr);  
 		}
 	}
 

@@ -18,7 +18,6 @@ class CImGui_Manager final : public CBase
 
 public:
     enum PICKING_TYPE {
-		PICKING_TERRAIN_TRANSFORM,
         PICKING_MODEL
     };
 
@@ -37,7 +36,7 @@ public:
 
 public:
 	/* For Debug*/
-	void ShowSimpleMousePos(bool* p_open);
+	void Apply_UnityDark_Theme();
 	void ShowPickedObj();
 	void Show_PopupBox();
 

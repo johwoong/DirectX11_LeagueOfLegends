@@ -90,9 +90,10 @@ HRESULT CImGui_Manager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+
 	// Style Setting
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("../../../Bin/Resources/Fonts/Quicksand-Medium.ttf", 16.0f);
-	ImGui::StyleColorsBlue();
+	Apply_UnityDark_Theme();
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(g_hWnd);
@@ -108,11 +109,6 @@ void CImGui_Manager::Update(_float fTimeDelta)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	//CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	//pGameInstance->AddRef();
-	//
-
-	//pGameInstance->Release();
 	Update_Imgui();
 	ImGui::EndFrame();
 }
@@ -151,20 +147,6 @@ void CImGui_Manager::Update_Imgui()
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Debug"))
-		{
-			ImGui::MenuItem("Show Mouse Pos", NULL, &m_bShowSimpleMousePos);
-			ImGui::Separator();
-			ImGui::MenuItem("Show Picked Object", NULL, &m_bShowPickedObject);
-			ImGui::EndMenu();
-		}
-
-		if (ImGui::BeginMenu("Tools"))
-		{
-			ImGui::MenuItem("Style Editor", NULL, &m_bShow_app_style_editor);
-			ImGui::EndMenu();
-		}
-
 		ImGui::EndMenuBar();
 	}
 
@@ -176,9 +158,6 @@ void CImGui_Manager::Update_Imgui()
 	{
 		if (ImGui::BeginTabItem("Terrian Tool"))
 		{
-			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Move"); ImGui::SameLine();
-			ImGui::RadioButton("##Picking for Moving Terrian", &m_PickingType, PICKING_TERRAIN_TRANSFORM); ImGui::SameLine();
-
 			Set_Terrian_Map();
 			ImGui::EndTabItem();
 		}
@@ -217,9 +196,6 @@ void CImGui_Manager::Update_Imgui()
 	if (m_bSave || m_bLoad)
 		BrowseForFolder();
 
-	if (m_bShowSimpleMousePos)
-		ShowSimpleMousePos(&m_bShowSimpleMousePos);
-
 	if (m_bShow_app_style_editor)
 	{
 		ImGui::Begin("Dear ImGui Style Editor", &m_bShow_app_style_editor);
@@ -232,58 +208,6 @@ void CImGui_Manager::Update_Imgui()
 
 }
 
-void CImGui_Manager::ShowSimpleMousePos(bool* p_open)
-{
-	static int location = 0;
-	ImGuiIO& io = ImGui::GetIO();
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-	if (location >= 0)
-	{
-		const float PAD = 10.0f;
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImVec2 work_pos = viewport->WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
-		ImVec2 work_size = viewport->WorkSize;
-		ImVec2 window_pos, window_pos_pivot;
-		window_pos.x = (location & 1) ? (work_pos.x + work_size.x - PAD) : (work_pos.x + PAD);
-		window_pos.y = (location & 2) ? (work_pos.y + work_size.y - PAD) : (work_pos.y + PAD);
-		window_pos_pivot.x = (location & 1) ? 1.0f : 0.0f;
-		window_pos_pivot.y = (location & 2) ? 1.0f : 0.0f;
-		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-		window_flags |= ImGuiWindowFlags_NoMove;
-	}
-	else if (location == -2)
-	{
-		// Center window
-		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-		window_flags |= ImGuiWindowFlags_NoMove;
-	}
-	ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-	if (ImGui::Begin("Mouse Debug tab", p_open, window_flags))
-	{
-		ImGui::Text("Mouse Debug");
-		ImGui::Separator();
-		if (ImGui::IsMousePosValid())
-		{
-			_float3 vPickingPos = CPickingMgr::GetInstance()->Get_PickingPos();
-			ImGui::Text("Mouse UI: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
-			ImGui::Text("Mouse World: (%.1f,%.1f,%.1f)", vPickingPos.x, vPickingPos.y, vPickingPos.z);
-		}
-		else
-			ImGui::Text("Mouse Position: <invalid>");
-		if (ImGui::BeginPopupContextWindow())
-		{
-			if (ImGui::MenuItem("Custom", NULL, location == -1)) location = -1;
-			if (ImGui::MenuItem("Center", NULL, location == -2)) location = -2;
-			if (ImGui::MenuItem("Top-left", NULL, location == 0)) location = 0;
-			if (ImGui::MenuItem("Top-right", NULL, location == 1)) location = 1;
-			if (ImGui::MenuItem("Bottom-left", NULL, location == 2)) location = 2;
-			if (ImGui::MenuItem("Bottom-right", NULL, location == 3)) location = 3;
-			if (p_open && ImGui::MenuItem("Close")) *p_open = false;
-			ImGui::EndPopup();
-		}
-	}
-	ImGui::End();
-}
 
 void CImGui_Manager::ShowPickedObj()
 {
@@ -347,7 +271,6 @@ void CImGui_Manager::ShowPickedObj()
 	Rotation[1] = m_vPickedRotAxis.y;
 	Rotation[2] = m_vPickedRotAxis.z;
 	ImGui::Text("Rotation axis"); ImGui::SameLine();
-
 	ImGui::DragFloat3("##Setting RotAxis", Rotation);
 
 	m_vPickedRotAxis = _float3(Rotation[0], Rotation[1], Rotation[2]);
@@ -365,17 +288,87 @@ void CImGui_Manager::ShowPickedObj()
 
 	if (ImGui::Button("Delete Object"))
 	{
+		CPickingMgr* pPickingMgr = CPickingMgr::GetInstance();
+		pPickingMgr->AddRef();
 		if (pPickingMgr->Get_PickedObj() != nullptr)
 			ImGui::OpenPopup("Delete Object?");
+		pPickingMgr->Release();
 
 	}
 	Show_PopupBox();
 	pPickingMgr->Release();
 }
 
+void CImGui_Manager::Apply_UnityDark_Theme()
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 6.0f;
+	style.FrameRounding = 5.0f;
+	style.GrabRounding = 4.0f;
+	style.PopupRounding = 5.0f;
+	style.ScrollbarRounding = 6.0f;
+	style.TabRounding = 5.0f;
+	style.FrameBorderSize = 0.0f;
+
+	style.WindowPadding = ImVec2(10, 10);
+	style.FramePadding = ImVec2(8, 5);
+	style.ItemSpacing = ImVec2(8, 6);
+	style.ItemInnerSpacing = ImVec2(6, 4);
+	style.ScrollbarSize = 14.0f;
+
+	ImVec4* colors = style.Colors;
+
+	// ===== Unity Dark Pro Style =====
+	colors[ImGuiCol_Text] = ImVec4(0.98f, 0.98f, 0.98f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);
+
+	colors[ImGuiCol_WindowBg] = ImVec4(0.21f, 0.21f, 0.21f, 1.00f);
+	colors[ImGuiCol_ChildBg] = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
+	colors[ImGuiCol_PopupBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+
+	colors[ImGuiCol_Border] = ImVec4(0.12f, 0.12f, 0.12f, 0.90f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(0, 0, 0, 0);
+
+	colors[ImGuiCol_FrameBg] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.36f, 0.36f, 0.36f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.43f, 0.43f, 0.43f, 1.00f);
+
+	colors[ImGuiCol_TitleBg] = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
+	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.10f, 0.10f, 0.10f, 0.70f);
+
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.60f);
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
+
+	colors[ImGuiCol_Button] = ImVec4(0.32f, 0.32f, 0.32f, 1.00f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.55f, 0.55f, 0.55f, 1.00f);
+
+	colors[ImGuiCol_Header] = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
+	colors[ImGuiCol_HeaderActive] = ImVec4(0.55f, 0.55f, 0.55f, 1.00f);
+
+	colors[ImGuiCol_Tab] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+	colors[ImGuiCol_TabHovered] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
+	colors[ImGuiCol_TabActive] = ImVec4(0.43f, 0.43f, 0.43f, 1.00f);
+	colors[ImGuiCol_TabUnfocused] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+
+	colors[ImGuiCol_CheckMark] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	colors[ImGuiCol_SliderGrab] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.65f, 0.65f, 0.65f, 1.00f);
+
+	colors[ImGuiCol_Separator] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
+	colors[ImGuiCol_ResizeGrip] = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
+	colors[ImGuiCol_ResizeGripActive] = ImVec4(0.55f, 0.55f, 0.55f, 1.00f);
+}
+
 void CImGui_Manager::Show_PopupBox()
 {
-	// Always center this window when appearing
 	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 	bool unused_open = true;
@@ -384,6 +377,7 @@ void CImGui_Manager::Show_PopupBox()
 	{
 		CPickingMgr* pPickingMgr = CPickingMgr::GetInstance();
 		pPickingMgr->AddRef();
+
 		CGameObject* pPickedObj = pPickingMgr->Get_PickedObj();
 		CNonAnim* pNonAnim = dynamic_cast<CNonAnim*>(pPickedObj);
 		ImGui::Text("Are yoou Sure Delete This Object?\n\n");
@@ -503,86 +497,168 @@ void CImGui_Manager::Show_PopupBox()
 
 void CImGui_Manager::Set_Terrian_Map()
 {
-	ImGui::GetIO().NavActive = false;
 	ImGui::GetIO().WantCaptureMouse = true;
 	ImGui::CollapsingHeader("Terrian_Map");
-	
-	CTerrianManager::TERRIANDESC TerrianDesc = m_pTerrianManager->Get_TerrianDesc();
 
-	static _int iNumVertices[2] = { TerrianDesc.TerrianDesc.m_iVerticeNumX, TerrianDesc.TerrianDesc.m_iVerticeNumZ };
-	ImGui::Text("X / Z");
+	CTerrianManager::TERRIANDESC TerrainDesc = m_pTerrianManager->Get_TerrianDesc();
+	static CTerrian* pSelectedTerrain = nullptr;
+
+	// =======================================
+	// ?? Vertex X / Z 실시간 수정
+	// =======================================
+	int iNumVertices[2] = {
+		TerrainDesc.TerrianDesc.m_iVerticeNumX,
+		TerrainDesc.TerrianDesc.m_iVerticeNumZ
+	};
+
+	ImGui::Text("Vertex X / Z");
 	ImGui::SameLine(0, 10);
-	ImGui::InputInt2("##1", iNumVertices, 10);
-	TerrianDesc.TerrianDesc.m_iVerticeNumX = iNumVertices[0];
-	TerrianDesc.TerrianDesc.m_iVerticeNumZ = iNumVertices[1];
+	ImGui::InputInt2("##VertexCount", iNumVertices);
 
-	ImGui::Text("Position X"); ImGui::SameLine();
-	ImGui::DragInt("##PositionX", &TerrianDesc.TerrianDesc.m_iPositionX);
-
-	ImGui::Text("Position Y"); ImGui::SameLine();
-	ImGui::DragFloat("##PositionY", &TerrianDesc.TerrianDesc.m_fHeight, 0.05f);
-
-	ImGui::Text("Position Z"); ImGui::SameLine();
-	ImGui::DragInt("##PositionZ", &TerrianDesc.TerrianDesc.m_iPositionZ);
-
-
-	if (ImGui::Button("Update Terrian"))
+	if (ImGui::IsItemDeactivatedAfterEdit())
 	{
-		m_pTerrianManager->Out_DebugTerrain();
+		TerrainDesc.TerrianDesc.m_iVerticeNumX = max(2, iNumVertices[0]);
+		TerrainDesc.TerrianDesc.m_iVerticeNumZ = max(2, iNumVertices[1]);
+		m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
 
-		CTerrianManager::TERRIANDESC TerrianDesc = CTerrianManager::GetInstance()->Get_TerrianDesc();
-		TerrianDesc.m_eDebugTerrian = CTerrianManager::DEBUG_SOLID;
-		TerrianDesc.m_bShowWireFrame = true;
-		CGameInstance::GetInstance()->Clear_Layer(LEVEL_GAMEPLAY, TEXT("Layer_DebugTerrian"));
-		if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_DebugTerrain"), &TerrianDesc)))
-			return;
+		// ? 기존 Terrain의 버텍스 버퍼만 재설정
+		if (pSelectedTerrain)
+		{
+			auto pVIBuffer = dynamic_cast<CVIBuffer_Terrian*>(pSelectedTerrain->Find_Component(TEXT("Com_VIBuffer")));
+			if (pVIBuffer)
+				pVIBuffer->Set_Terrain_Buffer(TerrainDesc.TerrianDesc);
+		}
+	}
+	ImGui::Separator();
+
+	// =======================================
+	// ?? Terrain 생성 버튼
+	// =======================================
+	if (ImGui::Button("Create Terrain"))
+	{
+		if (SUCCEEDED(m_pTerrianManager->Create_Terrain(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"))))
+			pSelectedTerrain = nullptr;
 	}
 
 	ImGui::SameLine();
-	if (ImGui::Button("Create Terrian"))
-	{
-		if (FAILED(m_pTerrianManager->Create_Terrain(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"))))
-			return;
-	}
+	ImGui::Checkbox("WireFrame", &TerrainDesc.m_bShowWireFrame);
+	m_pTerrianManager->Set_bWireFrame(TerrainDesc.m_bShowWireFrame);
 
-	ImGui::SameLine();
-	ImGui::Checkbox("WireFrame", &TerrianDesc.m_bShowWireFrame);
-	m_pTerrianManager->Set_bWireFrame(TerrianDesc.m_bShowWireFrame);
 	ImGui::SameLine();
 	ImGui::Checkbox("Show", &m_bTerrian_Show);
 	m_pTerrianManager->Set_TerrainShow(m_bTerrian_Show);
-	ImGui::NewLine();
 
-	m_pTerrianManager->Set_TerrainDesc(&TerrianDesc);
+	m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
+	ImGui::Separator();
 
-	if (m_PickingType == PICKING_TERRAIN_TRANSFORM)
+
+	list<CGameObject*>* pTerrainList =
+		CGameInstance::GetInstance()->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
+
+	if (pSelectedTerrain)
 	{
-		if (CGameInstance::GetInstance()->Mouse_Down(DIMK_LBUTTON))
-			CPickingMgr::GetInstance()->Picking();
+		bool bFound = false;
+		if (pTerrainList)
+		{
+			for (auto& obj : *pTerrainList)
+			{
+				if (obj == pSelectedTerrain && !obj->Get_Dead())
+				{
+					bFound = true;
+					break;
+				}
+			}
+		}
+		if (!bFound)
+			pSelectedTerrain = nullptr;
 	}
 
-	if (CGameInstance::GetInstance()->Key_Up(DIK_Z))
-	{
-		list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
-		if (nullptr == plistClone || plistClone->size() == 0)
-			return;
+	ImGui::TextColored(ImVec4(1, 1, 0, 1), "Current Terrains");
 
-		auto iter = --plistClone->end();
-		CPickingMgr::GetInstance()->Out_PickingGroup(*iter);
-		Safe_Release(*iter);
-		plistClone->erase(iter);
+	if (pTerrainList && !pTerrainList->empty())
+	{
+		int index = 0;
+		for (auto& terrainObj : *pTerrainList)
+		{
+			if (!terrainObj) continue;
+			char label[64];
+			sprintf_s(label, "Terrain %d", index++);
+			bool isSelected = (terrainObj == pSelectedTerrain);
+
+			if (ImGui::Selectable(label, isSelected))
+			{
+				pSelectedTerrain = dynamic_cast<CTerrian*>(terrainObj);
+				if (pSelectedTerrain)
+					CPickingMgr::GetInstance()->Set_PickedObj(pSelectedTerrain);
+			}
+		}
 	}
+	else
+		ImGui::TextDisabled("No Terrains currently in scene.");
 
+	ImGui::Separator();
 
-	if (ImGui::Button("Save Terrian"))
+	if (pSelectedTerrain)
 	{
+		CTransform* pTransform = pSelectedTerrain->Get_Transform();
+		if (pTransform)
+		{
+			_float3 vPos, vRot;
+			XMStoreFloat3(&vPos, pTransform->Get_State(CTransform::STATE_TRANSLATION));
+			vRot = _float3(
+				pTransform->Get_CurrentRotationX(),
+				pTransform->Get_CurrentRotationY(),
+				pTransform->Get_CurrentRotationZ()
+			);
+
+			ImGui::TextColored(ImVec4(0.9f, 0.8f, 0.2f, 1), "Transform");
+
+			bool changed = false;
+			if (ImGui::DragFloat3("Position", (_float*)&vPos, 0.5f))
+			{
+				_vector vNewPos = XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f);
+				pTransform->Set_State(CTransform::STATE_TRANSLATION, vNewPos);
+				changed = true;
+			}
+
+			if (ImGui::DragFloat3("Rotation", (_float*)&vRot, 0.5f))
+			{
+				pTransform->Set_Rotation(vRot);
+				changed = true;
+			}
+
+			if (changed)
+			{
+				TerrainDesc.TerrianDesc.m_iPositionX = (int)vPos.x;
+				TerrainDesc.TerrianDesc.m_fHeight = vPos.y;
+				TerrainDesc.TerrianDesc.m_iPositionZ = (int)vPos.z;
+				m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
+			}
+
+			ImGui::Spacing();
+			ImGui::Separator();
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.9f, 0.3f, 0.3f, 1));
+			if (ImGui::Button("?? Delete Selected Terrain"))
+			{
+				pSelectedTerrain->Set_Dead(true);
+				pSelectedTerrain = nullptr;
+			}
+			ImGui::PopStyleColor();
+		}
+		else
+			ImGui::TextDisabled("Transform not found.");
+	}
+	else
+		ImGui::TextDisabled("No Terrain Selected.");
+
+	ImGui::Separator();
+
+	if (ImGui::Button("Save Terrain"))
 		Save_Terrian();
-	}
 	ImGui::SameLine();
-	if (ImGui::Button("Load Terrian"))
-	{
+	if (ImGui::Button("Load Terrain"))
 		Load_Terrian();
-	}
 }
 
 void CImGui_Manager::Save_Terrian()
@@ -642,38 +718,57 @@ void CImGui_Manager::Load_Terrian()
 	OFN.nMaxFile = 300;
 	OFN.lpstrInitialDir = L".";
 
-	if (GetOpenFileName(&OFN) != 0) {
+	if (GetOpenFileName(&OFN) != 0)
+	{
 		wsprintf(filePathName, L"%s 파일을 열겠습니까?", OFN.lpstrFile);
 		MessageBox(g_hWnd, filePathName, L"열기 선택", MB_OK);
 
-		//ERR_MSG(TEXT("save-as  '%s'\n"), ofn.lpstrFile); //경로// 파일이름.확장자
-		//ERR_MSG(TEXT("filename '%s'\n"), ofn.lpstrFile + ofn.nFileOffset); 
-
-		HANDLE hFile = 0;
-		_ulong dwByte = 0;
-		_uint iNum = 0;
-		_float3		vPoints[3];
-
-		hFile = CreateFile(OFN.lpstrFile, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-		if (0 == hFile)
+		HANDLE hFile = CreateFile(OFN.lpstrFile, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+		if (hFile == INVALID_HANDLE_VALUE)
 			return;
 
 		CGameInstance* pGameInstance = CGameInstance::GetInstance();
 		pGameInstance->AddRef();
 
-		/* 타일의 개수 받아오기 */
-		ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+		_ulong dwByte = 0;
+		_uint iNum = 0;
+		ReadFile(hFile, &iNum, sizeof(_uint), &dwByte, nullptr); // 저장된 Terrain 개수
 
 		for (_uint i = 0; i < iNum; ++i)
 		{
-			_tchar			szFullPath[MAX_PATH] = TEXT("Prototype_Component_VIBuffer_Terrain_Load");
+			_tchar szFullPath[MAX_PATH] = TEXT("Prototype_Component_VIBuffer_Terrain_Load");
 
+			// 1?? 버텍스 로드 (기존 로직 유지)
 			if (pGameInstance->Find_Prototype(LEVEL_STATIC, szFullPath) == S_OK)
 				pGameInstance->Add_Prototype(LEVEL_STATIC, szFullPath, m_pTerrianManager->Create_Terrain(m_pDevice, m_pContext, hFile, dwByte));
-			pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), szFullPath);
-		}
-		CloseHandle(hFile);
 
+			pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), szFullPath);
+
+			// 2?? Transform 로드
+			_float3 vPos, vRot;
+			ReadFile(hFile, &vPos, sizeof(_float3), &dwByte, nullptr);
+			ReadFile(hFile, &vRot, sizeof(_float3), &dwByte, nullptr);
+
+			// 3?? 가장 최근에 생성된 Terrain 찾기
+			list<CGameObject*>* pTerrainList =
+				pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
+
+			if (pTerrainList && !pTerrainList->empty())
+			{
+				CTerrian* pTerrain = dynamic_cast<CTerrian*>(pTerrainList->back());
+				if (pTerrain)
+				{
+					CTransform* pTransform = pTerrain->Get_Transform();
+
+					pTransform->Set_State(CTransform::STATE_TRANSLATION,
+						XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
+
+					pTransform->Set_Rotation(vRot);
+				}
+			}
+		}
+
+		CloseHandle(hFile);
 		pGameInstance->Release();
 	}
 }
@@ -840,7 +935,6 @@ void CImGui_Manager::Show_ModelList()
 
 	// ------------------------ Right -----------------------------------
 	{
-
 		ImGui::BeginGroup();
 		ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
 		char szLayertag[MAX_PATH] = "";
@@ -863,34 +957,6 @@ void CImGui_Manager::Show_ModelList()
 					Create_Model(ModelTags[selected], LayerTag);
 					m_TempLayerTags.push_back(LayerTag);
 				}
-				ImGui::SameLine();
-				if (ImGui::Button("Revert"))
-				{
-					_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
-					m_iCurrentLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
-					list<CGameObject*>* plistClone = CGameInstance::GetInstance()->Get_ObjectList(m_iCurrentLevel, LayerTag);
-					if (nullptr == plistClone || plistClone->size() == 0)
-					{
-						delete LayerTag;
-						return;
-					}
-
-
-					auto iter = --plistClone->end();
-					CPickingMgr::GetInstance()->Out_PickingGroup(*iter);
-					m_pModel_Manager->Out_CreatedModel(dynamic_cast<CNonAnim*>(*iter));
-					Safe_Release(*iter);
-					plistClone->erase(iter);
-
-					delete LayerTag;
-				}
-			}
-			if (ImGui::BeginTabItem("Macro"))
-			{
-				ImGui::NewLine();
-				Set_LayerTag();
-				Set_Macro();
-				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();
 		}
@@ -1053,9 +1119,6 @@ void CImGui_Manager::BrowseForFolder()
 
 		if (GetSaveFileName(&OFN))
 		{
-			//ERR_MSG(TEXT("save-as  '%s'\n"), ofn.lpstrFile); //경로// 파일이름.확장자
-			//ERR_MSG(TEXT("filename '%s'\n"), ofn.lpstrFile + ofn.nFileOffset); 
-
 			HANDLE hFile = 0;
 			_ulong dwByte = 0;
 			NONANIMDESC  ModelDesc;
