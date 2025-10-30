@@ -161,6 +161,4 @@ void CMainApp::Free()
 	CPickingMgr::GetInstance()->DestroyInstance();
 	CImGui_Manager::GetInstance()->DestroyInstance();
 	CTerrianManager::GetInstance()->DestroyInstance();
-
-
 }

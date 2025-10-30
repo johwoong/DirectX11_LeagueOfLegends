@@ -30,6 +30,7 @@ HRESULT CCamera_Dynamic::Initialize(void* pArg)
 
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, XMLoadFloat4(&((CAMERADESC_DERIVED*)pArg)->InitPostion));
 	m_OriginPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+
 	return S_OK;
 }
 

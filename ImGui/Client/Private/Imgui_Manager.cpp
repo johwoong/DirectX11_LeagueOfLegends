@@ -175,7 +175,7 @@ void CImGui_Manager::Update_Imgui()
 					Show_ModelList();
 					ImGui::EndTabItem();
 				}
-				if (ImGui::BeginTabItem("Show Current Model List"))
+				if (ImGui::BeginTabItem("Scene"))
 				{
 					Show_CurrentModelList();
 					ImGui::EndTabItem();
@@ -185,11 +185,11 @@ void CImGui_Manager::Update_Imgui()
 			ImGui::EndTabItem();
 		}
 
-		if (ImGui::BeginTabItem("Animation Tool"))
-		{
-			Set_Animation();
-			ImGui::EndTabItem();
-		}
+		//if (ImGui::BeginTabItem("Animation Tool"))
+		//{
+		//	Set_Animation();
+		//	ImGui::EndTabItem();
+		//}
 		ImGui::EndTabBar(); 
 	}
 

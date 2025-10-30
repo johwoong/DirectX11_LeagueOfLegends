@@ -49,6 +49,7 @@ HRESULT CTerrian::Initialize_Load(const _tchar* VIBufferTag, void* pArg)
     /* For.Com_VIBuffer */
     if (FAILED(__super::Add_Components(TEXT("Com_VIBuffer"), LEVEL_STATIC, VIBufferTag, (CComponent**)&m_pVIBufferCom)))
         return E_FAIL;
+
     return S_OK;
 }
 

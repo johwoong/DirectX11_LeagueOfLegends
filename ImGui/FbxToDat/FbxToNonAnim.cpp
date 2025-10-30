@@ -117,32 +117,32 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
         write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
     }
 
-    // 머티리얼
+
     unsigned numMats = scene->mNumMaterials;
     write_n(fp, &numMats, sizeof(numMats));
-
-    fs::path autoTex = FindTextureFile(texDir);
-    string autoTexStr = autoTex.empty() ? "default_diffuse.png" : autoTex.string();
 
     for (unsigned mi = 0; mi < numMats; ++mi)
     {
         aiMaterial* mat = scene->mMaterials[mi];
+        aiString matName;
+        mat->Get(AI_MATKEY_NAME, matName);
+        string mName = matName.C_Str();
+        transform(mName.begin(), mName.end(), mName.begin(), ::tolower);
+
+        string texName = "default_diffuse.png";
+        if (mName.find("scissor") != string::npos)
+            texName = "gwen_base_main_weapon_tx_cm.dds";
+        else if (mName.find("doll") != string::npos)
+            texName = "gwen_base_main_doll_tx_cm.dds";
+        else if (mName.find("body") != string::npos || mName.find("gwen") != string::npos)
+            texName = "gwen_base_main_tx_cm.dds";
+
+        // ? 구조 유지: AI_TEXTURE_TYPE_MAX 만큼 고정 길이로 기록
         for (int t = 0; t < AI_TEXTURE_TYPE_MAX; ++t)
         {
-            aiString tex;
+            fs::path texPath = texDir / texName;
             char path[MAX_PATH]{};
-
-            if (mat->GetTexture((aiTextureType)t, 0, &tex) == AI_SUCCESS)
-            {
-                fs::path texFile = texDir / fs::path(tex.C_Str()).filename();
-                strncpy_s(path, texFile.string().c_str(), MAX_PATH - 1);
-            }
-            else
-            {
-                // FBX가 텍스처를 지정하지 않은 경우 자동 탐색된 텍스처 사용
-                strncpy_s(path, autoTexStr.c_str(), MAX_PATH - 1);
-            }
-
+            strncpy_s(path, texPath.string().c_str(), MAX_PATH - 1);
             write_n(fp, path, sizeof(path));
         }
     }

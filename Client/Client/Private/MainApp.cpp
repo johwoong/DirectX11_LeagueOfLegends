@@ -133,7 +133,6 @@ void CMainApp::Free()
 	__super::Free();
 
 	Safe_Release(m_pRenderer);
-
 	Safe_Release(m_pDevice);
 	Safe_Release(m_pContext);
 
