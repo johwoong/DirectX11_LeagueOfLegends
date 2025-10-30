@@ -89,10 +89,6 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 
 	lstrcpy(m_szLoadingText, TEXT("Loading Texture"));
 
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Terrain"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Terrian/Texture.dds")))))
-		return E_FAIL;
-
 	lstrcpy(m_szLoadingText, TEXT("Loading For Shader"));
 
 	/* For.Prototype_Component_Shader_VtxModel */

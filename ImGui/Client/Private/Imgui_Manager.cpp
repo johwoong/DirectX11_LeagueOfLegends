@@ -497,166 +497,186 @@ void CImGui_Manager::Show_PopupBox()
 
 void CImGui_Manager::Set_Terrian_Map()
 {
+	ImGui::GetIO().NavActive = false;
 	ImGui::GetIO().WantCaptureMouse = true;
-	ImGui::CollapsingHeader("Terrian_Map");
+
+	if (!ImGui::CollapsingHeader("Terrain Tool", ImGuiTreeNodeFlags_DefaultOpen))
+		return;
+
+	auto Section = [](const char* title)
+		{
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::TextColored(ImVec4(1.0f, 0.95f, 0.3f, 1.0f), "%s", title);
+			ImGui::Separator();
+		};
 
 	CTerrianManager::TERRIANDESC TerrainDesc = m_pTerrianManager->Get_TerrianDesc();
-	static CTerrian* pSelectedTerrain = nullptr;
+	static int selectedTerrain = -1;
 
-	// =======================================
-	// ?? Vertex X / Z 실시간 수정
-	// =======================================
-	int iNumVertices[2] = {
+	// --- Terrain 리스트 ---
+	list<CGameObject*>* pTerrainList =
+		CGameInstance::GetInstance()->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
+
+	CTerrian* pSelectedTerr = nullptr;
+	if (pTerrainList && selectedTerrain >= 0)
+	{
+		int idx = 0;
+		for (auto& obj : *pTerrainList)
+		{
+			if (idx == selectedTerrain)
+			{
+				pSelectedTerr = dynamic_cast<CTerrian*>(obj);
+				break;
+			}
+			++idx;
+		}
+	}
+
+	// --- 선택된 Terrain 값 UI에 반영 ---
+	if (pSelectedTerr)
+	{
+		CTransform* pTr = pSelectedTerr->Get_Transform();
+		_float3 vPos; XMStoreFloat3(&vPos, pTr->Get_State(CTransform::STATE_TRANSLATION));
+		TerrainDesc.TerrianDesc.m_iPositionX = (int)vPos.x;
+		TerrainDesc.TerrianDesc.m_fHeight = vPos.y;
+		TerrainDesc.TerrianDesc.m_iPositionZ = (int)vPos.z;
+		TerrainDesc.TerrianDesc.m_fRotationX = pTr->Get_CurrentRotationX();
+		TerrainDesc.TerrianDesc.m_fRotationY = pTr->Get_CurrentRotationY();
+		TerrainDesc.TerrianDesc.m_fRotationZ = pTr->Get_CurrentRotationZ();
+	}
+
+	// ===================== Vertex =====================
+	Section("Vertex");
+	static int iNumVert[2] = {
 		TerrainDesc.TerrianDesc.m_iVerticeNumX,
 		TerrainDesc.TerrianDesc.m_iVerticeNumZ
 	};
 
-	ImGui::Text("Vertex X / Z");
-	ImGui::SameLine(0, 10);
-	ImGui::InputInt2("##VertexCount", iNumVertices);
-
-	if (ImGui::IsItemDeactivatedAfterEdit())
+	ImGui::Columns(2, nullptr, false);
+	ImGui::SetColumnWidth(0, 110);
+	ImGui::Text("NumX / NumZ"); ImGui::NextColumn();
+	ImGui::PushItemWidth(180);
+	if (ImGui::InputInt2("##NumXZ", iNumVert))
 	{
-		TerrainDesc.TerrianDesc.m_iVerticeNumX = max(2, iNumVertices[0]);
-		TerrainDesc.TerrianDesc.m_iVerticeNumZ = max(2, iNumVertices[1]);
-		m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
+		TerrainDesc.TerrianDesc.m_iVerticeNumX = max(2, iNumVert[0]);
+		TerrainDesc.TerrianDesc.m_iVerticeNumZ = max(2, iNumVert[1]);
+	}
+	ImGui::PopItemWidth();
+	ImGui::Columns(1);
 
-		// ? 기존 Terrain의 버텍스 버퍼만 재설정
-		if (pSelectedTerrain)
+	// ===================== Transform =====================
+	Section("Transform");
+	bool anyChanged = false;
+	ImGui::Columns(2, nullptr, false);
+	ImGui::SetColumnWidth(0, 110);
+
+	ImGui::Text("Position"); ImGui::NextColumn();
+	ImGui::PushItemWidth(70);
+	anyChanged |= ImGui::DragInt("X##Pos", &TerrainDesc.TerrianDesc.m_iPositionX, 0.5f);
+	ImGui::SameLine();
+	anyChanged |= ImGui::DragFloat("Y##Pos", &TerrainDesc.TerrianDesc.m_fHeight, 0.1f);
+	ImGui::SameLine();
+	anyChanged |= ImGui::DragInt("Z##Pos", &TerrainDesc.TerrianDesc.m_iPositionZ, 0.5f);
+	ImGui::PopItemWidth();
+
+	ImGui::NextColumn();
+	ImGui::Text("Rotation"); ImGui::NextColumn();
+	ImGui::PushItemWidth(70);
+	anyChanged |= ImGui::DragFloat("X##Rot", &TerrainDesc.TerrianDesc.m_fRotationX, 0.5f);
+	ImGui::SameLine();
+	anyChanged |= ImGui::DragFloat("Y##Rot", &TerrainDesc.TerrianDesc.m_fRotationY, 0.5f);
+	ImGui::SameLine();
+	anyChanged |= ImGui::DragFloat("Z##Rot", &TerrainDesc.TerrianDesc.m_fRotationZ, 0.5f);
+	ImGui::PopItemWidth();
+	ImGui::Columns(1);
+
+	// 선택된 Terrain 실시간 갱신
+	if (anyChanged && pSelectedTerr)
+	{
+		CTransform* pTr = pSelectedTerr->Get_Transform();
+		if (pTr)
 		{
-			auto pVIBuffer = dynamic_cast<CVIBuffer_Terrian*>(pSelectedTerrain->Find_Component(TEXT("Com_VIBuffer")));
-			if (pVIBuffer)
-				pVIBuffer->Set_Terrain_Buffer(TerrainDesc.TerrianDesc);
+			pTr->Set_State(CTransform::STATE_TRANSLATION,
+				XMVectorSet((float)TerrainDesc.TerrianDesc.m_iPositionX,
+					TerrainDesc.TerrianDesc.m_fHeight,
+					(float)TerrainDesc.TerrianDesc.m_iPositionZ, 1.f));
+
+			pTr->Set_Rotation(_float3(
+				TerrainDesc.TerrianDesc.m_fRotationX,
+				TerrainDesc.TerrianDesc.m_fRotationY,
+				TerrainDesc.TerrianDesc.m_fRotationZ));
 		}
 	}
-	ImGui::Separator();
 
-	if (ImGui::Button("Create Terrain"))
-	{
-		if (SUCCEEDED(m_pTerrianManager->Create_Terrain(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"))))
-			pSelectedTerrain = nullptr;
-	}
-
-	ImGui::SameLine();
+	// ===================== Options =====================
+	Section("Options");
 	ImGui::Checkbox("WireFrame", &TerrainDesc.m_bShowWireFrame);
-	m_pTerrianManager->Set_bWireFrame(TerrainDesc.m_bShowWireFrame);
-
-	ImGui::SameLine();
+	ImGui::SameLine(160);
 	ImGui::Checkbox("Show", &m_bTerrian_Show);
+
+	m_pTerrianManager->Set_bWireFrame(TerrainDesc.m_bShowWireFrame);
 	m_pTerrianManager->Set_TerrainShow(m_bTerrian_Show);
 
-	m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
+	ImGui::Spacing();
 	ImGui::Separator();
 
-
-	list<CGameObject*>* pTerrainList =
-		CGameInstance::GetInstance()->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
-
-	if (pSelectedTerrain)
+	if (ImGui::Button("Create Terrain", ImVec2(180, 28)))
 	{
-		bool bFound = false;
-		if (pTerrainList)
-		{
-			for (auto& obj : *pTerrainList)
-			{
-				if (obj == pSelectedTerrain && !obj->Get_Dead())
-				{
-					bFound = true;
-					break;
-				}
-			}
-		}
-		if (!bFound)
-			pSelectedTerrain = nullptr;
+		m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
+		if (FAILED(m_pTerrianManager->Create_Terrain(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"))))
+			return;
 	}
 
-	ImGui::TextColored(ImVec4(1, 1, 0, 1), "Current Terrains");
-
-	if (pTerrainList && !pTerrainList->empty())
+	// ===================== Terrain List =====================
+	Section("Current Terrain List");
+	ImGui::BeginChild("TerrainList", ImVec2(0, 160), true);
+	if (pTerrainList)
 	{
-		int index = 0;
-		for (auto& terrainObj : *pTerrainList)
+		int i = 0;
+		for (auto& obj : *pTerrainList)
 		{
-			if (!terrainObj) continue;
-			char label[64];
-			sprintf_s(label, "Terrain %d", index++);
-			bool isSelected = (terrainObj == pSelectedTerrain);
-
-			if (ImGui::Selectable(label, isSelected))
+			if (auto* pTerr = dynamic_cast<CTerrian*>(obj))
 			{
-				pSelectedTerrain = dynamic_cast<CTerrian*>(terrainObj);
-				if (pSelectedTerrain)
-					CPickingMgr::GetInstance()->Set_PickedObj(pSelectedTerrain);
+				char label[64]; sprintf_s(label, "Terrain_%d", i);
+				if (ImGui::Selectable(label, selectedTerrain == i))
+					selectedTerrain = i;
 			}
+			++i;
 		}
 	}
-	else
-		ImGui::TextDisabled("No Terrains currently in scene.");
+	ImGui::EndChild();
 
-	ImGui::Separator();
-
-	if (pSelectedTerrain)
-	{
-		CTransform* pTransform = pSelectedTerrain->Get_Transform();
-		if (pTransform)
-		{
-			_float3 vPos, vRot;
-			XMStoreFloat3(&vPos, pTransform->Get_State(CTransform::STATE_TRANSLATION));
-			vRot = _float3(
-				pTransform->Get_CurrentRotationX(),
-				pTransform->Get_CurrentRotationY(),
-				pTransform->Get_CurrentRotationZ()
-			);
-
-			ImGui::TextColored(ImVec4(0.9f, 0.8f, 0.2f, 1), "Transform");
-
-			bool changed = false;
-			if (ImGui::DragFloat3("Position", (_float*)&vPos, 0.5f))
-			{
-				_vector vNewPos = XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f);
-				pTransform->Set_State(CTransform::STATE_TRANSLATION, vNewPos);
-				changed = true;
-			}
-
-			if (ImGui::DragFloat3("Rotation", (_float*)&vRot, 0.5f))
-			{
-				pTransform->Set_Rotation(vRot);
-				changed = true;
-			}
-
-			if (changed)
-			{
-				TerrainDesc.TerrianDesc.m_iPositionX = (int)vPos.x;
-				TerrainDesc.TerrianDesc.m_fHeight = vPos.y;
-				TerrainDesc.TerrianDesc.m_iPositionZ = (int)vPos.z;
-				m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
-			}
-
-			ImGui::Spacing();
-			ImGui::Separator();
-
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.9f, 0.3f, 0.3f, 1));
-			if (ImGui::Button("?? Delete Selected Terrain"))
-			{
-				pSelectedTerrain->Set_Dead(true);
-				pSelectedTerrain = nullptr;
-			}
-			ImGui::PopStyleColor();
-		}
-		else
-			ImGui::TextDisabled("Transform not found.");
-	}
-	else
-		ImGui::TextDisabled("No Terrain Selected.");
-
-	ImGui::Separator();
-
-	if (ImGui::Button("Save Terrain"))
+	// ===================== Save / Load / Delete =====================
+	Section("File Controls");
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 1.f, 1.f));
+	if (ImGui::Button("Save Terrain", ImVec2(140, 28)))
 		Save_Terrian();
+	ImGui::PopStyleColor();
+
 	ImGui::SameLine();
-	if (ImGui::Button("Load Terrain"))
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 1.f, 0.3f, 1.f));
+	if (ImGui::Button("Load Terrain", ImVec2(140, 28)))
 		Load_Terrian();
+	ImGui::PopStyleColor();
+
+	ImGui::SameLine();
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.f, 0.3f, 0.3f, 1.f));
+	if (ImGui::Button("Delete Selected", ImVec2(160, 28)))
+	{
+		if (pSelectedTerr)
+		{
+			pSelectedTerr->Set_Dead(true);
+			pSelectedTerr = nullptr;
+			selectedTerrain = -1;
+		}
+	}
+	ImGui::PopStyleColor();
+
+	// --- desc 반영 ---
+	m_pTerrianManager->Set_TerrainDesc(&TerrainDesc);
 }
+
 
 void CImGui_Manager::Save_Terrian()
 {

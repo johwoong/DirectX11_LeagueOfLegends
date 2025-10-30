@@ -77,6 +77,8 @@ HRESULT CTerrian::Initialize_Load(const _tchar* VIBufferTag, void* pArg)
     _vector vInitPosition = XMVectorSet(TerrianDesc.TerrianDesc.m_iPositionX, TerrianDesc.TerrianDesc.m_fHeight, TerrianDesc.TerrianDesc.m_iPositionZ, 1.f);
     m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vInitPosition);
 
+
+
     CPickingMgr::GetInstance()->Add_PickingGroup(this);
     m_eObjectID = OBJ_BACKGROUND;
 
@@ -168,10 +170,6 @@ HRESULT CTerrian::Ready_Components(void* pArg)
     if (FAILED(__super::Add_Components(TEXT("Com_Renderer"), LEVEL_STATIC, TEXT("Prototype_Component_Renderer"), (CComponent**)&m_pRenderCom)))
         return E_FAIL;
 
-    /* For.Com_Texture */
-    if (FAILED(__super::Add_Components(TEXT("Com_Texture"), LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Terrain"), (CComponent**)&m_pTextureCom[TYPE_DIFFUSE])))
-        return E_FAIL;
-
     if (pArg != nullptr)
     {
         /* For.Com_VIBuffer */
@@ -241,13 +239,6 @@ HRESULT CTerrian::SetUp_ShaderResources()
         return E_FAIL;
 
     if (FAILED(m_pShaderCom->Set_RawValue("g_ProjMatrix", &ProjMatrix, sizeof(_float4x4))))
-        return E_FAIL;
-
-    ID3D11ShaderResourceView* pSRVs[] = {
-    m_pTextureCom[TYPE_DIFFUSE]->Get_SRV(0),
-    };
-
-    if (FAILED(m_pShaderCom->Set_ShaderResourceViewArray("g_DiffuseTexture", pSRVs, 1)))
         return E_FAIL;
 
     return S_OK;

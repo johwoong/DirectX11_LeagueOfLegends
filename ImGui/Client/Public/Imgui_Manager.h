@@ -78,7 +78,6 @@ private:
 	CTerrianManager* m_pTerrianManager = { nullptr };
 	CTerrianManager::TERRIANDESC		m_pTerrianDesc;
 	_bool								m_bTerrian_Show = true;
-	_bool									m_bUpdateTerrain = false;
 
 
     //  For Object
