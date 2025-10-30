@@ -363,7 +363,7 @@ HRESULT CVIBuffer_Terrian::Load_Prototype(HANDLE hFile, _ulong& dwByte, _bool bC
 
 	m_pTerrianDesc.m_isHeightMap = true;
 #pragma region VERTEXBUFFER
-
+	 
 	m_iNumVerticesX = (m_pTerrianDesc).m_iVerticeNumX;
 	m_iNumVerticesZ = (m_pTerrianDesc).m_iVerticeNumZ;
 

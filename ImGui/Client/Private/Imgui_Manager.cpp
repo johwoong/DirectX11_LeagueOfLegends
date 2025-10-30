@@ -531,9 +531,6 @@ void CImGui_Manager::Set_Terrian_Map()
 	}
 	ImGui::Separator();
 
-	// =======================================
-	// ?? Terrain 생성 버튼
-	// =======================================
 	if (ImGui::Button("Create Terrain"))
 	{
 		if (SUCCEEDED(m_pTerrianManager->Create_Terrain(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"))))
@@ -718,59 +715,57 @@ void CImGui_Manager::Load_Terrian()
 	OFN.nMaxFile = 300;
 	OFN.lpstrInitialDir = L".";
 
-	if (GetOpenFileName(&OFN) != 0)
+	if (GetOpenFileName(&OFN) == 0)
+		return;
+
+	wsprintf(filePathName, L"%s 파일을 열겠습니까?", OFN.lpstrFile);
+	MessageBox(g_hWnd, filePathName, L"열기 선택", MB_OK);
+
+	HANDLE hFile = CreateFile(OFN.lpstrFile, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return;
+
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	pGameInstance->AddRef();
+
+	_ulong dwByte = 0;
+	_uint iNum = 0;
+	ReadFile(hFile, &iNum, sizeof(_uint), &dwByte, nullptr);
+
+	for (_uint i = 0; i < iNum; ++i)
 	{
-		wsprintf(filePathName, L"%s 파일을 열겠습니까?", OFN.lpstrFile);
-		MessageBox(g_hWnd, filePathName, L"열기 선택", MB_OK);
+		_tchar szFullPath[MAX_PATH] = TEXT("Prototype_Component_VIBuffer_Terrain_Load");
 
-		HANDLE hFile = CreateFile(OFN.lpstrFile, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-		if (hFile == INVALID_HANDLE_VALUE)
-			return;
+		// Terrain 생성
+		CVIBuffer_Terrian* pBuffer = m_pTerrianManager->Create_Terrain(m_pDevice, m_pContext, hFile, dwByte);
+		pGameInstance->Add_Prototype(LEVEL_STATIC, szFullPath, pBuffer);
+		
+		pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), szFullPath);
 
-		CGameInstance* pGameInstance = CGameInstance::GetInstance();
-		pGameInstance->AddRef();
+		// 이제 Terrain 버텍스 데이터 바로 다음 위치에 Transform 정보가 붙어있음
+		_float3 vPos{}, vRot{};
+		DWORD bytesRead = 0;
+		ReadFile(hFile, &vPos, sizeof(_float3), &bytesRead, nullptr);
+		ReadFile(hFile, &vRot, sizeof(_float3), &bytesRead, nullptr);
 
-		_ulong dwByte = 0;
-		_uint iNum = 0;
-		ReadFile(hFile, &iNum, sizeof(_uint), &dwByte, nullptr); // 저장된 Terrain 개수
+		list<CGameObject*>* pTerrainList =
+			pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
 
-		for (_uint i = 0; i < iNum; ++i)
+		if (pTerrainList && !pTerrainList->empty())
 		{
-			_tchar szFullPath[MAX_PATH] = TEXT("Prototype_Component_VIBuffer_Terrain_Load");
-
-			// 1?? 버텍스 로드 (기존 로직 유지)
-			if (pGameInstance->Find_Prototype(LEVEL_STATIC, szFullPath) == S_OK)
-				pGameInstance->Add_Prototype(LEVEL_STATIC, szFullPath, m_pTerrianManager->Create_Terrain(m_pDevice, m_pContext, hFile, dwByte));
-
-			pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), szFullPath);
-
-			// 2?? Transform 로드
-			_float3 vPos, vRot;
-			ReadFile(hFile, &vPos, sizeof(_float3), &dwByte, nullptr);
-			ReadFile(hFile, &vRot, sizeof(_float3), &dwByte, nullptr);
-
-			// 3?? 가장 최근에 생성된 Terrain 찾기
-			list<CGameObject*>* pTerrainList =
-				pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
-
-			if (pTerrainList && !pTerrainList->empty())
+			CTerrian* pTerrain = dynamic_cast<CTerrian*>(pTerrainList->back());
+			if (pTerrain)
 			{
-				CTerrian* pTerrain = dynamic_cast<CTerrian*>(pTerrainList->back());
-				if (pTerrain)
-				{
-					CTransform* pTransform = pTerrain->Get_Transform();
-
-					pTransform->Set_State(CTransform::STATE_TRANSLATION,
-						XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
-
-					pTransform->Set_Rotation(vRot);
-				}
+				CTransform* pTransform = pTerrain->Get_Transform();
+				pTransform->Set_State(CTransform::STATE_TRANSLATION,
+					XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
+				pTransform->Set_Rotation(vRot);
 			}
 		}
-
-		CloseHandle(hFile);
-		pGameInstance->Release();
 	}
+
+	CloseHandle(hFile);
+	pGameInstance->Release();
 }
 
 void CImGui_Manager::Set_Object_Map()

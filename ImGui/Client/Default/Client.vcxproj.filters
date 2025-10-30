@@ -255,11 +255,11 @@
     <ClCompile Include="..\Private\Terrian.cpp">
       <Filter>02. GameObjects\04. Terrian</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\TerrianManager.cpp">
-      <Filter>03. ToolManager\02. TerrianManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\ImGuizmo.cpp">
       <Filter>100. IMGUI\Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\TerrianManager.cpp">
+      <Filter>03. ToolManager\02. TerrianManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

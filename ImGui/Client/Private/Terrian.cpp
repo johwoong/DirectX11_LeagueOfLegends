@@ -266,10 +266,8 @@ void CTerrian::Set_Picked()
 
 void CTerrian::Save_Terrain(HANDLE hFile, _ulong* dwByte)
 {
-    // 1?? 버텍스 데이터 저장
     m_pVIBufferCom->Save_VertexPosition(hFile, dwByte);
 
-    // 2?? Transform 데이터 저장
     _float3 vPos, vRot;
 
     XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION));
