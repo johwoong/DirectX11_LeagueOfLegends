@@ -358,14 +358,16 @@ HRESULT CVIBuffer_Terrian::Load_Prototype(HANDLE hFile, _ulong& dwByte, _bool bC
 {
 	VTXNORTEX VertexTag;
 
-	/* 한번 TerrainDesc 정보 읽기 */
+	/* 1?? TerrainDesc 정보 읽기 */
 	ReadFile(hFile, &m_pTerrianDesc, sizeof(TERRIANDESC), &dwByte, nullptr);
 
 	m_pTerrianDesc.m_isHeightMap = true;
-#pragma region VERTEXBUFFER
-	 
-	m_iNumVerticesX = (m_pTerrianDesc).m_iVerticeNumX;
-	m_iNumVerticesZ = (m_pTerrianDesc).m_iVerticeNumZ;
+
+	// =========================================
+	// 2?? Vertex Buffer
+	// =========================================
+	m_iNumVerticesX = m_pTerrianDesc.m_iVerticeNumX;
+	m_iNumVerticesZ = m_pTerrianDesc.m_iVerticeNumZ;
 
 	ZeroMemory(&m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
 	m_iStride = sizeof(VTXNORTEX);
@@ -378,21 +380,35 @@ HRESULT CVIBuffer_Terrian::Load_Prototype(HANDLE hFile, _ulong& dwByte, _bool bC
 	ZeroMemory(pVertices, sizeof(VTXNORTEX) * m_iNumVertices);
 	m_pVerticesPos = new _float3[m_iNumVertices];
 
+	// ?? 버텍스 읽기 (Z가 바깥, X가 안쪽)
 	for (_uint i = 0; i < m_iNumVerticesZ; ++i)
 	{
 		for (_uint j = 0; j < m_iNumVerticesX; ++j)
 		{
-			_int		iIndex = i * m_iNumVerticesX + j;
-
+			_int iIndex = i * m_iNumVerticesX + j;
 			ReadFile(hFile, &pVertices[iIndex], sizeof(VTXNORTEX), &dwByte, nullptr);
 			m_pVerticesPos[iIndex] = pVertices[iIndex].vPosition;
 		}
 	}
 
+	// =========================================
+	// 3?? 위치 / 회전 정보 (Vertex 뒤에서 읽기)
+	// =========================================
+	_float3 vPos{}, vRot{};
+	ReadFile(hFile, &vPos, sizeof(_float3), &dwByte, nullptr);
+	ReadFile(hFile, &vRot, sizeof(_float3), &dwByte, nullptr);
 
-#pragma endregion
+	// 구조체에 저장
+	m_pTerrianDesc.m_iPositionX = (_int)vPos.x;
+	m_pTerrianDesc.m_iPositionZ = (_int)vPos.z;
+	m_pTerrianDesc.m_fHeight = vPos.y;
+	m_pTerrianDesc.m_fRotationX = vRot.x;
+	m_pTerrianDesc.m_fRotationY = vRot.y;
+	m_pTerrianDesc.m_fRotationZ = vRot.z;
 
-#pragma region INDEXBUFFER
+	// =========================================
+	// 4?? 인덱스 버퍼 생성
+	// =========================================
 	ZeroMemory(&m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
 
 	m_iIndicesByte = sizeof(FACEINDICES32);
@@ -401,86 +417,59 @@ HRESULT CVIBuffer_Terrian::Load_Prototype(HANDLE hFile, _ulong& dwByte, _bool bC
 
 	FACEINDICES32* pIndices = new FACEINDICES32[m_iNumPrimitive];
 
-	_uint		iNumFaces = 0;
-
+	_uint iNumFaces = 0;
 	for (_uint i = 0; i < m_iNumVerticesZ - 1; i++)
 	{
 		for (_uint j = 0; j < m_iNumVerticesX - 1; j++)
 		{
-			_uint		iIndex = i * m_iNumVerticesX + j;
-
-			_uint		iIndices[4] = {
+			_uint iIndex = i * m_iNumVerticesX + j;
+			_uint iIndices[4] = {
 				iIndex + m_iNumVerticesX,
 				iIndex + m_iNumVerticesX + 1,
 				iIndex + 1,
 				iIndex
 			};
 
+			// 삼각형 1
 			pIndices[iNumFaces]._0 = iIndices[0];
 			pIndices[iNumFaces]._1 = iIndices[1];
 			pIndices[iNumFaces]._2 = iIndices[2];
-
-			_vector		vSourDir, vDestDir, vNormal;
-
-			vSourDir = XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vPosition) - XMLoadFloat3(&pVertices[pIndices[iNumFaces]._0].vPosition);
-			vDestDir = XMLoadFloat3(&pVertices[pIndices[iNumFaces]._2].vPosition) - XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vPosition);
-			vNormal = XMVector3Normalize(XMVector3Cross(vSourDir, vDestDir));
-
-			XMStoreFloat3(&pVertices[pIndices[iNumFaces]._0].vNormal, XMLoadFloat3(&pVertices[pIndices[iNumFaces]._0].vNormal) + vNormal);
-			XMStoreFloat3(&pVertices[pIndices[iNumFaces]._1].vNormal, XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vNormal) + vNormal);
-			XMStoreFloat3(&pVertices[pIndices[iNumFaces]._2].vNormal, XMLoadFloat3(&pVertices[pIndices[iNumFaces]._2].vNormal) + vNormal);
 			++iNumFaces;
 
+			// 삼각형 2
 			pIndices[iNumFaces]._0 = iIndices[0];
 			pIndices[iNumFaces]._1 = iIndices[2];
 			pIndices[iNumFaces]._2 = iIndices[3];
-
-			vSourDir = XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vPosition) - XMLoadFloat3(&pVertices[pIndices[iNumFaces]._0].vPosition);
-			vDestDir = XMLoadFloat3(&pVertices[pIndices[iNumFaces]._2].vPosition) - XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vPosition);
-			vNormal = XMVector3Normalize(XMVector3Cross(vSourDir, vDestDir));
-
-			XMStoreFloat3(&pVertices[pIndices[iNumFaces]._0].vNormal, XMLoadFloat3(&pVertices[pIndices[iNumFaces]._0].vNormal) + vNormal);
-			XMStoreFloat3(&pVertices[pIndices[iNumFaces]._1].vNormal, XMLoadFloat3(&pVertices[pIndices[iNumFaces]._1].vNormal) + vNormal);
-			XMStoreFloat3(&pVertices[pIndices[iNumFaces]._2].vNormal, XMLoadFloat3(&pVertices[pIndices[iNumFaces]._2].vNormal) + vNormal);
 			++iNumFaces;
 		}
 	}
 
+	// =========================================
+	// 5?? 정규화 및 버퍼 생성
+	// =========================================
 	for (_uint i = 0; i < m_iNumVertices; ++i)
 		XMStoreFloat3(&pVertices[i].vNormal, XMVector3Normalize(XMLoadFloat3(&pVertices[i].vNormal)));
 
-
-	ZeroMemory(&m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
 	m_BufferDesc.ByteWidth = m_iNumVertices * m_iStride;
 	m_BufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	m_BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	m_BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	m_BufferDesc.MiscFlags = 0;
 	m_BufferDesc.StructureByteStride = m_iStride;
 
-	ZeroMemory(&m_SubResourceData, sizeof(D3D11_SUBRESOURCE_DATA));
 	m_SubResourceData.pSysMem = pVertices;
-
 	if (FAILED(__super::Create_VertexBuffer()))
 		return E_FAIL;
 
 	m_BufferDesc.ByteWidth = m_iIndicesByte * m_iNumPrimitive;
-	m_BufferDesc.Usage = D3D11_USAGE_DYNAMIC; /* 정적버퍼를 생성한다. */
 	m_BufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	m_BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	m_BufferDesc.MiscFlags = 0;
 	m_BufferDesc.StructureByteStride = sizeof(_ushort);
-
-	ZeroMemory(&m_SubResourceData, sizeof(D3D11_SUBRESOURCE_DATA));
 	m_SubResourceData.pSysMem = pIndices;
 
-	/* 정점을 담기 위한 공간을 할당하고, 내가 전달해준 배열의 값들을 멤카피한다. */
 	if (FAILED(__super::Create_IndexBuffer()))
 		return E_FAIL;
 
 	Safe_Delete_Array(pVertices);
 	Safe_Delete_Array(pIndices);
-#pragma endregion
 
 	return S_OK;
 }

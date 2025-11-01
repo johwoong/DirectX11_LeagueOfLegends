@@ -49,7 +49,7 @@ public:
 
 private:
 	class CActor* m_pTarget = { nullptr };
-	CAM_MODE m_eCamMode = CAM_GAME;
+	CAM_MODE m_eCamMode = CAM_DEBUG;
 	CAM_MODE m_ePreCamMode = CAM_GAME;
 	_vector m_vDistance = { 0.f, 0.f, 0.f, 0.f };
 	_long	m_lMouseWheel = 0;

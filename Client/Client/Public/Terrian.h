@@ -3,15 +3,21 @@
 #include "Client_Defines.h"
 #include "Actor.h"
 
+
 NS_BEGIN(Engine)
 class CTexture;
 class CVIBuffer_Terrian;
 NS_END
 
 NS_BEGIN(Client)
-class CTerrian final :
-    public CActor
+class CTerrian final : public CActor
 {
+public:
+	struct TERRAIN_LOAD_DESC
+	{
+		HANDLE hFile;
+		_ulong* pBytes;
+	};
 public:
 	enum TERRAIN_DEBUG_TYPE { DEBUG_SOLID, DEBUG_WIRE, DEBUG_NONE };
 
@@ -34,10 +40,9 @@ private:
 
 private:
 	CVIBuffer_Terrian* m_pVIBufferCom = nullptr;
-
 	_bool m_bWireFrame = false;
 	TERRAIN_DEBUG_TYPE m_eDebugtype = DEBUG_SOLID;
-
+	_bool	m_bDebugShow = true;
 public:
 	static CTerrian* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr) override;

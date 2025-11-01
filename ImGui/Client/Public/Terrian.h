@@ -1,8 +1,8 @@
 #pragma once
 #include "Actor.h"
+#include "VIBuffer_Terrian.h"   // ? 이 줄 추가
 
 NS_BEGIN(Engine)
-class CVIBuffer_Terrian;
 class CTexture;
 NS_END
 
@@ -28,8 +28,11 @@ public:
 	virtual HRESULT Render() override;
 
 public:
+	const CVIBuffer_Terrian::TERRIANDESC& Get_TerrianDesc() const { return m_pVIBufferCom->Get_TerrianDesc(); }
+public:
 	virtual _bool Picking(_float3* PickingPoint);
 	virtual void PickingTrue();
+
 
 private:
 	virtual HRESULT Ready_Components(void* pArg)override;

@@ -25,12 +25,12 @@ CVIBuffer::CVIBuffer(const CVIBuffer& rhs)
 
 HRESULT CVIBuffer::Initialize_Prototype()
 {
-    return E_NOTIMPL;
+    return S_OK;
 }
 
 HRESULT CVIBuffer::Initialize(void* pArg)
 {
-    return E_NOTIMPL;
+    return S_OK;
 }
 
 HRESULT CVIBuffer::Render()

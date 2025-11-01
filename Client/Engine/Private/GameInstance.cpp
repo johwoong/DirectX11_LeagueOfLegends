@@ -11,11 +11,13 @@ CGameInstance::CGameInstance()
 	, m_pTimer_Manager(CTimer_Manager::GetInstance())
 	, m_pComponent_Manager(CComponentManager::GetInstance())
 	, m_pPipeLine(CPipeLine::GetInstance())
+	, m_pFrustum(CFrustum::GetInstance())
 	, m_pTarget_Manager(CTarget_Manager::GetInstance())
 	, m_pPicking(CPicking::GetInstance())
 {
 	Safe_AddRef(m_pPicking);
 	Safe_AddRef(m_pTarget_Manager);
+	Safe_AddRef(m_pFrustum);
 	Safe_AddRef(m_pPipeLine);
 	Safe_AddRef(m_pComponent_Manager);
 	Safe_AddRef(m_pTimer_Manager);
@@ -53,6 +55,7 @@ HRESULT CGameInstance::Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, cons
 	if (FAILED(m_pComponent_Manager->Reserve_Container(iNumLevels)))
 		return E_FAIL;
 
+	m_pFrustum->Initialize();
 
 
 	return S_OK;
@@ -71,6 +74,7 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 
 	m_pPipeLine->Update();
 	m_pPicking->Update();
+	m_pFrustum->Transform_ToWorldSpace();
 
 	m_pLevel_Manager->Late_Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
@@ -490,8 +494,19 @@ _vector CGameInstance::Get_RayDir()
 
 	return m_pPicking->Get_RayDir();
 }
-
 #pragma endregion
+
+#pragma region Frustum
+
+_bool CGameInstance::isIn_WorldFrustum(_fvector vPosition, _float fRange)
+{
+	if (nullptr == m_pFrustum)
+		return false;
+
+	return m_pFrustum->isIn_WorldFrustum(vPosition, fRange);
+}
+#pragma endregion Frustum
+
 
 #pragma region TargetManager
 ID3D11ShaderResourceView* CGameInstance::Get_BackBufferCopySRV()
@@ -522,6 +537,7 @@ void CGameInstance::Release_Engine()
 	CPipeLine::GetInstance()->DestroyInstance();
 	CTimer_Manager::GetInstance()->DestroyInstance();
 	CInput_Device::GetInstance()->DestroyInstance();
+	CFrustum::GetInstance()->DestroyInstance();
 	CTarget_Manager::GetInstance()->DestroyInstance();
 	CPicking::GetInstance()->DestroyInstance();
 	CGraphic_Device::GetInstance()->DestroyInstance();
@@ -531,6 +547,7 @@ void CGameInstance::Free()
 {	
 	Safe_Release(m_pPicking);
 	Safe_Release(m_pTarget_Manager);
+	Safe_Release(m_pFrustum);
 	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pComponent_Manager);
 	Safe_Release(m_pTimer_Manager);

@@ -15,6 +15,7 @@
 #include "ComponentManager.h"
 #include "Target_Manager.h"
 #include "Object_Manager.h"
+#include "Frustum.h"
 #include "Picking.h"
 
 NS_BEGIN(Engine)
@@ -116,6 +117,11 @@ public: /* For Picking */
 	_vector Get_RayDir();
 #pragma endregion Picking
 
+#pragma region Frustum
+public: /* For.Frustum */
+	_bool isIn_WorldFrustum(_fvector vPosition, _float fRange = 0.f);
+#pragma endregion 
+
 
 #pragma region Target
 public: /* For.Target_Manager */
@@ -134,7 +140,8 @@ private:
 	class CComponentManager*		m_pComponent_Manager =	{ nullptr };
 	class CPipeLine*				m_pPipeLine		=		{ nullptr };
 	class CPicking*					m_pPicking =			{ nullptr };
-	class CTarget_Manager*			m_pTarget_Manager =				{ nullptr };
+	class CFrustum*					m_pFrustum		=		{ nullptr };
+	class CTarget_Manager*			m_pTarget_Manager =	    { nullptr };
 
 public:
 	virtual void Free() override;

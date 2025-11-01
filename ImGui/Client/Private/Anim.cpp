@@ -42,9 +42,23 @@ HRESULT CAnim::Initialize(void* pArg)
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
 
-	m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, m_ModelDesc.vScale.x);
-	m_pTransformCom->Set_Scale(CTransform::STATE_UP, m_ModelDesc.vScale.y);
-	m_pTransformCom->Set_Scale(CTransform::STATE_LOOK, m_ModelDesc.vScale.z);
+	_float scaleFactor;
+
+	switch (m_ModelDesc.eModel)
+	{
+	case MODEL_VAYNE:
+		scaleFactor = 1.f;
+		break;
+	default:
+		scaleFactor = 0.02f;
+	}
+
+
+
+	// 스케일 적용
+	m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, m_ModelDesc.vScale.x * scaleFactor);
+	m_pTransformCom->Set_Scale(CTransform::STATE_UP, m_ModelDesc.vScale.y * scaleFactor);
+	m_pTransformCom->Set_Scale(CTransform::STATE_LOOK, m_ModelDesc.vScale.z * scaleFactor);
 
 	m_pTransformCom->Set_Rotation(m_ModelDesc.vRotation);
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, XMVectorSetW(XMLoadFloat3(&m_ModelDesc.vPosition), 1.f));
@@ -177,6 +191,11 @@ HRESULT CAnim::Ready_Components(void* pArg)
 	case MODEL_VI:
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Vi"), (CComponent**)&m_pModelCom)))
 			return E_FAIL;
+		break;
+	case MODEL_VAYNE:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Vayne"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
 		break;
 	case MODEL_MINION_CANNON_B:
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Blue"), (CComponent**)&m_pModelCom)))

@@ -37,6 +37,7 @@ public:
 
 public:
 	HRESULT Loading_For_Logo();
+	HRESULT Loading_For_Prtotype();
 	HRESULT Loading_For_GamePlay();
 
 private:

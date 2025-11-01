@@ -45,6 +45,13 @@ HRESULT CActor::Render()
 	return S_OK;
 }
 
+_bool CActor::Is_Frustum(_float fOffset)
+{
+	_float3 vScale = Get_Scale();
+	_float fCullingRadius = max(max(vScale.x, vScale.y), vScale.z);
+	return m_pGameInstance->isIn_WorldFrustum(m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION), fCullingRadius + fOffset);
+}
+
 void CActor::SetUp_BillBoard()
 {
 	_float4x4 ViewMatrix;

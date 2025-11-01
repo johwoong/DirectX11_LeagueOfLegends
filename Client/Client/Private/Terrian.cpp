@@ -49,15 +49,24 @@ HRESULT CTerrian::Initialize_Load(const _tchar* VIBufferTag, void* pArg)
     /* For.Com_VIBuffer */
     if (FAILED(__super::Add_Components(TEXT("Com_VIBuffer"), LEVEL_STATIC, VIBufferTag, (CComponent**)&m_pVIBufferCom)))
         return E_FAIL;
+    
+    CVIBuffer_Terrian::TERRIANDESC desc = m_pVIBufferCom->Get_TerrianDesc();
+    _vector vInitPosition = XMVectorSet(desc.m_iPositionX, desc.m_fHeight, desc.m_iPositionZ, 1.f);
+    m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vInitPosition);
+
+    _float3 vRot = _float3(desc.m_fRotationX, desc.m_fRotationY, desc.m_fRotationZ);
+    m_pTransformCom->Set_Rotation(vRot);
 
     return S_OK;
 }
 
 int CTerrian::Update(_float fTimeDelta)
 {
-    // F1 키로 Solid / WireFrame 전환
-    if (GetAsyncKeyState(VK_F1) & 0x0001)
+    if (GetAsyncKeyState(VK_F2) & 0x0001)
         m_bWireFrame = !m_bWireFrame;
+
+    if (GetAsyncKeyState(VK_F3) & 0x0001)
+        m_bDebugShow = !m_bDebugShow;
 
     return OBJ_NOEVENT;
 }
@@ -72,6 +81,9 @@ void CTerrian::Late_Update(_float fTimeDelta)
 
 HRESULT CTerrian::Render()
 {
+    if (!m_bDebugShow)
+        return S_OK;
+
     if (nullptr == m_pShaderCom || nullptr == m_pVIBufferCom)
         return E_FAIL;
 

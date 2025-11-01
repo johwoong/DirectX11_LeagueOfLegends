@@ -22,6 +22,7 @@ public:
 public:
 	const char* Get_ModelTag() { return m_ModelDesc.pModeltag; }
 	const NONANIMDESC Get_ModelDesc() { return m_ModelDesc; }
+	_float Check_CullingRadius();
 
 public:
 	virtual _bool Picking(_float3* PickingPoint) override { return true; };

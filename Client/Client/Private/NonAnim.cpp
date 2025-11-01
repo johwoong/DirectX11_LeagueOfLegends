@@ -19,6 +19,24 @@ HRESULT CNonAnim::Initialize_Prototype()
 
 HRESULT CNonAnim::Initialize(void* pArg)
 {
+	if (pArg != nullptr)
+		memcpy(&m_ModelDesc, pArg, sizeof(NONANIMDESC));
+
+	if (FAILED(Ready_Components(pArg)))
+		return E_FAIL;
+
+	if (pArg != nullptr)
+	{
+		m_pTransformCom->Set_WorldMatrix(XMLoadFloat4x4(&m_ModelDesc.WorldMatrix));
+		_vector vPosition = XMLoadFloat3(&m_ModelDesc.vPosition);
+		vPosition = XMVectorSetW(vPosition, 1.f);
+		m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
+		m_pTransformCom->Set_Rotation(m_ModelDesc.vRotation);
+		Set_Scale(m_ModelDesc.vScale);
+
+		if (m_ModelDesc.m_fAngle != 0)
+			m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(m_ModelDesc.m_fAngle));
+	}
 	return S_OK;
 }
 
@@ -33,6 +51,10 @@ int CNonAnim::Update(_float fTimeDelta)
 
 void CNonAnim::Late_Update(_float fTimeDelta)
 {
+	if (Is_Frustum(Check_CullingRadius()) == false)
+	{
+		return;
+	}
 	if (m_pRendererCom != nullptr)
 	{
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
@@ -67,6 +89,14 @@ HRESULT CNonAnim::Render()
 
 	return S_OK;
 }
+
+_float CNonAnim::Check_CullingRadius()
+{
+	if (!strcmp(m_ModelDesc.pModeltag, "Map"))
+		return 1000.f;
+	return 0.f;
+}
+
 
 HRESULT CNonAnim::Ready_Components(void* pArg)
 {

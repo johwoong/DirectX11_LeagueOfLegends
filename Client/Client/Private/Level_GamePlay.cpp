@@ -10,7 +10,12 @@ CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pCo
 
 HRESULT CLevel_GamePlay::Initialize()
 {
-	if(FAILED(Ready_Layer_BackGround(TEXT("Layer_BackGround"))))
+	if (FAILED(__super::Initialize()))
+		return E_FAIL;
+
+	if(FAILED(Ready_Layer_Terrian(TEXT("Layer_BackGround"))))
+		return E_FAIL;
+	if (FAILED(Ready_Layer_MapObject(TEXT("Layer_MapObject"))))
 		return E_FAIL;
 
 	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
@@ -21,13 +26,15 @@ HRESULT CLevel_GamePlay::Initialize()
 
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
+	__super::Update(fTimeDelta);
 }
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 {
+	__super::Late_Update(fTimeDelta);
 }
 
-HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)
+HRESULT CLevel_GamePlay::Ready_Layer_Terrian(const _tchar* pLayerTag)
 {
 	if (FAILED(m_pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrian"), LEVEL_GAMEPLAY, pLayerTag, TEXT("Prototype_Summoners_Rift"))))
 		return E_FAIL;
@@ -35,8 +42,32 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)
 	return S_OK;
 }
 
+HRESULT CLevel_GamePlay::Ready_Layer_MapObject(const _tchar* pLayerTag)
+{
+	HANDLE hFile = 0;
+	_ulong dwByte = 0;
+	NONANIMDESC ModelDesc;
+	_uint iNum = 0;
+
+	hFile = CreateFile(TEXT("../../../Bin/Data/Summoners'LiftData/Summoners'LiftMap.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (0 == hFile)
+		return E_FAIL;
+
+	ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+
+	for (_uint i = 0; i < iNum; ++i)
+	{
+		ReadFile(hFile, &(ModelDesc), sizeof(NONANIMDESC), &dwByte, nullptr);
+		if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_NonAnim"), LEVEL_GAMEPLAY, pLayerTag, &ModelDesc)))
+			return E_FAIL;
+	}
+	CloseHandle(hFile);
+	return S_OK;
+}
+
 HRESULT CLevel_GamePlay::Ready_Layer_Player(const _tchar* pLayerTag)
 {
+
 	return S_OK;
 }
 
@@ -56,7 +87,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 	CameraDesc.CameraDesc.fNear = 0.1f;
 	CameraDesc.CameraDesc.fFar = 1000.f;
 
-	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 10.f;
+	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 20.f;
 	CameraDesc.CameraDesc.TransformDesc.fRotationPerSec = XMConvertToRadians(60.f);
 
 	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Camera_Dynamic"), LEVEL_GAMEPLAY, pLayerTag, &CameraDesc)))

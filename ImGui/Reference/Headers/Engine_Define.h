@@ -42,6 +42,7 @@ using namespace DirectX;
 #include <functional>
 #include <string>
 #include <iostream>
+#include <typeinfo>
 #include <sstream>
 using namespace std;
 
@@ -74,6 +75,7 @@ enum DIMM { DIMM_X, DIMM_Y, DIMM_WHEEL, DIMM_END };
 #define new DBG_NEW 
 
 #endif
+
 #endif
 
 #define OBJ_POOL 2

@@ -185,11 +185,11 @@ void CImGui_Manager::Update_Imgui()
 			ImGui::EndTabItem();
 		}
 
-		//if (ImGui::BeginTabItem("Animation Tool"))
-		//{
-		//	Set_Animation();
-		//	ImGui::EndTabItem();
-		//}
+		if (ImGui::BeginTabItem("Animation Tool"))
+		{
+			Set_Animation();
+			ImGui::EndTabItem();
+		}
 		ImGui::EndTabBar(); 
 	}
 
@@ -722,12 +722,11 @@ void CImGui_Manager::Save_Terrian()
 
 void CImGui_Manager::Load_Terrian()
 {
-	OPENFILENAME OFN;
+	OPENFILENAME OFN{};
 	TCHAR filePathName[300] = L"";
 	TCHAR lpstrFile[300] = L"";
 	static TCHAR filter[] = L"데이터 파일\0*.dat\0텍스트 파일\0*.txt";
 
-	memset(&OFN, 0, sizeof(OPENFILENAME));
 	OFN.lStructSize = sizeof(OPENFILENAME);
 	OFN.hwndOwner = g_hWnd;
 	OFN.lpstrFilter = filter;
@@ -756,17 +755,10 @@ void CImGui_Manager::Load_Terrian()
 	{
 		_tchar szFullPath[MAX_PATH] = TEXT("Prototype_Component_VIBuffer_Terrain_Load");
 
-		// Terrain 생성
+		// Terrain 버퍼 생성 (vPos, vRot은 내부에서 이미 읽힘)
 		CVIBuffer_Terrian* pBuffer = m_pTerrianManager->Create_Terrain(m_pDevice, m_pContext, hFile, dwByte);
 		pGameInstance->Add_Prototype(LEVEL_STATIC, szFullPath, pBuffer);
-		
 		pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrain"), LEVEL_GAMEPLAY, TEXT("Layer_Terrain"), szFullPath);
-
-		// 이제 Terrain 버텍스 데이터 바로 다음 위치에 Transform 정보가 붙어있음
-		_float3 vPos{}, vRot{};
-		DWORD bytesRead = 0;
-		ReadFile(hFile, &vPos, sizeof(_float3), &bytesRead, nullptr);
-		ReadFile(hFile, &vRot, sizeof(_float3), &bytesRead, nullptr);
 
 		list<CGameObject*>* pTerrainList =
 			pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Terrain"));
@@ -776,10 +768,22 @@ void CImGui_Manager::Load_Terrian()
 			CTerrian* pTerrain = dynamic_cast<CTerrian*>(pTerrainList->back());
 			if (pTerrain)
 			{
+				// ?? Terrian에서 desc 바로 얻기
+				auto desc = pTerrain->Get_TerrianDesc();
+
 				CTransform* pTransform = pTerrain->Get_Transform();
-				pTransform->Set_State(CTransform::STATE_TRANSLATION,
-					XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
-				pTransform->Set_Rotation(vRot);
+				if (pTransform)
+				{
+					// ?? 위치
+					pTransform->Set_State(CTransform::STATE_TRANSLATION,
+						XMVectorSet((float)desc.m_iPositionX, desc.m_fHeight, (float)desc.m_iPositionZ, 1.f));
+
+					// ?? 회전
+					pTransform->Set_Rotation(_float3(
+						desc.m_fRotationX,
+						desc.m_fRotationY,
+						desc.m_fRotationZ));
+				}
 			}
 		}
 	}
@@ -1079,7 +1083,6 @@ void CImGui_Manager::BrowseForFolder()
 			}
 
 
-			/* 첫줄은 object 리스트의 size 받아서 갯수만큼 for문 돌리게 하려고 저장해놓음*/
 			WriteFile(hFile, &(iNum), sizeof(_int), &dwByte, nullptr);
 
 			for (auto& iter : *plistClone)
@@ -1206,6 +1209,9 @@ void CImGui_Manager::Set_Animation()
 			break;
 		case MODEL_VI:
 			lstrcat(pAnimationDataFilePath, TEXT("Champion/Vi/Vi_Animation_Add.dat"));
+			break;
+		case MODEL_VAYNE:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Vayne/Vayne_Animation_Add.dat"));
 			break;
 		case MODEL_MINION_CANNON_B:
 			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Cannon_Blue/Minion_Cannon_Blue_Animation_Add.dat"));

@@ -15,11 +15,10 @@ public:
 		_int  m_iVerticeNumX = 10;
 		_int  m_iVerticeNumZ = 10;
 		_float m_fHeight = 0;
-		_bool m_isHeightMap = false;
-
 		_float m_fRotationX = 0.f;
 		_float m_fRotationY = 0.f;
 		_float m_fRotationZ = 0.f;
+		_bool m_isHeightMap = false;
 	}TERRIANDESC;
 
 protected:

@@ -13,6 +13,16 @@ CMainApp::CMainApp()
 
 HRESULT CMainApp::Initialize()
 {
+	//if (::AllocConsole() == TRUE)
+	//{
+	//	FILE* nfp[3];
+	//	freopen_s(nfp + 0, "CONOUT$", "rb", stdin);
+	//	freopen_s(nfp + 1, "CONOUT$", "wb", stdout);
+	//	freopen_s(nfp + 2, "CONOUT$", "wb", stderr);
+	//	std::ios::sync_with_stdio();
+	//}
+
+
 	srand(unsigned int(time(NULL)));
 
 	/* 내 게임의 초기화작업을 수행 */
@@ -107,7 +117,6 @@ HRESULT CMainApp::Ready_Prototype_Component()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_UI"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Shaderfiles/Shader_UI.hlsl"), VTXTEX_DECLARATION::Elements, VTXTEX_DECLARATION::iNumElements))))
 		return E_FAIL;
-
 
 
 	Safe_AddRef(m_pRenderer);

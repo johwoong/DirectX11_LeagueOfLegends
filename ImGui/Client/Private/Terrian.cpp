@@ -54,9 +54,6 @@ HRESULT CTerrian::Initialize_Load(const _tchar* VIBufferTag, void* pArg)
     if (FAILED(__super::Add_Components(TEXT("Com_Renderer"), LEVEL_STATIC, TEXT("Prototype_Component_Renderer"), (CComponent**)&m_pRenderCom)))
         return E_FAIL;
 
-    /* For.Com_Texture */
-    if (FAILED(__super::Add_Components(TEXT("Com_Texture"), LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Terrain"), (CComponent**)&m_pTextureCom[TYPE_DIFFUSE])))
-        return E_FAIL;
 
     /* For.Com_VIBuffer */
     if (FAILED(__super::Add_Components(TEXT("Com_VIBuffer"), LEVEL_STATIC, VIBufferTag, (CComponent**)&m_pVIBufferCom)))
@@ -258,7 +255,6 @@ void CTerrian::Set_Picked()
 void CTerrian::Save_Terrain(HANDLE hFile, _ulong* dwByte)
 {
     m_pVIBufferCom->Save_VertexPosition(hFile, dwByte);
-
     _float3 vPos, vRot;
 
     XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION));

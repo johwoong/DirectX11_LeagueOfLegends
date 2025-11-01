@@ -19,19 +19,18 @@ protected:
 	virtual ~CActor() = default;
 
 public:
-	void SetUp_BillBoard();
-
-public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
 	virtual int Update(_float fTimeDelta);
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render();
 
+
 public:
 	virtual _bool Picking(_float3* PickingPoint) { return false; }
 	virtual void PickingTrue() {};
-
+	_bool Is_Frustum(_float fOffset = 0);
+	void SetUp_BillBoard();
 public:
 	_float3 Get_Scale() { return m_vScale; }
 	CTransform* Get_Transform() { return m_pTransformCom; }

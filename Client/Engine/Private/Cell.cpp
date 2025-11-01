@@ -89,6 +89,7 @@ _vector CCell::Get_Center()
 	return XMVectorSet(PositionX, PositionY, PositionZ, 1.f);
 }
 
+#ifdef _DEBUG
 HRESULT CCell::Render()
 {
 	if (nullptr == m_pVIBuffer)
@@ -97,7 +98,7 @@ HRESULT CCell::Render()
 
 	return S_OK;
 }
-
+#endif
 
 
 CCell* CCell::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _float3* pPoints, _int iIndex)

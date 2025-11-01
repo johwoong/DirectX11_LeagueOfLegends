@@ -392,7 +392,7 @@ void CModel::Update(_float fRadius)
     if (TYPE_NONANIM_INSTANCE == m_eModelType)
     {
         for (auto& pInstanceMesh : m_InstanceMeshes)
-            pInstanceMesh->Tick(fRadius);
+            pInstanceMesh->Update(fRadius);
     }
 }
 

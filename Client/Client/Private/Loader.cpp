@@ -8,6 +8,8 @@
 
 #include "Terrian.h"
 #include "CCamera_Dynamic.h"
+#include "NonAnim.h"
+
 
 
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -75,9 +77,33 @@ HRESULT CLoader::Loading_For_Logo()
 		CUI_BackGround::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	lstrcpy(m_szLoadingText, TEXT("원본 객체 로딩 중"));
 
+	if(FAILED(Loading_For_Prtotype()))
+		return E_FAIL;
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었슴니다."));
 	m_isFinished = true;
+	return S_OK;
+}
+
+HRESULT CLoader::Loading_For_Prtotype()
+{
+
+ 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_NonAnim"),
+		CNonAnim::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	// For Prototype Object Terrian 
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Terrian"),
+		CTerrian::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	// For Prototype Object CameraDynamic 
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Camera_Dynamic"),
+		CCamera_Dynamic::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+
 	return S_OK;
 }
 
@@ -91,22 +117,14 @@ HRESULT CLoader::Loading_For_GamePlay()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNorTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_NorTexTerrianl.hlsl"), VTXNORTEX_DECLARATION::Elements, VTXNORTEX_DECLARATION::iNumElements))))
 		return E_FAIL;
+
+	// For Prototype Component Shader VtxNorTex
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxModel"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxModel.hlsl"), VTXNORTEX_DECLARATION::Elements, VTXNORTEX_DECLARATION::iNumElements))))
+		return E_FAIL;
 #pragma region 셰이더 로딩
 
 
-
-#pragma region 원본객체 로딩
-	lstrcpy(m_szLoadingText, TEXT("원본 객체 로딩 중"));
-	// For Prototype Object Terrian 
-	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Terrian"),
-		CTerrian::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	// For Prototype Object CameraDynamic 
-	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Camera_Dynamic"),
-		CCamera_Dynamic::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-
-#pragma endregion
 
 #pragma region
 
@@ -115,12 +133,20 @@ HRESULT CLoader::Loading_For_GamePlay()
 	HANDLE hFile = 0;
 	_ulong dwByte = 0;
 	_uint iNum = 0;
-	hFile = CreateFile(TEXT("../../../Bin/Bin_Data/NonAnim/Map/MapTest.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	hFile = CreateFile(TEXT("../../../Bin/Data/Summoners'LiftData/MapTest.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
  	if(FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Summoners_Rift"), CVIBuffer_Terrian::Create(m_pDevice, m_pContext, hFile, dwByte))))
 		return E_FAIL;
 
 #pragma endregion 
+
+#pragma region Model 로딩
+	lstrcpy(m_szLoadingText, TEXT("맵 로딩중 "));
+
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Map"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
+		return E_FAIL;
+#pragma endregion
 
 	m_isFinished = true;
 
@@ -148,7 +174,6 @@ void CLoader::Free()
 	DeleteCriticalSection(&m_CriticalSection);
 
 	Safe_Release(m_pGameInstnace);
-
-
-
+	Safe_Release(m_pDevice);
+	Safe_Release(m_pContext);
 }

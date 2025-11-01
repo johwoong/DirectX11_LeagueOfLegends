@@ -43,17 +43,8 @@
     <Filter Include="02. GameObjects\00. Actor">
       <UniqueIdentifier>{d81d9cea-2658-403b-a5ff-4d4befd2fd92}</UniqueIdentifier>
     </Filter>
-    <Filter Include="97. Camera">
-      <UniqueIdentifier>{1b8112bc-0f69-41df-9a28-58f6c2826225}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="97. Camera\Dynamic">
-      <UniqueIdentifier>{b7fc6d64-aad1-4951-8ad2-2ee2ba8b3fed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects\01. BackGround">
       <UniqueIdentifier>{a9b3601b-1e97-47a3-a3fc-ea932578ac37}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="96. ShaderFiles">
-      <UniqueIdentifier>{d1b26620-fd19-4e03-a176-8064bc795a7a}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\02. NonAnimModel">
       <UniqueIdentifier>{4ba85a4a-9b21-40cf-9a38-d9d6ef55a76d}</UniqueIdentifier>
@@ -72,6 +63,15 @@
     </Filter>
     <Filter Include="100. IMGUI\Default\Manager">
       <UniqueIdentifier>{747acbf4-c554-40b0-b54f-2173bcc73fb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. ToolManager\96. ShaderFiles">
+      <UniqueIdentifier>{d1b26620-fd19-4e03-a176-8064bc795a7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="97. Camera">
+      <UniqueIdentifier>{1b8112bc-0f69-41df-9a28-58f6c2826225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="97. Camera\Dynamic">
+      <UniqueIdentifier>{b7fc6d64-aad1-4951-8ad2-2ee2ba8b3fed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -264,21 +264,21 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
-      <Filter>96. ShaderFiles</Filter>
+      <Filter>03. ToolManager\96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
-      <Filter>96. ShaderFiles</Filter>
+      <Filter>03. ToolManager\96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl">
-      <Filter>96. ShaderFiles</Filter>
+      <Filter>03. ToolManager\96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_NorTexTerrianl.hlsl">
-      <Filter>96. ShaderFiles</Filter>
+      <Filter>03. ToolManager\96. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\Bin\ShaderFiles\Shader_VtxModelTool.hlsl">
-      <Filter>96. ShaderFiles</Filter>
+      <Filter>03. ToolManager\96. ShaderFiles</Filter>
     </None>
   </ItemGroup>
 </Project>

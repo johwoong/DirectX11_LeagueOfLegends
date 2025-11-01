@@ -40,7 +40,7 @@ CComponent* CComponentManager::Clone_Component(_uint iLevelIdx, const _tchar* pP
 	if (nullptr == pPrototype)
 		return nullptr;
 	
-	CComponent* pComponent = pPrototype->Clone(pArg);
+ 	CComponent* pComponent = pPrototype->Clone(pArg);
 	if (nullptr == pComponent)
 		return nullptr;
 	return pComponent;

@@ -1,5 +1,6 @@
 #include "Mesh_Instance.h"
 #include "Bone.h"
+#include "Frustum.h"
 
 CMesh_Instance::CMesh_Instance(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CVIBuffer_Instance(pDevice, pContext)
@@ -28,7 +29,6 @@ void CMesh_Instance::Get_BoneMatrices(_float4x4* pBoneMatrices, _fmatrix PivotMa
 
 	for (auto& pBoneNode : m_Bones)
 	{
-		/* Offset * Combined * Pivot */
 		XMStoreFloat4x4(&pBoneMatrices[iNumBones++], pBoneNode->Get_OffsetMatrix() * pBoneNode->Get_CombinedTransformationMatrix() * PivotMatrix);
 	}
 }
@@ -111,7 +111,7 @@ HRESULT CMesh_Instance::Initialize_Prototype(CModel::TYPE eModelType, HANDLE hFi
 	m_iNumIndicesPerPrimitive = 3;
 
 	m_BufferDesc.ByteWidth = m_iIndicesByte * m_iNumPrimitive;
-	/* 동적 버퍼를 생성한다. */
+
 	m_BufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	m_BufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	m_BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -137,13 +137,13 @@ HRESULT CMesh_Instance::Initialize_Prototype(CModel::TYPE eModelType, HANDLE hFi
 	ZeroMemory(&m_SubResourceData, sizeof(D3D11_SUBRESOURCE_DATA));
 	m_SubResourceData.pSysMem = pIndices;
 
-	/* 정점을 담기 위한 공간을 할당하고, 내가 전달해준 배열의 값들을 멤카피한다. */
 	if (FAILED(__super::Create_IndexBuffer()))
 		return E_FAIL;
 
 	Safe_Delete_Array(pIndices);
 	Safe_Delete_Array(pInstanceIndices);
 #pragma endregion
+
 #pragma region INSTANCE_BUFFER
 	ZeroMemory(&m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
 
@@ -243,31 +243,32 @@ HRESULT CMesh_Instance::SetUp_Bones(HANDLE hFile, _ulong* pdwByte, CModel* pMode
 	return S_OK;
 }
 
-void CMesh_Instance::Tick(_float fRaius)
+void CMesh_Instance::Update(_float fRaius)
 {
-	//CFrustum* pFrustum = GET_INSTANCE(CFrustum);
+	CFrustum* pFrustum = CFrustum::GetInstance();
+	pFrustum->AddRef();
 
-	//vector<VTXMATRIX> vInstance;
+	vector<VTXMATRIX> vInstance;
 
-	//for (_uint i = 0; i < m_iOriginalInstance; ++i)
-	//{
-	//	if (true == pFrustum->isIn_WorldFrustum(XMLoadFloat4(&m_pInstance[i].vPosition), fRaius))
-	//		vInstance.push_back(m_pInstance[i]);
-	//}
+	for (_uint i = 0; i < m_iOriginalInstance; ++i)
+	{
+		if (true == pFrustum->isIn_WorldFrustum(XMLoadFloat4(&m_pInstance[i].vPosition), fRaius))
+			vInstance.push_back(m_pInstance[i]);
+	}
 
-	//m_iNumInstance = (_uint)vInstance.size();
+	m_iNumInstance = (_uint)vInstance.size();
 
-	//D3D11_MAPPED_SUBRESOURCE		MappedSubResource;
-	//ZeroMemory(&MappedSubResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	D3D11_MAPPED_SUBRESOURCE		MappedSubResource;
+	ZeroMemory(&MappedSubResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
-	//m_pContext->Map(m_pInstanceBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &MappedSubResource);
+	m_pContext->Map(m_pInstanceBuffer, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &MappedSubResource);
 
-	//for (_uint i = 0; i < m_iNumInstance; ++i)
-	//	((VTXMATRIX*)(MappedSubResource.pData))[i] = vInstance[i];
+	for (_uint i = 0; i < m_iNumInstance; ++i)
+		((VTXMATRIX*)(MappedSubResource.pData))[i] = vInstance[i];
 
-	//m_pContext->Unmap(m_pInstanceBuffer, 0);
+	m_pContext->Unmap(m_pInstanceBuffer, 0);
 
-	//RELEASE_INSTANCE(CFrustum);
+	pFrustum->Release();
 }
 
 CMesh_Instance* CMesh_Instance::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, CModel::TYPE eModelType, HANDLE hFile, _ulong* pdwByte, const char* pDataFilePath, CModel* pModel, _fmatrix PivotMatrix)

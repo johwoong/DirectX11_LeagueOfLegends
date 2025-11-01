@@ -19,7 +19,8 @@ public:
 
 
 public:
-	HRESULT Ready_Layer_BackGround(const _tchar* pLayerTag);
+	HRESULT Ready_Layer_Terrian(const _tchar* pLayerTag);
+	HRESULT Ready_Layer_MapObject(const _tchar* pLayerTag);
 	HRESULT Ready_Layer_Player(const _tchar* pLayerTag);
 	HRESULT Ready_Layer_Camera(const _tchar* pLayerTag);
 	

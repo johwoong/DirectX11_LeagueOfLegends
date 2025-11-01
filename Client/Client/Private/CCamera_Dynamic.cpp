@@ -67,7 +67,7 @@ int CCamera_Dynamic::Update(_float fTimeDelta)
 	}
 
 	if (FAILED(Bind_OnPipeLine()))
-		return E_FAIL;
+		return OBJ_NOEVENT;
 }
 
 void CCamera_Dynamic::Late_Update(_float fTimeDelta)
@@ -102,13 +102,13 @@ void CCamera_Dynamic::Set_CamMode(CAM_MODE eCamMode)
 
 void CCamera_Dynamic::Debug_Camera(_float fTimeDelta)
 {
-	if (m_pGameInstance->Key_Pressing(DIK_UP))
+	if (m_pGameInstance->Key_Pressing(DIK_W))
 		m_pTransformCom->Move_Straight(fTimeDelta * 2);
-	if (m_pGameInstance->Key_Pressing(DIK_DOWN))
+	if (m_pGameInstance->Key_Pressing(DIK_S))
 		m_pTransformCom->Move_BackWard(fTimeDelta * 2);
-	if (m_pGameInstance->Key_Pressing(DIK_LEFT))
+	if (m_pGameInstance->Key_Pressing(DIK_A))
 		m_pTransformCom->Move_Left(fTimeDelta * 2);
-	if (m_pGameInstance->Key_Pressing(DIK_RIGHT))
+	if (m_pGameInstance->Key_Pressing(DIK_D))
 		m_pTransformCom->Move_Right(fTimeDelta * 2);
 
 	_long MouseMove = 0;
