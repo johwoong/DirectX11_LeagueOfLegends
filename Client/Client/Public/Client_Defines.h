@@ -9,8 +9,7 @@ namespace Client
 
 	// SHADER 
 	enum SHADER_NONANIMID {SHADER_NOANIM_DEFAULT};
-
-	
+	enum OBJECT_ID {PLAYER, ENEMY, NPC, TEAM, OBJECT_END};
 }
 
 #include <process.h>

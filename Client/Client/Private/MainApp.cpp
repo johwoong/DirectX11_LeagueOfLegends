@@ -2,6 +2,8 @@
 #include "GameInstance.h"
 
 #include "Level_Loading.h"
+#include "PickingManager.h"
+#include "PlayerManager.h"
 
 USING(Client)
 
@@ -148,6 +150,7 @@ void CMainApp::Free()
 
 	/* 내 멤버를 정리한다. */
 	Safe_Release(m_pGameInstance);
-
+	CPickingManager::GetInstance()->DestroyInstance();
+	CPlayerManager::GetInstance()->DestroyInstance();
 	CGameInstance::Release_Engine();
 }

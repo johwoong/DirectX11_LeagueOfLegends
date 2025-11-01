@@ -2,6 +2,8 @@
 #include "Level_GamePlay.h"
 #include "GameInstance.h"
 #include "CCamera_Dynamic.h"
+#include "PlayerManager.h"
+#include "PickingManager.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
@@ -13,12 +15,14 @@ HRESULT CLevel_GamePlay::Initialize()
 	if (FAILED(__super::Initialize()))
 		return E_FAIL;
 
+
+	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
+		return E_FAIL;
 	if(FAILED(Ready_Layer_Terrian(TEXT("Layer_BackGround"))))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_MapObject(TEXT("Layer_MapObject"))))
 		return E_FAIL;
-
-	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
+	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
 		return E_FAIL;
 
     return S_OK;
@@ -27,16 +31,25 @@ HRESULT CLevel_GamePlay::Initialize()
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
+	CPlayerManager::GetInstance()->Update(fTimeDelta);
 }
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 {
 	__super::Late_Update(fTimeDelta);
+	CPlayerManager::GetInstance()->Late_Update(fTimeDelta);
+	if (m_pGameInstance->Mouse_Down(DIMK_LBUTTON))
+	{
+		CPickingManager::GetInstance()->Picking();
+	}
 }
 
 HRESULT CLevel_GamePlay::Ready_Layer_Terrian(const _tchar* pLayerTag)
 {
 	if (FAILED(m_pGameInstance->Add_GameObjectLoad(TEXT("Prototype_GameObject_Terrian"), LEVEL_GAMEPLAY, pLayerTag, TEXT("Prototype_Summoners_Rift"))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Sky"), LEVEL_GAMEPLAY, pLayerTag, nullptr)))
 		return E_FAIL;
 
 	return S_OK;
@@ -67,6 +80,8 @@ HRESULT CLevel_GamePlay::Ready_Layer_MapObject(const _tchar* pLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Player(const _tchar* pLayerTag)
 {
+	if (FAILED(CPlayerManager::GetInstance()->Initialize(m_pDevice, m_pContext)))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -116,5 +131,4 @@ CLevel_GamePlay* CLevel_GamePlay::Create(ID3D11Device* pDevice, ID3D11DeviceCont
 void CLevel_GamePlay::Free()
 {
     __super::Free();
-
 }

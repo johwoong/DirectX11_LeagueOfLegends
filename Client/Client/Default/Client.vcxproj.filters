@@ -67,6 +67,15 @@
     <ClInclude Include="..\Public\PickingManager.h">
       <Filter>04. PickingManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Sky.h">
+      <Filter>02. GameObjects\03. NonAnim\02. Sky</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PlayerManager.h">
+      <Filter>02. GameObjects\01. Player\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Renekton.h">
+      <Filter>02. GameObjects\01. Player\00. Champion\01. Renekton</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -143,6 +152,15 @@
     <Filter Include="04. PickingManager">
       <UniqueIdentifier>{1902d77a-0c7c-4b48-b91c-40a48938c7e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\03. NonAnim\02. Sky">
+      <UniqueIdentifier>{41bbd8e3-8ee6-48d1-adf5-dd3f0dafffc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\01. Player\00. Champion\01. Renekton">
+      <UniqueIdentifier>{4c38113e-f281-4659-8194-197d53cb3731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\01. Player\Manager">
+      <UniqueIdentifier>{236a6db1-f629-49b4-95e3-7bfb297fe696}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -199,6 +217,15 @@
     <ClCompile Include="..\private\Loader.cpp">
       <Filter>01.Levles\Loading\Loader</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\Sky.cpp">
+      <Filter>02. GameObjects\03. NonAnim\02. Sky</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PlayerManager.cpp">
+      <Filter>02. GameObjects\01. Player\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Renekton.cpp">
+      <Filter>02. GameObjects\01. Player\00. Champion\01. Renekton</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc">
@@ -222,6 +249,9 @@
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxModel.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxCubeTexture.hlsl">
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

@@ -34,9 +34,17 @@ public:
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual HRESULT Render() override;
 
+public:
+	virtual _bool Picking(_float3* PickingPoint);
+	virtual void PickingTrue();
+
+
 private:
 	HRESULT Ready_Components(void* pArg);
 	HRESULT SetUp_ShaderResources();
+
+public:
+	void Set_Picked();
 
 private:
 	CVIBuffer_Terrian* m_pVIBufferCom = nullptr;

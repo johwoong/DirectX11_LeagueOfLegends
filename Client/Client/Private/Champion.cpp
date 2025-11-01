@@ -30,12 +30,13 @@ HRESULT CChampion::Initialize(void* pArg)
 
 int CChampion::Update(_float fTimeDelta)
 {
+	__super::Update(fTimeDelta);
 	return OBJ_NOEVENT;
 }
 
 void CChampion::Late_Update(_float fTimeDelta)
 {
-
+	__super::Late_Update(fTimeDelta);
 }
 
 HRESULT CChampion::Render()

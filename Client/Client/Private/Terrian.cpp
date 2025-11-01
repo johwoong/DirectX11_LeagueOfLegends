@@ -30,6 +30,8 @@ HRESULT CTerrian::Initialize(void* pArg)
     if (FAILED(Ready_Components(pArg)))
         return E_FAIL;
 
+    CPickingManager::GetInstance()->Add_PickingGroup(this);
+
     return S_OK;
 }
 
@@ -56,6 +58,8 @@ HRESULT CTerrian::Initialize_Load(const _tchar* VIBufferTag, void* pArg)
 
     _float3 vRot = _float3(desc.m_fRotationX, desc.m_fRotationY, desc.m_fRotationZ);
     m_pTransformCom->Set_Rotation(vRot);
+
+    CPickingManager::GetInstance()->Add_PickingGroup(this);
 
     return S_OK;
 }
@@ -97,6 +101,25 @@ HRESULT CTerrian::Render()
     m_pVIBufferCom->Render();
 
     return S_OK;
+}
+
+_bool CTerrian::Picking(_float3* PickingPoint)
+{
+    if (m_pVIBufferCom->Picking(m_pTransformCom, PickingPoint) == true)
+    {
+        m_vMousePickedPos = *PickingPoint;
+        return true;
+    }
+    else
+    {
+        ZeroMemory(&m_vMousePickedPos, sizeof(_float3));
+    }
+    return false;
+}
+
+void CTerrian::PickingTrue()
+{
+    Set_Picked();
 }
 
 HRESULT CTerrian::Ready_Components(void* pArg)
@@ -141,6 +164,17 @@ HRESULT CTerrian::SetUp_ShaderResources()
         return E_FAIL;
 
     return S_OK;
+}
+
+void CTerrian::Set_Picked()
+{
+    if (m_pGameInstance->Mouse_Down(DIMK::DIMK_LBUTTON))
+    {
+        if (m_bPicked)
+            CPickingManager::GetInstance()->Set_PickedObj(nullptr);
+        else
+            CPickingManager::GetInstance()->Set_PickedObj(this);
+    }
 }
 
 CTerrian* CTerrian::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

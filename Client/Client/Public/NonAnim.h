@@ -25,8 +25,8 @@ public:
 	_float Check_CullingRadius();
 
 public:
-	virtual _bool Picking(_float3* PickingPoint) override { return true; };
-	virtual void PickingTrue() override {};
+	virtual _bool Picking(_float3* PickingPoint) override;
+	virtual void PickingTrue();
 
 protected:
 	CModel* m_pModelCom = { nullptr };

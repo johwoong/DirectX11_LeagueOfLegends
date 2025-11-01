@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "VIBuffer_Rect.h"
 #include "VIBuffer_Terrian.h"
+#include "VIBuffer_Cube.h"
 #include "Shader.h"
 #include "Transform.h"
 #include "Navigation.h"

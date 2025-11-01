@@ -1,5 +1,6 @@
 #include "NonAnim.h"
 #include "GameInstance.h"
+#include "PickingManager.h"
 
 CNonAnim::CNonAnim(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CActor(pDevice, pContext)
@@ -24,6 +25,8 @@ HRESULT CNonAnim::Initialize(void* pArg)
 
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
+
+	
 
 	if (pArg != nullptr)
 	{
@@ -95,6 +98,25 @@ _float CNonAnim::Check_CullingRadius()
 	if (!strcmp(m_ModelDesc.pModeltag, "Map"))
 		return 1000.f;
 	return 0.f;
+}
+
+_bool CNonAnim::Picking(_float3* PickingPoint)
+{
+	if (m_pModelCom->Picking(m_pTransformCom, PickingPoint))
+		return true;
+
+	return false;
+}
+
+void CNonAnim::PickingTrue()
+{
+	if (m_pGameInstance->Mouse_Up(DIMK::DIMK_LBUTTON))
+	{
+		if (m_bPicked)
+		{
+			int a = 0;
+		}
+	}
 }
 
 

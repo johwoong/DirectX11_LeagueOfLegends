@@ -34,7 +34,10 @@ int CPlayer::Update(_float fTimeDelta)
 
 void CPlayer::Late_Update(_float fTimeDelta)
 {
-
+	if (m_pRendererCom != nullptr)
+	{
+		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
+	}
 }
 
 HRESULT CPlayer::Render()
