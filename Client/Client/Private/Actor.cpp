@@ -27,10 +27,10 @@ HRESULT CActor::Initialize(void* pArg)
 
 int CActor::Update(_float fTimeDelta)
 {
-	__super::Update(fTimeDelta);
+	int iEvent = __super::Update(fTimeDelta);
 
-	if (!m_bDead)
-		return OBJ_DEAD;
+	if (m_bDead)
+		return OBJ_DEAD; 
 
 	return OBJ_NOEVENT;
 }

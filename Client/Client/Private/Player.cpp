@@ -29,6 +29,27 @@ HRESULT CPlayer::Initialize(void* pArg)
 
 int CPlayer::Update(_float fTimeDelta)
 {
+	// 부모 클래스(Actor)의 Update 호출
+	int iEvent = __super::Update(fTimeDelta);
+
+	// 부모가 Dead로 판단했으면 즉시 반환 (삭제 예약)
+	if (iEvent == OBJ_DEAD)
+		return OBJ_DEAD;
+
+	if (m_bMoving)
+	{
+		_vector vCur = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+		_vector vDest = XMLoadFloat3(&m_vTargetPos);
+
+		m_pTransformCom->LookAtExceptY(vDest);
+
+		bool bStillMoving = m_pTransformCom->Move_PosTarget(fTimeDelta, vDest, nullptr);
+
+		if (!bStillMoving)
+			m_bMoving = false;
+
+	}
+
 	return OBJ_NOEVENT;
 }
 

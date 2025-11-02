@@ -21,28 +21,26 @@ private:
 	explicit CPlayerManager();
 	virtual ~CPlayerManager() = default;
 
-private:
-	ID3D11Device* m_pDevice = nullptr;
-	ID3D11DeviceContext* m_pContext = nullptr;
+public:
+	CChampion* Get_ActivePlayer() const { return m_pActivePlayer; }
+	void        Set_ActivePlayer(CChampion* pPlayer);
 
-	// 현재 조종 중인 플레이어
-	CChampion* m_pActivePlayer = nullptr;
-
-	// 전체 플레이어들 (자기 자신 포함)
-	vector<CChampion*> m_AllPlayers;
+	
 public:
 	HRESULT Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	void Update(_float fTimeDelta);
-	void Late_Update(_float fTimeDelta);
-	void Render();
+	void    ChangeChampion(); // F4로 호출 시 활성 플레이어 교체
 
-	// 플레이어 생성 및 등록
-	HRESULT Add_Player(TYPE eType, CChampion* pPlayer);
-	void ChangeActivePlayer(TYPE eType); // F4 등으로 전환
-	CChampion* Get_ActivePlayer() const { return m_pActivePlayer; }
-	void ChangeChampion();
+private:
+	ID3D11Device*			m_pDevice	=	{ nullptr };
+	ID3D11DeviceContext*	m_pContext	=	{ nullptr };
 
-	void Free() override;
+private:
+	std::vector<CChampion*> m_vChampions;     // 생성된 챔피언 목록
+	_int                    m_iCurrentChampionIndex = 0; // 현재 조종 중인 챔피언 인덱스
+	CChampion* m_pActivePlayer = nullptr; 	// 현재 조작 중인 플레이어
+
+public:
+	virtual void Free() override;
 
 };
 NS_END

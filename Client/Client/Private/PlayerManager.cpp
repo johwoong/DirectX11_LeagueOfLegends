@@ -10,111 +10,100 @@ CPlayerManager::CPlayerManager()
 {
 }
 
+void CPlayerManager::Set_ActivePlayer(CChampion* pPlayer)
+{
+	if (!pPlayer) return;
+
+	m_pActivePlayer = pPlayer;
+}
+
 HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-	m_pDevice = pDevice;
-	m_pContext = pContext;
+    m_pDevice = pDevice;
+    m_pContext = pContext;
+    Safe_AddRef(m_pDevice);
+    Safe_AddRef(m_pContext);
 
-	CChampion* pEzreal = CEzreal::Create(m_pDevice, m_pContext);
-	CChampion* pRenekton = CRenekton::Create(m_pDevice, m_pContext);
+    CGameInstance* pGI = CGameInstance::GetInstance();
+    if (!pGI)
+        return E_FAIL;
 
-	if (pEzreal)
-		pEzreal->Initialize(nullptr);
+    // Ezreal 생성
+    auto pEzreal = CEzreal::Create(m_pDevice, m_pContext);
+    pEzreal->Initialize(nullptr);
+    pEzreal->Set_PlayerID(CChampion::EZREAL);
+    m_vChampions.push_back(pEzreal);
 
-	if (pRenekton)
-		pRenekton->Initialize(nullptr);
+    // Renekton 생성
+    auto pRenekton = CRenekton::Create(m_pDevice, m_pContext);
+    pRenekton->Initialize(nullptr);
+    pRenekton->Set_PlayerID(CChampion::RENEKTON);
+    m_vChampions.push_back(pRenekton);
 
-	Add_Player(PLAYER, pEzreal);
+    // 첫 챔피언을 활성화
+    m_iCurrentChampionIndex = 0;
+    m_pActivePlayer = pEzreal;
 
-	m_pActivePlayer = pEzreal;
+    // ? 반드시 Layer에 직접 등록해야 Update/Render가 동작함
+    pGI->ReAdd_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), pEzreal);
 
-	return S_OK;
+    return S_OK;
 }
 
-HRESULT CPlayerManager::Add_Player(TYPE eType, CChampion* pPlayer)
-{
-	if (!pPlayer)
-		return E_FAIL;
 
-	m_AllPlayers.push_back(pPlayer);
-	return S_OK;
-}
-
-void CPlayerManager::Update(_float fTimeDelta)
-{
-	for (auto& player : m_AllPlayers)
-		player->Update(fTimeDelta);
-
-	// ?? F4 키로 모델 교체 (챔피언 변경)
-	if (GetAsyncKeyState(VK_F4) & 0x0001)
-	{
-		ChangeChampion();
-	}
-}
-
-void CPlayerManager::Late_Update(_float fTimeDelta)
-{
-	for (auto& player : m_AllPlayers)
-		player->Late_Update(fTimeDelta);
-}
-
-void CPlayerManager::Render()
-{
-	for (auto& player : m_AllPlayers)
-		player->Render();
-}
-
-void CPlayerManager::ChangeActivePlayer(TYPE eType)
-{
-	if (eType < m_AllPlayers.size())
-		m_pActivePlayer = m_AllPlayers[eType];
-}
 
 void CPlayerManager::ChangeChampion()
 {
-	if (!m_pActivePlayer)
-		return;
+    if (m_vChampions.size() < 2 || !m_pActivePlayer)
+        return;
 
-	// 현재 챔피언 타입 확인
-	CChampion::PLAYERID eID = m_pActivePlayer->Get_PlayerID();
+    CGameInstance* pGI = CGameInstance::GetInstance();
+    if (!pGI)
+        return;
 
-	// 1?? 기존 포인터 벡터에서 제거
-	for (auto it = m_AllPlayers.begin(); it != m_AllPlayers.end(); ++it)
-	{
-		if (*it == m_pActivePlayer)
-		{
-			Safe_Release(*it);
-			m_AllPlayers.erase(it);
-			break;
-		}
-	}
+    // ? 현재 활성 챔피언 인덱스 찾기
+    _int iCurrent = -1;
+    for (_uint i = 0; i < m_vChampions.size(); ++i)
+    {
+        if (m_vChampions[i] == m_pActivePlayer)
+        {
+            iCurrent = i;
+            break;
+        }
+    }
+    if (iCurrent == -1) return;
 
-	// 2?? 새 챔피언 생성
-	if (eID == CChampion::EZREAL)
-	{
-		m_pActivePlayer = CRenekton::Create(m_pDevice, m_pContext);
-		m_pActivePlayer->Initialize(nullptr);
-		m_pActivePlayer->Set_PlayerID(CChampion::RENEKTON);
-	}
-	else
-	{
-		m_pActivePlayer = CEzreal::Create(m_pDevice, m_pContext);
-		m_pActivePlayer->Initialize(nullptr);
-		m_pActivePlayer->Set_PlayerID(CChampion::EZREAL);
-	}
+    // ? 다음 챔피언 인덱스 (2개만 존재하므로 토글)
+    _int iNext = (iCurrent + 1) % m_vChampions.size();
 
-	m_AllPlayers.push_back(m_pActivePlayer);
+    // ? 현재 위치 저장
+    _vector vPos = m_pActivePlayer->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+
+    // ? 이전 챔피언 완전히 비활성화
+    // (Layer에서 제거하고, 렌더링/업데이트에서 제외)
+    pGI->Out_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), m_pActivePlayer);
+
+    // ? 새 챔피언 교체
+    m_pActivePlayer = m_vChampions[iNext];
+    m_iCurrentChampionIndex = iNext;
+
+    // ? 위치 복원
+    m_pActivePlayer->Get_Transform()->Set_State(CTransform::STATE_TRANSLATION, vPos);
+    m_pActivePlayer->Set_Dead(false);
+
+    // ? Layer에 등록 (새로 활성화된 챔피언만)
+    pGI->ReAdd_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), m_pActivePlayer);
+
 }
 
 
 
 void CPlayerManager::Free()
 {
-	for (auto& player : m_AllPlayers)
-		Safe_Release(player);
+    for (auto& pChampion : m_vChampions)
+        Safe_Release(pChampion);
 
-	m_AllPlayers.clear();
-
-	Safe_Release(m_pDevice);
-	Safe_Release(m_pContext);
+    m_vChampions.clear();
+    Safe_Release(m_pDevice);
+    Safe_Release(m_pContext);
 }

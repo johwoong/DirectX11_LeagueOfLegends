@@ -20,16 +20,16 @@
       <Filter>00..MainApp</Filter>
     </ClInclude>
     <ClInclude Include="..\public\Level_Logo.h">
-      <Filter>01.Levles\Logo</Filter>
+      <Filter>01. Level\Logo</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_GamePlay.h">
-      <Filter>01.Levles\GamePlay</Filter>
+      <Filter>01. Level\GamePlay</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_Loading.h">
-      <Filter>01.Levles\Loading</Filter>
+      <Filter>01. Level\Loading</Filter>
     </ClInclude>
     <ClInclude Include="..\public\Loader.h">
-      <Filter>01.Levles\Loading\Loader</Filter>
+      <Filter>01. Level\Loading\Loader</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_Base.h">
       <Filter>02. GameObjects\02. UI\Base</Filter>
@@ -76,6 +76,15 @@
     <ClInclude Include="..\Public\Renekton.h">
       <Filter>02. GameObjects\01. Player\00. Champion\01. Renekton</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\PlayerState.h">
+      <Filter>02. GameObjects\01. Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerIdleState.h">
+      <Filter>02. GameObjects\01. Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PlayerRunState.h">
+      <Filter>02. GameObjects\01. Player\State</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -95,21 +104,6 @@
     <Filter Include="00..MainApp">
       <UniqueIdentifier>{92236fa1-322c-4101-801a-cb8abb822f1e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Levles">
-      <UniqueIdentifier>{e7c9e66b-9e50-485b-9868-bdd7980e642d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levles\Logo">
-      <UniqueIdentifier>{229006e2-c7f1-4f1f-b67b-beaacaf3869b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levles\GamePlay">
-      <UniqueIdentifier>{46afd0bb-de2c-4022-9ed3-c48c5396425d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levles\Loading">
-      <UniqueIdentifier>{e6b383cf-42d7-43ff-87e0-0197478d3b75}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Levles\Loading\Loader">
-      <UniqueIdentifier>{19244d70-b85c-4ecc-9489-ebadd54a079e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects">
       <UniqueIdentifier>{b45ac153-307b-40b1-b011-4acca8f3a12f}</UniqueIdentifier>
     </Filter>
@@ -127,12 +121,6 @@
     </Filter>
     <Filter Include="02. GameObjects\03. NonAnim">
       <UniqueIdentifier>{72368801-c3a9-419f-8476-3a10cea71ca2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\04. Anim">
-      <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor">
-      <UniqueIdentifier>{cd51af7c-274a-4ffa-b8cf-1aa2c30dabc1}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\01. Player">
       <UniqueIdentifier>{da7f9dda-c879-4f5a-a024-72d064905f87}</UniqueIdentifier>
@@ -161,6 +149,30 @@
     <Filter Include="02. GameObjects\01. Player\Manager">
       <UniqueIdentifier>{236a6db1-f629-49b4-95e3-7bfb297fe696}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\01. Player\State">
+      <UniqueIdentifier>{eec2726e-2ca4-415b-a309-a35da2ee5b7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\04. Anim">
+      <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Level">
+      <UniqueIdentifier>{e7c9e66b-9e50-485b-9868-bdd7980e642d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Level\Logo">
+      <UniqueIdentifier>{229006e2-c7f1-4f1f-b67b-beaacaf3869b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Level\GamePlay">
+      <UniqueIdentifier>{46afd0bb-de2c-4022-9ed3-c48c5396425d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Level\Loading">
+      <UniqueIdentifier>{e6b383cf-42d7-43ff-87e0-0197478d3b75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Level\Loading\Loader">
+      <UniqueIdentifier>{19244d70-b85c-4ecc-9489-ebadd54a079e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor">
+      <UniqueIdentifier>{cd51af7c-274a-4ffa-b8cf-1aa2c30dabc1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -170,13 +182,13 @@
       <Filter>00..MainApp</Filter>
     </ClCompile>
     <ClCompile Include="..\private\Level_Logo.cpp">
-      <Filter>01.Levles\Logo</Filter>
+      <Filter>01. Level\Logo</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_GamePlay.cpp">
-      <Filter>01.Levles\GamePlay</Filter>
+      <Filter>01. Level\GamePlay</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_Loading.cpp">
-      <Filter>01.Levles\Loading</Filter>
+      <Filter>01. Level\Loading</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_Base.cpp">
       <Filter>02. GameObjects\02. UI\Base</Filter>
@@ -215,7 +227,7 @@
       <Filter>04. PickingManager</Filter>
     </ClCompile>
     <ClCompile Include="..\private\Loader.cpp">
-      <Filter>01.Levles\Loading\Loader</Filter>
+      <Filter>01. Level\Loading\Loader</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Sky.cpp">
       <Filter>02. GameObjects\03. NonAnim\02. Sky</Filter>
@@ -225,6 +237,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Renekton.cpp">
       <Filter>02. GameObjects\01. Player\00. Champion\01. Renekton</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PlayerIdleState.cpp">
+      <Filter>02. GameObjects\01. Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PlayerRunState.cpp">
+      <Filter>02. GameObjects\01. Player\State</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,8 @@
 #include "CCamera_Dynamic.h"
 #include "PlayerManager.h"
 #include "PickingManager.h"
+#include "Ezreal.h"
+#include "Renekton.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
@@ -31,17 +33,27 @@ HRESULT CLevel_GamePlay::Initialize()
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
-	CPlayerManager::GetInstance()->Update(fTimeDelta);
+
+	CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
+	if (!pPlayer)
+		return;
+	if (GetAsyncKeyState(VK_F4) & 0x0001)
+		CPlayerManager::GetInstance()->ChangeChampion();
+
+	// 마우스 클릭 시 이동 (Terrain 클릭 시만)
+	if (m_pGameInstance->Mouse_Down(DIMK_RBUTTON))
+	{
+		if (CPickingManager::GetInstance()->Picking())
+		{
+			_float3 vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
+			pPlayer->Set_TargetPosition(vClickPos);
+		}
+	}
 }
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 {
 	__super::Late_Update(fTimeDelta);
-	CPlayerManager::GetInstance()->Late_Update(fTimeDelta);
-	if (m_pGameInstance->Mouse_Down(DIMK_LBUTTON))
-	{
-		CPickingManager::GetInstance()->Picking();
-	}
 }
 
 HRESULT CLevel_GamePlay::Ready_Layer_Terrian(const _tchar* pLayerTag)
@@ -80,9 +92,8 @@ HRESULT CLevel_GamePlay::Ready_Layer_MapObject(const _tchar* pLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Player(const _tchar* pLayerTag)
 {
-	if (FAILED(CPlayerManager::GetInstance()->Initialize(m_pDevice, m_pContext)))
-		return E_FAIL;
-
+	auto pManager = CPlayerManager::GetInstance();
+	pManager->Initialize(m_pDevice, m_pContext);
 	return S_OK;
 }
 

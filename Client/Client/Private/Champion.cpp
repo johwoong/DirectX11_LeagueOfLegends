@@ -30,7 +30,12 @@ HRESULT CChampion::Initialize(void* pArg)
 
 int CChampion::Update(_float fTimeDelta)
 {
-	__super::Update(fTimeDelta);
+	int iEvent = __super::Update(fTimeDelta);
+
+	// 부모가 Dead면 그대로 반환 (삭제 예약)
+	if (iEvent == OBJ_DEAD)
+		return OBJ_DEAD;
+
 	return OBJ_NOEVENT;
 }
 

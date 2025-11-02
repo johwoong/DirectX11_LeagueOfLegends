@@ -13,6 +13,7 @@
 
 // Champion
 #include "Ezreal.h"
+#include "Renekton.h"
 
 
 
@@ -116,6 +117,10 @@ HRESULT CLoader::Loading_For_Prtotype()
 	/*For.Prototype_GameObject_Champion*/
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Ezreal"),
 		CEzreal::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	/*For.Prototype_GameObject_Champion*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Renekton"),
+		CRenekton::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 

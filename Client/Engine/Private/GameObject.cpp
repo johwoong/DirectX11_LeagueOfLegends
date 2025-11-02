@@ -31,6 +31,9 @@ HRESULT CGameObject::Initialize(void* pArg)
 
 int CGameObject::Update(_float fTimeDelta)
 {
+    if (m_bDead)
+        return OBJ_DEAD; 
+
     return OBJ_NOEVENT;
 }
 
