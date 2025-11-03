@@ -36,7 +36,9 @@ public:
 	HRESULT Load_Prototype(HANDLE hFile, _ulong& dwByte, _bool bCreateQuadTree = false);
 
 public:
+	void Culling(const class CTransform* pTransform);
 	TERRIANDESC Get_TerrianDesc() { return m_pTerrianDesc; }
+	_float3 Get_PickingLocalPos() { return m_bPickingLocalPos; }
 
 private:
 	_uint m_iNumVerticesX = 0, m_iNumVerticesZ = 0;

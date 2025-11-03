@@ -119,7 +119,7 @@ _bool CTerrian::Picking(_float3* PickingPoint)
 
 void CTerrian::PickingTrue()
 {
-    Set_Picked();
+
 }
 
 HRESULT CTerrian::Ready_Components(void* pArg)
@@ -164,17 +164,6 @@ HRESULT CTerrian::SetUp_ShaderResources()
         return E_FAIL;
 
     return S_OK;
-}
-
-void CTerrian::Set_Picked()
-{
-    if (m_pGameInstance->Mouse_Down(DIMK::DIMK_LBUTTON))
-    {
-        if (m_bPicked)
-            CPickingManager::GetInstance()->Set_PickedObj(nullptr);
-        else
-            CPickingManager::GetInstance()->Set_PickedObj(this);
-    }
 }
 
 CTerrian* CTerrian::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

@@ -65,10 +65,39 @@ static fs::path FindTextureFile(const fs::path& texDir)
 // ============================= Model.dat =============================
 static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& texDir)
 {
-    // Pivot 행렬 (스케일 0.05배)
+    // ? Pivot 행렬 (0.01배로 축소 + Y축 180도 회전)
     FLOAT4X4 pivot{};
-    pivot.m[0] = pivot.m[5] = pivot.m[10] = 0.05f;
-    pivot.m[15] = 1.f;
+    {
+        // 180도 회전 행렬 (Y축 기준)
+        float rotY[16] = {
+            -1, 0,  0, 0,
+             0, 1,  0, 0,
+             0, 0, -1, 0,
+             0, 0,  0, 1
+        };
+
+        // 스케일 0.01 적용
+        pivot.m[0] = rotY[0] * 0.01f;
+        pivot.m[1] = rotY[1] * 0.01f;
+        pivot.m[2] = rotY[2] * 0.01f;
+        pivot.m[3] = rotY[3];
+
+        pivot.m[4] = rotY[4] * 0.01f;
+        pivot.m[5] = rotY[5] * 0.01f;
+        pivot.m[6] = rotY[6] * 0.01f;
+        pivot.m[7] = rotY[7];
+
+        pivot.m[8] = rotY[8] * 0.01f;
+        pivot.m[9] = rotY[9] * 0.01f;
+        pivot.m[10] = rotY[10] * 0.01f;
+        pivot.m[11] = rotY[11];
+
+        pivot.m[12] = rotY[12];
+        pivot.m[13] = rotY[13];
+        pivot.m[14] = rotY[14];
+        pivot.m[15] = rotY[15];
+    }
+
     write_n(fp, &pivot, sizeof(pivot));
 
     unsigned numMeshes = scene->mNumMeshes;
@@ -88,21 +117,26 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
 
         vector<VTXMODEL> verts(numVerts);
 
-
-        const float scale = 0.01f;  // DirectX용 적정 축소비
-
+        // ? 정점은 원본 그대로 (추가 스케일 없음)
         for (unsigned v = 0; v < numVerts; ++v)
         {
-            verts[v].vPosition = { mesh->mVertices[v].x * scale,
-                                   mesh->mVertices[v].y * scale,
-                                   mesh->mVertices[v].z * scale };
-            verts[v].vNormal = mesh->HasNormals() ? float3{ mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z } : float3{ 0,1,0 };
-            verts[v].vTexUV = mesh->HasTextureCoords(0)
-                ? float2{ (float)mesh->mTextureCoords[0][v].x, (float)mesh->mTextureCoords[0][v].y }
-            : float2{ 0,0 };
-            verts[v].vTangent = mesh->HasTangentsAndBitangents()
-                ? float3{ mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z }
-            : float3{ 1,0,0 };
+            verts[v].vPosition = {
+                mesh->mVertices[v].x,
+                mesh->mVertices[v].y,
+                mesh->mVertices[v].z
+            };
+
+            verts[v].vNormal = mesh->HasNormals() ?
+                float3{ mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z } :
+                float3{ 0,1,0 };
+
+            verts[v].vTexUV = mesh->HasTextureCoords(0) ?
+                float2{ (float)mesh->mTextureCoords[0][v].x, (float)mesh->mTextureCoords[0][v].y } :
+                float2{ 0,0 };
+
+            verts[v].vTangent = mesh->HasTangentsAndBitangents() ?
+                float3{ mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z } :
+                float3{ 1,0,0 };
         }
 
         write_n(fp, verts.data(), sizeof(VTXMODEL) * verts.size());
@@ -139,7 +173,6 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
             }
             else
             {
-                // FBX가 텍스처를 지정하지 않은 경우 자동 탐색된 텍스처 사용
                 strncpy_s(path, autoTexStr.c_str(), MAX_PATH - 1);
             }
 
@@ -158,13 +191,12 @@ int wmain()
         if (!fs::exists(root))
             throw runtime_error("Champion directory not found!");
 
-        // ? Champion 내부의 모든 하위 폴더를 재귀적으로 순회
         for (const auto& dir : fs::recursive_directory_iterator(root))
         {
             if (!dir.is_directory()) continue;
 
             fs::path championPath = dir.path();
-            fs::path championName = championPath.filename(); // 예: Ezreal, Buildings 등
+            fs::path championName = championPath.filename();
 
             fs::path fbxPath;
             for (const auto& f : fs::directory_iterator(championPath))
@@ -181,16 +213,12 @@ int wmain()
                 continue;
             }
 
-            // ? 출력 경로를 입력 경로와 동일한 구조로 맞춤
             fs::path relative = fs::relative(championPath, root);
             fs::path outDir = outputRoot / relative;
             fs::create_directories(outDir);
 
             fs::path outFile = outDir / (championName.wstring() + L".dat");
-
-            // ? 이미 .dat 파일이 있으면 스킵
-            if (fs::exists(outFile))
-            {
+            if (fs::exists(outFile)) {
                 wcout << L"[SKIP] " << championName << L" - already exists (" << outFile << L")\n";
                 continue;
             }
@@ -217,10 +245,11 @@ int wmain()
             wcout << L"[OK] " << relative << L" → " << outFile << endl;
         }
 
-        wcout << L"\n=== 모든 NonAnim 모델 변환 완료 (Champion 하위 전체 탐색 + 동일 구조 생성) ===\n";
+        wcout << L"\n=== 모든 NonAnim 모델 변환 완료 ===\n";
     }
     catch (const exception& e)
     {
         cerr << "[ERROR] " << e.what() << endl;
     }
 }
+

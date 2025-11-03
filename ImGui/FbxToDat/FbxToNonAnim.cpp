@@ -65,12 +65,13 @@ static fs::path FindTextureFile(const fs::path& texDir)
 // ============================= Model.dat =============================
 static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& texDir)
 {
-    // Pivot 행렬 (스케일 0.05배)
+    // [1] Pivot 행렬 = 항등행렬
     FLOAT4X4 pivot{};
-    pivot.m[0] = pivot.m[5] = pivot.m[10] = 0.05f;
-    pivot.m[15] = 1.f;
+    for (int i = 0; i < 16; ++i)
+        pivot.m[i] = (i % 5 == 0) ? 1.f : 0.f;
     write_n(fp, &pivot, sizeof(pivot));
 
+    // [2] 메시 수
     unsigned numMeshes = scene->mNumMeshes;
     write_n(fp, &numMeshes, sizeof(numMeshes));
 
@@ -88,15 +89,13 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
 
         vector<VTXMODEL> verts(numVerts);
 
-
-        const float scale = 0.01f;  // DirectX용 적정 축소비
-
+        // [3] 절대 변환 없음 ? FBX 내부 좌표 그대로 저장
         for (unsigned v = 0; v < numVerts; ++v)
         {
-            verts[v].vPosition = { mesh->mVertices[v].x * scale,
-                                   mesh->mVertices[v].y * scale,
-                                   mesh->mVertices[v].z * scale };
-            verts[v].vNormal = mesh->HasNormals() ? float3{ mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z } : float3{ 0,1,0 };
+            verts[v].vPosition = { mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z };
+            verts[v].vNormal = mesh->HasNormals()
+                ? float3{ mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z }
+            : float3{ 0,1,0 };
             verts[v].vTexUV = mesh->HasTextureCoords(0)
                 ? float2{ (float)mesh->mTextureCoords[0][v].x, (float)mesh->mTextureCoords[0][v].y }
             : float2{ 0,0 };
@@ -107,42 +106,48 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
 
         write_n(fp, verts.data(), sizeof(VTXMODEL) * verts.size());
 
+        // [4] 인덱스
         unsigned numFaces = mesh->mNumFaces;
         write_n(fp, &numFaces, sizeof(numFaces));
 
         vector<FACEINDICES32> faces(numFaces);
         for (unsigned f = 0; f < numFaces; ++f)
-            faces[f] = { mesh->mFaces[f].mIndices[0], mesh->mFaces[f].mIndices[1], mesh->mFaces[f].mIndices[2] };
+        {
+            faces[f] = {
+                mesh->mFaces[f].mIndices[0],
+                mesh->mFaces[f].mIndices[1],
+                mesh->mFaces[f].mIndices[2]
+            };
+        }
 
         write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
     }
 
-
+    // [5] 머티리얼 저장 (원래대로 유지)
     unsigned numMats = scene->mNumMaterials;
     write_n(fp, &numMats, sizeof(numMats));
+
+    fs::path autoTex = FindTextureFile(texDir);
+    string autoTexStr = autoTex.empty() ? "default_diffuse.png" : autoTex.string();
 
     for (unsigned mi = 0; mi < numMats; ++mi)
     {
         aiMaterial* mat = scene->mMaterials[mi];
-        aiString matName;
-        mat->Get(AI_MATKEY_NAME, matName);
-        string mName = matName.C_Str();
-        transform(mName.begin(), mName.end(), mName.begin(), ::tolower);
-
-        string texName = "default_diffuse.png";
-        if (mName.find("scissor") != string::npos)
-            texName = "gwen_base_main_weapon_tx_cm.dds";
-        else if (mName.find("doll") != string::npos)
-            texName = "gwen_base_main_doll_tx_cm.dds";
-        else if (mName.find("body") != string::npos || mName.find("gwen") != string::npos)
-            texName = "gwen_base_main_tx_cm.dds";
-
-        // ? 구조 유지: AI_TEXTURE_TYPE_MAX 만큼 고정 길이로 기록
         for (int t = 0; t < AI_TEXTURE_TYPE_MAX; ++t)
         {
-            fs::path texPath = texDir / texName;
+            aiString tex;
             char path[MAX_PATH]{};
-            strncpy_s(path, texPath.string().c_str(), MAX_PATH - 1);
+
+            if (mat->GetTexture((aiTextureType)t, 0, &tex) == AI_SUCCESS)
+            {
+                fs::path texFile = texDir / fs::path(tex.C_Str()).filename();
+                strncpy_s(path, texFile.string().c_str(), MAX_PATH - 1);
+            }
+            else
+            {
+                strncpy_s(path, autoTexStr.c_str(), MAX_PATH - 1);
+            }
+
             write_n(fp, path, sizeof(path));
         }
     }

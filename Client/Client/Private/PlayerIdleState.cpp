@@ -16,21 +16,26 @@ CIdleState::CIdleState(CPlayer* pPlayer, IDLETYPE eIdleType)
 
 CPlayerState* CIdleState::HandleInput()
 {
-	return nullptr;
+    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+    if (pGameInstance->Mouse_Down(DIMK_RBUTTON))
+    {
+        _float3 vClickPos = {};
+
+        if (CPickingManager::GetInstance()->Picking())
+        {
+            vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
+            m_pOwner->Set_TargetPosition(vClickPos);
+
+            return new CRunState(m_pOwner);
+        }
+    }
+
+    return nullptr; // 입력 없음
 }
 
 CPlayerState* CIdleState::Update(_float fTimeDelta)
 {
-	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	pGameInstance->AddRef();
-	if (CPickingManager::GetInstance()->Picking())
-	{
-		_float3 vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
-		m_pOwner->Set_TargetPosition(vClickPos);
-	}
-
-	pGameInstance->Release();
-
 	return nullptr;
 }
 
@@ -43,13 +48,9 @@ CPlayerState* CIdleState::Late_Update(_float fTimeDelta)
 void CIdleState::Enter()
 {
 	__super::Enter();
-	m_eState = STATE::STATE_IDLE;
-	switch (m_pOwner->Get_PlayerID())
-	{
-	case CPlayer::EZREAL:
-		break;
-	}
+	m_eState = STATE_ID::STATE_IDLE;
 }
+
 
 void CIdleState::Exit()
 {

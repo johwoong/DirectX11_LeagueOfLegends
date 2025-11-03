@@ -34,8 +34,9 @@ void CMesh::Get_BoneMatrices(_float4x4* pBoneMatrices, _fmatrix PivotMatrix)
 
 	for (auto& pBoneNode : m_Bones)
 	{
-		/* Offset * Combined * Pivot */
-		XMStoreFloat4x4(&pBoneMatrices[iNumBones++], (pBoneNode->Get_OffsetMatrix() * pBoneNode->Get_CombinedTransformationMatrix() * PivotMatrix));
+		XMStoreFloat4x4(&pBoneMatrices[iNumBones++],
+			(pBoneNode->Get_OffsetMatrix() *
+				pBoneNode->Get_CombinedTransformationMatrix()));
 	}
 }
 

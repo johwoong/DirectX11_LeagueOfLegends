@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PlayerState.h"
+
 NS_BEGIN(Client)
 NS_BEGIN(Player)
 class CIdleState final : public CPlayerState

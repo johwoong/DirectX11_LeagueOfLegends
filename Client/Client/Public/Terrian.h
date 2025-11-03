@@ -43,8 +43,6 @@ private:
 	HRESULT Ready_Components(void* pArg);
 	HRESULT SetUp_ShaderResources();
 
-public:
-	void Set_Picked();
 
 private:
 	CVIBuffer_Terrian* m_pVIBufferCom = nullptr;

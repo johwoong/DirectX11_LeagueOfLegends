@@ -1,6 +1,7 @@
 #include "VIBuffer_Terrian.h"
 #include "Transform.h"
 #include "Picking.h"
+#include "Frustum.h"
 
 
 CVIBuffer_Terrian::CVIBuffer_Terrian(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -164,18 +165,21 @@ HRESULT CVIBuffer_Terrian::Initialize(void* pArg)
 _bool CVIBuffer_Terrian::Picking(CTransform* pTransform, _float3* pOut)
 {
 	CPicking* pPicking = CPicking::GetInstance();
-	pPicking->AddRef();
+	Safe_AddRef(pPicking);
 
-	_matrix WorldMatrixInv = pTransform->Get_WorldMatrixInverse();
+	_matrix		WorldMatrixInv = pTransform->Get_WorldMatrixInverse();
 
-	_float3 vTempRayDir, vTempRayPos;
-	XMVECTOR vRayDir, vRayPos;
+	_float3			vTempRayDir, vTempRayPos;
+	XMVECTOR		vRayDir, vRayPos;
 	pPicking->Compute_LocalRayInfo(&vTempRayDir, &vTempRayPos, pTransform);
 
 	vRayPos = XMLoadFloat3(&vTempRayPos);
 	vRayPos = XMVectorSetW(vRayPos, 1.f);
 	vRayDir = XMLoadFloat3(&vTempRayDir);
 	vRayDir = XMVector3Normalize(vRayDir);
+
+	CFrustum* pFrustum = CFrustum::GetInstance();
+	pFrustum->AddRef();
 
 	for (_uint i = 0; i < m_iNumVerticesZ - 1; ++i)
 	{
@@ -193,10 +197,6 @@ _bool CVIBuffer_Terrian::Picking(CTransform* pTransform, _float3* pOut)
 				iIndex
 			};
 
-
-
-			//iIndices[0]이랑 iIndices[2]사이에 직선이 있거나
-			//iIndices[1]이랑 iIndices[3]사이에 직선이 있으면 픽킹 체크 
 			_float discriminant0 = (vTempRayDir.z * (m_pVerticesPos[iIndices[0]].x - vTempRayPos.x) + vTempRayPos.z) / vTempRayDir.x - m_pVerticesPos[iIndices[0]].z;
 			_float discriminant1 = (vTempRayDir.z * (m_pVerticesPos[iIndices[1]].x - vTempRayPos.x) + vTempRayPos.z) / vTempRayDir.x - m_pVerticesPos[iIndices[1]].z;
 			_float discriminant2 = (vTempRayDir.z * (m_pVerticesPos[iIndices[2]].x - vTempRayPos.x) + vTempRayPos.z) / vTempRayDir.x - m_pVerticesPos[iIndices[2]].z;
@@ -224,6 +224,7 @@ _bool CVIBuffer_Terrian::Picking(CTransform* pTransform, _float3* pOut)
 				XMStoreFloat3(pOut, XMVector3TransformCoord(vPickPos, WorldMatrix));
 
 				Safe_Release(pPicking);
+				Safe_Release(pFrustum);
 				return true;
 			}
 
@@ -240,13 +241,15 @@ _bool CVIBuffer_Terrian::Picking(CTransform* pTransform, _float3* pOut)
 				XMStoreFloat3(pOut, XMVector3TransformCoord(vPickPos, WorldMatrix));
 
 				Safe_Release(pPicking);
+				Safe_Release(pFrustum);
 				return true;
 			}
 		}
 	}
 
-	pPicking->Release();
-    return false();
+	Safe_Release(pFrustum);
+	Safe_Release(pPicking);
+	return false;
 }
 
 void CVIBuffer_Terrian::Set_Terrain_UpDown(_float fVec, _float fRad, _float fSharp, _float3 vPoint, _float fTimeDelta)
@@ -472,6 +475,32 @@ HRESULT CVIBuffer_Terrian::Load_Prototype(HANDLE hFile, _ulong& dwByte, _bool bC
 	Safe_Delete_Array(pIndices);
 
 	return S_OK;
+}
+
+void CVIBuffer_Terrian::Culling(const CTransform* pTransform)
+{
+	CFrustum* pFrustum = CFrustum::GetInstance();
+	pFrustum->AddRef();
+
+	_matrix			WorldMatrix = pTransform->Get_WorldMatrix();
+
+	pFrustum->Transform_ToLocalSpace(WorldMatrix);
+
+	D3D11_MAPPED_SUBRESOURCE		SubResource;
+	ZeroMemory(&SubResource, sizeof(SubResource));
+
+	m_pContext->Map(m_pIB, 0, D3D11_MAP_WRITE_DISCARD, 0, &SubResource);
+
+	FACEINDICES32* pIndices = (FACEINDICES32*)SubResource.pData;
+
+
+	_uint				iNumFaces = 0;
+
+	m_pContext->Unmap(m_pIB, 0);
+
+	m_iNumPrimitive = iNumFaces;
+
+	pFrustum->Release();
 }
 
 CVIBuffer_Terrian* CVIBuffer_Terrian::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, _uint iNumVerticeX, _uint iNumVerticeZ, _float fHeight)
