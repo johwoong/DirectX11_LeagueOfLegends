@@ -16,8 +16,11 @@ private:
 	virtual ~CModelManager() = default;
 
 public:
-	HRESULT Create_Model(LEVEL eLevel, const _tchar* pPrototypeTag, const _tchar* pLayerTag, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, CModel::TYPE eModelType, _fmatrix PivotMatrix, _bool bCreatePrototype = false);
-
+	HRESULT Create_Model(LEVEL eLevel, const _tchar* pPrototypeTag, const _tchar* pLayerTag,
+		ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
+		CModel::TYPE eModelType, _fmatrix PivotMatrix,
+		_bool bCreatePrototype = false, NONANIMDESC* pCustomDesc = nullptr);
+	CNonAnim* Clone_Model(CNonAnim* pSource, LEVEL eLevel, const _tchar* pLayerTag, ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 public:
 	const vector<class CNonAnim*> Get_CreatedModel() const { return m_CreatedModel; }
 

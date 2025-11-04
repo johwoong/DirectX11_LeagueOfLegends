@@ -139,7 +139,7 @@ void CImGui_Manager::Update_Imgui()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("save"))
+			if (ImGui::MenuItem("save")) 
 				m_bSave = true;
 			ImGui::Separator();
 			if (ImGui::MenuItem("open"))
@@ -986,16 +986,15 @@ void CImGui_Manager::Show_CurrentModelList()
 	// Right
 	{
 		ImGui::BeginGroup();
-		ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+		ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()));
+
 		char szLayertag[MAX_PATH] = "";
-		if (vecCreatedModel.size() != 0)
-		{
-			if (vecCreatedModel[m_iCreatedSelected] != nullptr)
-				strcpy_s(szLayertag, MAX_PATH, vecCreatedModel[m_iCreatedSelected]->Get_Modeltag());
-		}
+		if (!vecCreatedModel.empty() && vecCreatedModel[m_iCreatedSelected] != nullptr)
+			strcpy_s(szLayertag, MAX_PATH, vecCreatedModel[m_iCreatedSelected]->Get_Modeltag());
 
 		ImGui::Text(szLayertag);
 		ImGui::Separator();
+
 		if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
 		{
 			if (ImGui::BeginTabItem("LayerList"))
@@ -1003,17 +1002,33 @@ void CImGui_Manager::Show_CurrentModelList()
 				ShowPickedObj();
 				ImGui::EndTabItem();
 			}
-			if (ImGui::BeginTabItem("Details"))
-			{
-				ImGui::Text("ID: 0123456789");
-				ImGui::EndTabItem();
-			}
 			ImGui::EndTabBar();
 		}
+
+		// ? Copy 버튼은 child 내부에서 만들어야 보임
+		ImGui::Spacing();
+		ImGui::Separator();
+		if (ImGui::Button("Copy", ImVec2(120, 30)))
+		{
+			if (m_iCreatedSelected >= 0 && m_iCreatedSelected < vecCreatedModel.size())
+			{
+				CNonAnim* pSelected = vecCreatedModel[m_iCreatedSelected];
+				if (pSelected)
+				{
+					LEVEL eLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+					_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
+
+					// 복제 수행
+					CNonAnim* pClone = m_pModel_Manager->Clone_Model(pSelected, eLevel, LayerTag, m_pDevice, m_pContext);
+					if (pClone)
+						pClone->Set_Picked();
+
+					m_TempLayerTags.push_back(LayerTag);
+				}
+			}
+		}
+
 		ImGui::EndChild();
-		if (ImGui::Button("Revert")) {}
-		ImGui::SameLine();
-		if (ImGui::Button("Save")) {}
 		ImGui::EndGroup();
 	}
 

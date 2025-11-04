@@ -159,8 +159,12 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Public\Building.h" />
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
     <ClInclude Include="..\Public\Champion.h" />
+    <ClInclude Include="..\Public\Inhibitor.h" />
+    <ClInclude Include="..\Public\Nexus.h" />
+    <ClInclude Include="..\Public\Turret.h" />
     <ClInclude Include="..\Public\Ezreal.h" />
     <ClInclude Include="..\Public\PickingManager.h" />
     <ClInclude Include="..\Public\Player.h" />
@@ -192,8 +196,12 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Private\Building.cpp" />
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
     <ClCompile Include="..\Private\Champion.cpp" />
+    <ClCompile Include="..\Private\Inhibitor.cpp" />
+    <ClCompile Include="..\Private\Nexus.cpp" />
+    <ClCompile Include="..\Private\Turret.cpp" />
     <ClCompile Include="..\Private\Ezreal.cpp" />
     <ClCompile Include="..\Private\PickingManager.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />

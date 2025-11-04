@@ -15,6 +15,11 @@
 #include "Ezreal.h"
 #include "Renekton.h"
 
+// Building
+#include "Nexus.h"
+#include "Turret.h"
+#include "Inhibitor.h"
+
 
 
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -123,6 +128,19 @@ HRESULT CLoader::Loading_For_Prtotype()
 		CRenekton::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+#pragma endregion
+
+#pragma region Building
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Nexus"),
+		CNexus::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Inhibitor"),
+		CTurret::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Turret"),
+		CInhibitor::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+#pragma endregion Building
 
 	return S_OK;
 }
@@ -177,10 +195,6 @@ HRESULT CLoader::Loading_For_GamePlay()
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Blue_NonAnim"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Turret_Blue/Turret_Blue.dat"))))
-		return E_FAIL;
-
 	lstrcpy(m_szLoadingText, TEXT("챔피언 모델 로딩중 "));
 	// 이즈리얼
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
@@ -190,6 +204,31 @@ HRESULT CLoader::Loading_For_GamePlay()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Renekton/Renekton.dat"))))
 		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("건물 로딩 중"));
+	// 넥서스
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Blue_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Nexus_Blue/Nexus_Blue.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Red_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Nexus_Red/Nexus_Red.dat"))))
+		return E_FAIL;
+	// 포탑
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Blue_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Turret_Blue/Turret_Blue.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Red_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Turret_Red/Turret_Red.dat"))))
+		return E_FAIL;
+	// 억제기
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Inhibitor_Blue_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Inhibitor_Blue/Inhibitor_Blue.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Inhibitor_Red_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Inhibitor_Red/Inhibitor_Red.dat"))))
+		return E_FAIL;
+
+
 #pragma endregion
 
 #pragma region 텍스쳐 로딩

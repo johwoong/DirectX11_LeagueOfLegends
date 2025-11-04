@@ -14,12 +14,25 @@ CModelManager::CModelManager()
     m_PrototypeTag.reserve(0);
 }
 
-HRESULT CModelManager::Create_Model(LEVEL eLevel, const _tchar* pPrototypeTag, const _tchar* pLayerTag, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, CModel::TYPE eModelType, _fmatrix PivotMatrix, _bool bCreatePrototype)
+HRESULT CModelManager::Create_Model(
+    LEVEL eLevel,
+    const _tchar* pPrototypeTag,
+    const _tchar* pLayerTag,
+    ID3D11Device* pDevice,
+    ID3D11DeviceContext* pContext,
+    CModel::TYPE eModelType,
+    _fmatrix PivotMatrix,
+    _bool bCreatePrototype,
+    NONANIMDESC* pCustomDesc) 
 {
     CGameInstance* pGameInstance = CGameInstance::GetInstance();
 
-    NONANIMDESC NonAnimDesc;
-    memcpy(&NonAnimDesc, &m_InitModelDesc, sizeof(NONANIMDESC));
+    NONANIMDESC NonAnimDesc = {};
+    if (pCustomDesc) 
+        memcpy(&NonAnimDesc, pCustomDesc, sizeof(NONANIMDESC));
+    else
+        memcpy(&NonAnimDesc, &m_InitModelDesc, sizeof(NONANIMDESC));
+
     char cModelTag[MAX_PATH] = "";
     WideCharToMultiByte(CP_ACP, 0, pPrototypeTag, MAX_PATH, cModelTag, MAX_PATH, NULL, NULL);
     strcpy(NonAnimDesc.pModeltag, cModelTag);
@@ -32,6 +45,53 @@ HRESULT CModelManager::Create_Model(LEVEL eLevel, const _tchar* pPrototypeTag, c
 
     pGameInstance->Release();
     return S_OK;
+}
+
+CNonAnim* CModelManager::Clone_Model(CNonAnim* pSource, LEVEL eLevel, const _tchar* pLayerTag, ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+{
+    if (!pSource)
+        return nullptr;
+
+    CTransform* pTransform = pSource->Get_Transform();
+    if (!pTransform)
+        return nullptr;
+
+    NONANIMDESC Desc = pSource->Get_ModelDesc();
+
+    // [1] Transform 값 복사
+    XMStoreFloat3(&Desc.vPosition, pTransform->Get_State(CTransform::STATE_TRANSLATION));
+
+    _float fScaleX = pTransform->Get_Scale(CTransform::STATE_RIGHT);
+    _float fScaleY = pTransform->Get_Scale(CTransform::STATE_UP);
+    _float fScaleZ = pTransform->Get_Scale(CTransform::STATE_LOOK);
+    Desc.vScale = _float3(fScaleX, fScaleY, fScaleZ);
+
+    Desc.vRotation = _float3(
+        pTransform->Get_CurrentRotationX(),
+        pTransform->Get_CurrentRotationY(),
+        pTransform->Get_CurrentRotationZ()
+    );
+
+    XMStoreFloat4x4(&Desc.WorldMatrix, pTransform->Get_WorldMatrix());
+
+    // [2] 복제 위치 보정 (겹치지 않게 살짝 이동)
+    Desc.vPosition.x += 2.0f;
+    Desc.vPosition.z += 2.0f;
+
+    // [3] PrototypeTag 변환
+    _tchar szPrototypeTag[MAX_PATH] = TEXT("");
+    MultiByteToWideChar(CP_ACP, 0, Desc.pModeltag, (int)strlen(Desc.pModeltag), szPrototypeTag, MAX_PATH);
+
+    // [4] 복제 생성 (? Desc를 직접 넘김)
+    _matrix PivotMatrix = XMMatrixIdentity();
+    if (FAILED(Create_Model(eLevel, szPrototypeTag, pLayerTag,
+        pDevice, pContext, CModel::TYPE_NONANIM, PivotMatrix, false, &Desc))) // ? pCustomDesc 전달
+    {
+        return nullptr;
+    }
+
+    // [5] 마지막 생성된 모델 반환
+    return !m_CreatedModel.empty() ? m_CreatedModel.back() : nullptr;
 }
 
 void CModelManager::Add_PrototypeTag(const _tchar* PrototypeTag)

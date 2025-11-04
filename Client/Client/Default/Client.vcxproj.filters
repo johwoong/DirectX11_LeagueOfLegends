@@ -40,11 +40,8 @@
     <ClInclude Include="stdafx.h">
       <Filter>98.Default</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Actor.h">
-      <Filter>02. GameObjects\00. Actor</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Player.h">
-      <Filter>02. GameObjects\01. Player</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\NonAnim.h">
       <Filter>02. GameObjects\03. NonAnim</Filter>
@@ -53,10 +50,10 @@
       <Filter>02. GameObjects\04. Anim</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Champion.h">
-      <Filter>02. GameObjects\01. Player\00. Champion</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Ezreal.h">
-      <Filter>02. GameObjects\01. Player\00. Champion\00. Ezreal</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\00. Ezreal</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\CCamera_Dynamic.h">
       <Filter>03. Camera</Filter>
@@ -71,19 +68,34 @@
       <Filter>02. GameObjects\03. NonAnim\02. Sky</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PlayerManager.h">
-      <Filter>02. GameObjects\01. Player\Manager</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\Manager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Renekton.h">
-      <Filter>02. GameObjects\01. Player\00. Champion\01. Renekton</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\01. Renekton</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PlayerState.h">
-      <Filter>02. GameObjects\01. Player\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
     </ClInclude>
     <ClInclude Include="PlayerIdleState.h">
-      <Filter>02. GameObjects\01. Player\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PlayerRunState.h">
-      <Filter>02. GameObjects\01. Player\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Building.h">
+      <Filter>02. GameObjects\00. Actor\01. Building</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Nexus.h">
+      <Filter>02. GameObjects\00. Actor\01. Building\03. Nexus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Inhibitor.h">
+      <Filter>02. GameObjects\00. Actor\01. Building\01. Inhibitor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Turret.h">
+      <Filter>02. GameObjects\00. Actor\01. Building\02. Turret</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Actor.h">
+      <Filter>02. GameObjects\00. Actor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -122,18 +134,6 @@
     <Filter Include="02. GameObjects\03. NonAnim">
       <UniqueIdentifier>{72368801-c3a9-419f-8476-3a10cea71ca2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\01. Player">
-      <UniqueIdentifier>{da7f9dda-c879-4f5a-a024-72d064905f87}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\01. Player\00. Champion">
-      <UniqueIdentifier>{0f1584be-ac7f-4f7c-a7c2-a983b529044a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\01. Player\00. Champion\00. Ezreal">
-      <UniqueIdentifier>{18ee8c1c-af76-425b-a0ed-e2c6943e11c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\03. NonAnim\01. Terrian">
-      <UniqueIdentifier>{70e15da3-4527-4ac8-b978-c4a99f1515a8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03. Camera">
       <UniqueIdentifier>{dc9ab2b6-d073-4443-a7b4-952dd9fb10ea}</UniqueIdentifier>
     </Filter>
@@ -142,15 +142,6 @@
     </Filter>
     <Filter Include="02. GameObjects\03. NonAnim\02. Sky">
       <UniqueIdentifier>{41bbd8e3-8ee6-48d1-adf5-dd3f0dafffc2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\01. Player\00. Champion\01. Renekton">
-      <UniqueIdentifier>{4c38113e-f281-4659-8194-197d53cb3731}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\01. Player\Manager">
-      <UniqueIdentifier>{236a6db1-f629-49b4-95e3-7bfb297fe696}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\01. Player\State">
-      <UniqueIdentifier>{eec2726e-2ca4-415b-a309-a35da2ee5b7d}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\04. Anim">
       <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
@@ -172,6 +163,39 @@
     </Filter>
     <Filter Include="02. GameObjects\00. Actor">
       <UniqueIdentifier>{cd51af7c-274a-4ffa-b8cf-1aa2c30dabc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player">
+      <UniqueIdentifier>{da7f9dda-c879-4f5a-a024-72d064905f87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion">
+      <UniqueIdentifier>{0f1584be-ac7f-4f7c-a7c2-a983b529044a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\00. Ezreal">
+      <UniqueIdentifier>{18ee8c1c-af76-425b-a0ed-e2c6943e11c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\01. Renekton">
+      <UniqueIdentifier>{4c38113e-f281-4659-8194-197d53cb3731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\Manager">
+      <UniqueIdentifier>{236a6db1-f629-49b4-95e3-7bfb297fe696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\State">
+      <UniqueIdentifier>{eec2726e-2ca4-415b-a309-a35da2ee5b7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\01. Building">
+      <UniqueIdentifier>{913d6b14-1285-4636-ba9e-3dce2817b9a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\01. Building\01. Inhibitor">
+      <UniqueIdentifier>{7670024e-9cd0-49a0-a8c8-278e1c758853}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\01. Building\02. Turret">
+      <UniqueIdentifier>{66bb0a24-df37-46c8-a40f-8554bdf384fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\01. Building\03. Nexus">
+      <UniqueIdentifier>{d1ee38a3-ee3f-42ab-a373-48723c28f78f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\03. NonAnim\01. Terrian">
+      <UniqueIdentifier>{70e15da3-4527-4ac8-b978-c4a99f1515a8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -199,11 +223,8 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>98.Default</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Actor.cpp">
-      <Filter>02. GameObjects\00. Actor</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Player.cpp">
-      <Filter>02. GameObjects\01. Player</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\NonAnim.cpp">
       <Filter>02. GameObjects\03. NonAnim</Filter>
@@ -212,10 +233,10 @@
       <Filter>02. GameObjects\04. Anim</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Champion.cpp">
-      <Filter>02. GameObjects\01. Player\00. Champion</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Ezreal.cpp">
-      <Filter>02. GameObjects\01. Player\00. Champion\00. Ezreal</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\00. Ezreal</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp">
       <Filter>03. Camera</Filter>
@@ -233,16 +254,31 @@
       <Filter>02. GameObjects\03. NonAnim\02. Sky</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PlayerManager.cpp">
-      <Filter>02. GameObjects\01. Player\Manager</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\Manager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Renekton.cpp">
-      <Filter>02. GameObjects\01. Player\00. Champion\01. Renekton</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\01. Renekton</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PlayerIdleState.cpp">
-      <Filter>02. GameObjects\01. Player\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PlayerRunState.cpp">
-      <Filter>02. GameObjects\01. Player\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Building.cpp">
+      <Filter>02. GameObjects\00. Actor\01. Building</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Nexus.cpp">
+      <Filter>02. GameObjects\00. Actor\01. Building\03. Nexus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Inhibitor.cpp">
+      <Filter>02. GameObjects\00. Actor\01. Building\01. Inhibitor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Turret.cpp">
+      <Filter>02. GameObjects\00. Actor\01. Building\02. Turret</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Actor.cpp">
+      <Filter>02. GameObjects\00. Actor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

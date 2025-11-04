@@ -6,6 +6,7 @@
 #include "PickingManager.h"
 #include "Ezreal.h"
 #include "Renekton.h"
+#include "Building.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
@@ -23,6 +24,8 @@ HRESULT CLevel_GamePlay::Initialize()
 	if(FAILED(Ready_Layer_Terrian(TEXT("Layer_BackGround"))))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_MapObject(TEXT("Layer_MapObject"))))
+		return E_FAIL;
+	if (FAILED(Ready_Layer_Building(TEXT("Layer_Building"))))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
 		return E_FAIL;
@@ -87,6 +90,68 @@ HRESULT CLevel_GamePlay::Ready_Layer_MapObject(const _tchar* pLayerTag)
 			return E_FAIL;
 	}
 	CloseHandle(hFile);
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Building(const _tchar* pLayerTag)
+{
+	HANDLE hFile = 0;
+	_ulong dwByte = 0;
+	CBuilding::BUILDINGDESC BuildDesc;
+	_uint iNum = 0;
+
+	hFile = CreateFile(TEXT("../../../Bin/Data/BuildingData/Build.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (0 == hFile)
+		return E_FAIL;
+
+	ReadFile(hFile, & (iNum), sizeof(_uint), &dwByte, nullptr);
+
+	for (_uint i = 0; i < iNum; ++i)
+	{
+		ReadFile(hFile, &(BuildDesc.ModelDesc), sizeof(NONANIMDESC), &dwByte, nullptr);
+		_tchar pModelTag[MAX_PATH];
+		MultiByteToWideChar(CP_ACP, 0, BuildDesc.ModelDesc.pModeltag, MAX_PATH, pModelTag, MAX_PATH);
+
+		if (!wcscmp(pModelTag, TEXT("Nexus_Blue_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::BLUE;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Nexus"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
+		else if (!wcscmp(pModelTag, TEXT("Nexus_Red_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::RED;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Nexus"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
+		else if (!wcscmp(pModelTag, TEXT("Inhibitor_Blue_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::BLUE;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Inhibitor"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
+		else if (!wcscmp(pModelTag, TEXT("Inhibitor_Red_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::RED;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Inhibitor"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
+		else if (!wcscmp(pModelTag, TEXT("Turret_Blue_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::BLUE;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Turret"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
+		else if (!wcscmp(pModelTag, TEXT("Turret_Red_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::RED;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Turret"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
+	}
+
+
+
 	return S_OK;
 }
 
