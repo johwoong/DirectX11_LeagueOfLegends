@@ -16,7 +16,6 @@ CRunState::CRunState(CPlayer* pPlayer)
 
 CPlayerState* CRunState::HandleInput()
 {
-    // ? 이동 중에도 새로운 클릭 입력 가능
     CGameInstance* pGameInstance = CGameInstance::GetInstance();
 
     if (pGameInstance->Mouse_Down(DIMK_RBUTTON))

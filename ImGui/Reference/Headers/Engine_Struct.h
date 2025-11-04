@@ -203,7 +203,6 @@ namespace Engine
 
 	}NONANIMDESC;
 
-
 	typedef struct tagJBinBone
 	{
 		char szName[MAX_PATH];
