@@ -23,6 +23,7 @@ HRESULT CLevel_Loading::Initialize(LEVEL eNextLevelID)
 	if (nullptr == m_pLoader)
 		return E_FAIL;
 
+
 	return S_OK;
 }
 

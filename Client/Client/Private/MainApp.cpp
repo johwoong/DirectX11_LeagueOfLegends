@@ -5,6 +5,8 @@
 #include "PickingManager.h"
 #include "PlayerManager.h"
 
+#include "UI_BackGround.h"
+
 USING(Client)
 
 CMainApp::CMainApp()
@@ -15,14 +17,6 @@ CMainApp::CMainApp()
 
 HRESULT CMainApp::Initialize()
 {
-	if (::AllocConsole() == TRUE)
-	{
-		FILE* nfp[3];
-		freopen_s(nfp + 0, "CONOUT$", "rb", stdin);
-		freopen_s(nfp + 1, "CONOUT$", "wb", stdout);
-		freopen_s(nfp + 2, "CONOUT$", "wb", stderr);
-		std::ios::sync_with_stdio();
-	}
 	if (::AllocConsole() == TRUE)
 	{
 		FILE* nfp[3];
@@ -126,6 +120,16 @@ HRESULT CMainApp::Ready_Prototype_Component()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_UI"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Shaderfiles/Shader_UI.hlsl"), VTXTEX_DECLARATION::Elements, VTXTEX_DECLARATION::iNumElements))))
+		return E_FAIL;
+
+
+	// 로딩 관련
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_BackGround_Logo"),
+		CUI_BackGround::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Loading_Logo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/UI/Logo/srbackground.dds")))))
 		return E_FAIL;
 
 

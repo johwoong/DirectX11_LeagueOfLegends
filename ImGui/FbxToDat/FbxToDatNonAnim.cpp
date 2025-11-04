@@ -14,7 +14,6 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-// ============================= 엔진 구조 =============================
 struct float2 { float x, y; };
 struct float3 { float x, y, z; };
 struct FLOAT4X4 { float m[16]; };
@@ -27,7 +26,6 @@ struct VTXMODEL {
     float3 vTangent;
 };
 
-// ============================= 파일 유틸 =============================
 static void write_n(FILE* fp, const void* p, size_t sz) {
     if (fwrite(p, 1, sz, fp) != sz)
         throw runtime_error("file write error");
@@ -46,7 +44,6 @@ static void ToF4x4(FLOAT4X4& out, const aiMatrix4x4& m) {
     out.m[12] = m.d1; out.m[13] = m.d2; out.m[14] = m.d3; out.m[15] = m.d4;
 }
 
-// ============================= 텍스처 자동 탐색 =============================
 static fs::path FindTextureFile(const fs::path& texDir)
 {
     for (const auto& entry : fs::directory_iterator(texDir))
@@ -62,13 +59,10 @@ static fs::path FindTextureFile(const fs::path& texDir)
     return fs::path(); // 없으면 빈 경로
 }
 
-// ============================= Model.dat =============================
 static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& texDir)
 {
-    // ? Pivot 행렬 (0.01배로 축소 + Y축 180도 회전)
     FLOAT4X4 pivot{};
     {
-        // 180도 회전 행렬 (Y축 기준)
         float rotY[16] = {
             -1, 0,  0, 0,
              0, 1,  0, 0,
@@ -116,8 +110,6 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
         write_n(fp, &numVerts, sizeof(numVerts));
 
         vector<VTXMODEL> verts(numVerts);
-
-        // ? 정점은 원본 그대로 (추가 스케일 없음)
         for (unsigned v = 0; v < numVerts; ++v)
         {
             verts[v].vPosition = {

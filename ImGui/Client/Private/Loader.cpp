@@ -66,7 +66,7 @@ HRESULT CLoader::Loading_ForLogoLevel()
 
 	lstrcpy(m_szLoadingText, TEXT("Loading Level"));
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_LOGO, TEXT("Prototype_Component_Texture_BackGround"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Logo/BackGround.dds"), 1))))
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/UI/Logo/BackGround.dds"), 1))))
 		return E_FAIL;
 
 	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_BackGround"),

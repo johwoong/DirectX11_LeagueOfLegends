@@ -164,13 +164,9 @@ void CImGui_Manager::Update_Imgui()
 
 		if (ImGui::BeginTabItem("Model Tool"))
 		{
-			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Picking for Object");
-			ImGui::SameLine();
-			ImGui::RadioButton("##Picking for Object", &m_PickingType, PICKING_MODEL);
-
 			if (ImGui::BeginTabBar("ModelsTabs", ImGuiTabBarFlags_None))
 			{
-				if (ImGui::BeginTabItem("Show Model List"))
+				if (ImGui::BeginTabItem("Model"))
 				{
 					Show_ModelList();
 					ImGui::EndTabItem();
@@ -185,11 +181,11 @@ void CImGui_Manager::Update_Imgui()
 			ImGui::EndTabItem();
 		}
 
-		if (ImGui::BeginTabItem("Animation Tool"))
-		{
-			Set_Animation();
-			ImGui::EndTabItem();
-		}
+		//if (ImGui::BeginTabItem("Animation Tool"))
+		//{
+		//	Set_Animation();
+		//	ImGui::EndTabItem();
+		//}
 		ImGui::EndTabBar(); 
 	}
 
@@ -239,17 +235,12 @@ void CImGui_Manager::ShowPickedObj()
 
 	ImGui::NewLine();
 	ImGui::BulletText("Position");
-	ImGui::Text("Position X");
-	ImGui::SameLine();
-	ImGui::DragFloat("##PositionX", &m_vPickedObjPos.x, 0.1f);
-
-	ImGui::Text("Position Z");
-	ImGui::SameLine();
-	ImGui::DragFloat("##PositionZ", &m_vPickedObjPos.z, 0.01f);
-
-	ImGui::Text("Position Y");
-	ImGui::SameLine();
-	ImGui::DragFloat("##PositionY", &m_vPickedObjPos.y, 0.01f);
+	ImGui::Text("X"); ImGui::SameLine();
+	ImGui::DragFloat("##PosX", &m_vPickedObjPos.x, 0.1f);
+	ImGui::Text("Y"); ImGui::SameLine();
+	ImGui::DragFloat("##PosY", &m_vPickedObjPos.y, 0.1f);
+	ImGui::Text("Z"); ImGui::SameLine();
+	ImGui::DragFloat("##PosZ", &m_vPickedObjPos.z, 0.1f);
 
 	ImGui::NewLine();
 
@@ -262,7 +253,7 @@ void CImGui_Manager::ShowPickedObj()
 
 	ImGui::Text("Scale");
 	ImGui::SameLine();
-	ImGui::DragFloat3("##SettingScale", Pos);
+	ImGui::DragFloat3("##Scale", Pos);
 	m_vPickedObjScale = _float3(Pos[0], Pos[1], Pos[2]);
 
 	ImGui::BulletText("Rotation");
@@ -271,7 +262,7 @@ void CImGui_Manager::ShowPickedObj()
 	Rotation[1] = m_vPickedRotAxis.y;
 	Rotation[2] = m_vPickedRotAxis.z;
 	ImGui::Text("Rotation axis"); ImGui::SameLine();
-	ImGui::DragFloat3("##Setting RotAxis", Rotation);
+	ImGui::DragFloat3("##Rotation", Rotation);
 
 	m_vPickedRotAxis = _float3(Rotation[0], Rotation[1], Rotation[2]);
 
@@ -417,82 +408,7 @@ void CImGui_Manager::Show_PopupBox()
 		ImGui::EndPopup();
 
 		pPickingMgr->Release();
-	}
-
-
-	if (ImGui::BeginPopupModal("Delete Layer Tag?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		ImGui::Text("All those LayerTag files will be deleted.\nThis operation cannot be undone!\n\n");
-		ImGui::Separator();
-
-		static int unused_i = 0;
-		ImGui::Combo("Combo", &unused_i, "Layer1\0Layer2\0");
-
-		static bool dont_ask_me_next_time = false;
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-		ImGui::Checkbox("Don't ask me next time", &dont_ask_me_next_time);
-		ImGui::PopStyleVar();
-
-		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-		ImGui::SetItemDefaultFocus();
-		ImGui::SameLine();
-		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-		ImGui::EndPopup();
-	}
-
-
-	if (ImGui::BeginPopupModal("Add Layer Tag", NULL, ImGuiWindowFlags_MenuBar))
-	{
-		static char LayerBuffer[MAX_PATH] = "";
-
-		ImGui::Text("Enter Layer Tag");
-		ImGui::InputText("Layer Tag", LayerBuffer, MAX_PATH);
-
-		if (ImGui::Button("Add Layer Tag"))
-		{
-			bool bFailed = false;
-
-			if (m_stLayerTags.size() != 0)
-			{
-				for (auto& iter : m_stLayerTags)
-				{
-					if (!strcmp("", LayerBuffer) || !strcmp(iter.c_str(), LayerBuffer))
-					{
-						bFailed = true;
-						ImGui::OpenPopup("Failed");
-					}
-
-				}
-			}
-			if (!bFailed)
-			{
-				string NewLayer = LayerBuffer;
-				m_stLayerTags.push_back(NewLayer);
-				ImGui::OpenPopup("Succese");
-			}
-
-		}
-
-		if (ImGui::BeginPopupModal("Failed", &unused_open))
-		{
-			ImGui::Text("Failed Add Layer Tag");
-			if (ImGui::Button("Close"))
-				ImGui::CloseCurrentPopup();
-			ImGui::EndPopup();
-		}
-		if (ImGui::BeginPopupModal("Succese", &unused_open))
-		{
-			ImGui::Text("Succese");
-			if (ImGui::Button("Close"))
-				ImGui::CloseCurrentPopup();
-			ImGui::EndPopup();
-		}
-
-
-		ImGui::SameLine();
-		if (ImGui::Button("Close"))  ImGui::CloseCurrentPopup();
-		ImGui::EndPopup();
-	}
+	}	
 }
 
 void CImGui_Manager::Set_Terrian_Map()
@@ -795,7 +711,7 @@ void CImGui_Manager::Load_Terrian()
 void CImGui_Manager::Set_Object_Map()
 {
 	ImGui::NewLine();
-	ImGui::BulletText("Transform Setting");
+	ImGui::BulletText("Transform");
 
 	static float Position[3] = { m_InitDesc.vPosition.x, m_InitDesc.vPosition.y, m_InitDesc.vPosition.z };
 	ImGui::Text("Position"); ImGui::SameLine();
@@ -821,25 +737,25 @@ void CImGui_Manager::Set_Object_Map()
 
 void CImGui_Manager::Set_LayerTag()
 {
-	//Layer tag를 만들거나, 삭제한다. 
-	ImGui::BulletText("Layer Setting");
+	////Layer tag를 만들거나, 삭제한다. 
+	//ImGui::BulletText("Layer Setting");
 
-	if (ImGui::BeginCombo("Layer List", m_stLayerTags[m_iSeletecLayerNum].c_str()))
-	{
-		for (int i = 0; i < m_stLayerTags.size(); i++)
-		{
-			if (ImGui::Selectable(m_stLayerTags[i].c_str(), m_iSeletecLayerNum == i))
-				m_iSeletecLayerNum = i;
-		}
-		ImGui::EndCombo();
-	}
-	if (ImGui::Button("Delete Layer Tag"))
-		ImGui::OpenPopup("Delete Layer Tag?"); ImGui::SameLine();
+	//if (ImGui::BeginCombo("Layer List", m_stLayerTags[m_iSeletecLayerNum].c_str()))
+	//{
+	//	for (int i = 0; i < m_stLayerTags.size(); i++)
+	//	{
+	//		if (ImGui::Selectable(m_stLayerTags[i].c_str(), m_iSeletecLayerNum == i))
+	//			m_iSeletecLayerNum = i;
+	//	}
+	//	ImGui::EndCombo();
+	//}
+	//if (ImGui::Button("Delete Layer Tag"))
+	//	ImGui::OpenPopup("Delete Layer Tag?"); ImGui::SameLine();
 
-	if (ImGui::Button("Add New Layer Tag"))
-		ImGui::OpenPopup("Add Layer Tag");
+	//if (ImGui::Button("Add New Layer Tag"))
+	//	ImGui::OpenPopup("Add Layer Tag");
 
-	Show_PopupBox();
+	//Show_PopupBox();
 }
 
 void CImGui_Manager::Show_ModelList()
@@ -1005,7 +921,6 @@ void CImGui_Manager::Show_CurrentModelList()
 			ImGui::EndTabBar();
 		}
 
-		// ? Copy 버튼은 child 내부에서 만들어야 보임
 		ImGui::Spacing();
 		ImGui::Separator();
 		if (ImGui::Button("Copy", ImVec2(120, 30)))
@@ -1018,7 +933,6 @@ void CImGui_Manager::Show_CurrentModelList()
 					LEVEL eLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
 					_tchar* LayerTag = StringToTCHAR(m_stLayerTags[m_iSeletecLayerNum]);
 
-					// 복제 수행
 					CNonAnim* pClone = m_pModel_Manager->Clone_Model(pSelected, eLevel, LayerTag, m_pDevice, m_pContext);
 					if (pClone)
 						pClone->Set_Picked();

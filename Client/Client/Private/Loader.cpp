@@ -3,9 +3,6 @@
 
 #include "GameInstance.h"
 
-// UI
-#include "UI_BackGround.h"
-
 #include "Terrian.h"
 #include "CCamera_Dynamic.h"
 #include "NonAnim.h"
@@ -79,13 +76,9 @@ HRESULT CLoader::Loading_For_Logo()
 
 
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_LOGO, TEXT("Prototype_Component_Texture_Logo"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Logo/BackGround.dds")))))
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/UI/Logo/BackGround.dds")))))
 		return E_FAIL;
 
-
-	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_BackGround_Logo"),
-		CUI_BackGround::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("원본 객체 로딩 중"));
 
