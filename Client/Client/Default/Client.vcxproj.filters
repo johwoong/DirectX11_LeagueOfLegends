@@ -35,7 +35,7 @@
       <Filter>02. GameObjects\02. UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_BackGround.h">
-      <Filter>02. GameObjects\02. UI\UI_BackGround</Filter>
+      <Filter>02. GameObjects\02. UI\00. UI_BackGround</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>98.Default</Filter>
@@ -97,6 +97,12 @@
     <ClInclude Include="..\Public\Actor.h">
       <Filter>02. GameObjects\00. Actor</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\UI_Manager.h">
+      <Filter>02. GameObjects\02. UI\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_ChampionImage.h">
+      <Filter>02. GameObjects\02. UI\01. UI_Loading</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -124,9 +130,6 @@
     </Filter>
     <Filter Include="02. GameObjects\02. UI\Base">
       <UniqueIdentifier>{311dce30-bbdb-42be-9421-08ae53a52b51}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\UI_BackGround">
-      <UniqueIdentifier>{1b572ae8-7a2d-45c3-b31f-7cd2acf8d6c8}</UniqueIdentifier>
     </Filter>
     <Filter Include="97. ShaderFiles">
       <UniqueIdentifier>{acceb22e-8979-4f7a-939e-28cc06a5a476}</UniqueIdentifier>
@@ -197,6 +200,15 @@
     <Filter Include="02. GameObjects\03. NonAnim\01. Terrian">
       <UniqueIdentifier>{70e15da3-4527-4ac8-b978-c4a99f1515a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\02. UI\Manager">
+      <UniqueIdentifier>{43e71344-5f99-4e10-904e-c90b72edbc38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\00. UI_BackGround">
+      <UniqueIdentifier>{1b572ae8-7a2d-45c3-b31f-7cd2acf8d6c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\01. UI_Loading">
+      <UniqueIdentifier>{c27dc556-5f16-4f65-8648-570190a9883d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -218,7 +230,7 @@
       <Filter>02. GameObjects\02. UI\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_BackGround.cpp">
-      <Filter>02. GameObjects\02. UI\UI_BackGround</Filter>
+      <Filter>02. GameObjects\02. UI\00. UI_BackGround</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>98.Default</Filter>
@@ -279,6 +291,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Actor.cpp">
       <Filter>02. GameObjects\00. Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_Manager.cpp">
+      <Filter>02. GameObjects\02. UI\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_ChampionImage.cpp">
+      <Filter>02. GameObjects\02. UI\01. UI_Loading</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

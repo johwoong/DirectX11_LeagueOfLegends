@@ -75,11 +75,6 @@ HRESULT CLoader::Loading_For_Logo()
 	lstrcpy(m_szLoadingText, TEXT("텍스쳐 로딩 중 "));
 
 
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_LOGO, TEXT("Prototype_Component_Texture_Logo"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/UI/Logo/BackGround.dds")))))
-		return E_FAIL;
-
-
 	lstrcpy(m_szLoadingText, TEXT("원본 객체 로딩 중"));
 
 	if(FAILED(Loading_For_Prtotype()))

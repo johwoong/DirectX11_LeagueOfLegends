@@ -66,7 +66,11 @@ HRESULT CUI_BackGround::Render()
     if (FAILED(SetUp_ShaderResources()))
         return E_FAIL;
 
-    m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", m_pTextureCom->Get_SRV(0));
+    int iCurrentIdx = m_pGameInstance->Get_CurrentLevelIndex();
+    if (iCurrentIdx == LEVEL_LOGO)
+        m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", m_pTextureCom->Get_SRV(0));
+    else
+        m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", m_pTextureCom->Get_SRV(1));
 
     m_pShaderCom->Begin(m_eShaderID);
     m_pVIBufferCom->Render();
@@ -93,7 +97,7 @@ HRESULT CUI_BackGround::Ready_Components(void* pArg)
         return E_FAIL;
 
     // Texture
-    if (FAILED(__super::Add_Components(TEXT("Com_Texture"), LEVEL_LOGO,
+    if (FAILED(__super::Add_Components(TEXT("Com_Texture"), LEVEL_STATIC,
         TEXT("Prototype_Component_Texture_Logo"), (CComponent**)&m_pTextureCom)))
         return E_FAIL;
 

@@ -6,6 +6,7 @@
 #include "PlayerManager.h"
 
 #include "UI_BackGround.h"
+#include "UI_ChampionImage.h"
 
 USING(Client)
 
@@ -17,14 +18,14 @@ CMainApp::CMainApp()
 
 HRESULT CMainApp::Initialize()
 {
-	if (::AllocConsole() == TRUE)
-	{
-		FILE* nfp[3];
-		freopen_s(nfp + 0, "CONOUT$", "rb", stdin);
-		freopen_s(nfp + 1, "CONOUT$", "wb", stdout);
-		freopen_s(nfp + 2, "CONOUT$", "wb", stderr);
-		std::ios::sync_with_stdio();
-	}
+	//if (::AllocConsole() == TRUE)
+	//{
+	//	FILE* nfp[3];
+	//	freopen_s(nfp + 0, "CONOUT$", "rb", stdin);
+	//	freopen_s(nfp + 1, "CONOUT$", "wb", stdout);
+	//	freopen_s(nfp + 2, "CONOUT$", "wb", stderr);
+	//	std::ios::sync_with_stdio();
+	//}
 
 
 	srand(unsigned int(time(NULL)));
@@ -124,13 +125,26 @@ HRESULT CMainApp::Ready_Prototype_Component()
 
 
 	// 로딩 관련
-	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_BackGround_Logo"),
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_BackGround"),
 		CUI_BackGround::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Loading_Logo"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/UI/Logo/srbackground.dds")))))
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_ChampionImage"),
+		CUI_ChampionImage::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Logo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Logo/BackGround%d.dds"), 2))))
+		return E_FAIL;
+ 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_ChampionImage"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/ChampionImage/ChampionImage%d.dds"), 2))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Frame"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/Frame/LoadingFrame.dds")))))
+		return E_FAIL;
+
+	
+
 
 
 	Safe_AddRef(m_pRenderer);

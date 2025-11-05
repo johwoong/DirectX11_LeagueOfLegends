@@ -5,6 +5,8 @@
 #include "Level_GamePlay.h"
 
 #include "GameInstance.h"
+#include "UI_ChampionImage.h"
+
 
 CLevel_Loading::CLevel_Loading(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CLevel(pDevice, pContext)
@@ -18,6 +20,14 @@ HRESULT CLevel_Loading::Initialize(LEVEL eNextLevelID)
 
 	m_eNextLevelID = eNextLevelID;
 
+
+	m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_BackGround"), LEVEL_LOADING, TEXT("UI_LOADING"));
+
+	for (int i = 0; i < 2; ++i)
+	{
+		m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_ChampionImage"), LEVEL_LOADING, TEXT("UI_LOADING"), &i);
+	}
+	
 	/* 다음레벨에 대한 자원들을 준비한다.(추가스레드) */
 	m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID);
 	if (nullptr == m_pLoader)

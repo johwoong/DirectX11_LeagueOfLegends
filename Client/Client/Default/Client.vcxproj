@@ -188,6 +188,8 @@
     <ClInclude Include="..\Public\Terrian.h" />
     <ClInclude Include="..\Public\UI_BackGround.h" />
     <ClInclude Include="..\Public\UI_Base.h" />
+    <ClInclude Include="..\Public\UI_ChampionImage.h" />
+    <ClInclude Include="..\Public\UI_Manager.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="PlayerIdleState.h" />
@@ -224,6 +226,8 @@
     <ClCompile Include="..\Private\Terrian.cpp" />
     <ClCompile Include="..\Private\UI_BackGround.cpp" />
     <ClCompile Include="..\Private\UI_Base.cpp" />
+    <ClCompile Include="..\Private\UI_ChampionImage.cpp" />
+    <ClCompile Include="..\Private\UI_Manager.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
