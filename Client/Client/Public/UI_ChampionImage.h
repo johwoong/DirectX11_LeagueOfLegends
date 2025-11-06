@@ -5,7 +5,7 @@ class CUI_ChampionImage final : public CUI_Base
 public:
 	enum CHAMPION
 	{
-		EZREAL, RENEKTON, CHAMPION_END
+		EZREAL, RENEKTON, LEESIN, GALIO, LEONA, GWEN, VI, GAREN, VAYNE, ALISTAR, CHAMPION_END
 	};
 
 private:

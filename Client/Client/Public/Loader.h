@@ -34,6 +34,9 @@ public:
 
 	void Set_Finished(_bool tof) { m_isFinished = tof; }
 
+public:
+	_float Get_Progress() const { return m_fProgress; }
+
 
 public:
 	HRESULT Loading_For_Logo();
@@ -49,6 +52,9 @@ private:
 	ID3D11Device* m_pDevice				=			{ nullptr };	
 	ID3D11DeviceContext* m_pContext		=			{ nullptr };
 	CGameInstance* m_pGameInstnace		=			{ nullptr };
+
+private:
+	_float m_fProgress = 0.f;
 
 private:
 	HANDLE					m_hThread = 0;

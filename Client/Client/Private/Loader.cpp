@@ -73,7 +73,7 @@ HRESULT CLoader::Loading_For_Logo()
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("텍스쳐 로딩 중 "));
-
+	m_fProgress = 0.f;
 
 	lstrcpy(m_szLoadingText, TEXT("원본 객체 로딩 중"));
 
@@ -81,13 +81,13 @@ HRESULT CLoader::Loading_For_Logo()
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었슴니다."));
+	m_fProgress = 100.f;
 	m_isFinished = true;
 	return S_OK;
 }
 
 HRESULT CLoader::Loading_For_Prtotype()
 {
-
  	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_NonAnim"),
 		CNonAnim::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
@@ -136,8 +136,9 @@ HRESULT CLoader::Loading_For_Prtotype()
 HRESULT CLoader::Loading_For_GamePlay()
 {
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었슴니다."));
-
+	m_fProgress = 0.f;
 #pragma region 셰이더 로딩
+	m_fProgress = 20.f;
 	lstrcpy(m_szLoadingText, TEXT("원본 셰이더 로딩 중"));
 	// For Prototype Component Shader VtxNorTex
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNorTex"),
@@ -157,10 +158,9 @@ HRESULT CLoader::Loading_For_GamePlay()
 #pragma region 셰이더 로딩
 
 
-#pragma region
-
+#pragma region 버퍼 로딩
 	lstrcpy(m_szLoadingText, TEXT("버퍼 로딩 중"));
-
+	m_fProgress = 40.f;
 	/*For.Prototype_Component_VIBuffer_Cube */
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Cube"),
 		CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
@@ -176,14 +176,14 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 #pragma endregion 
 
-#pragma region Model 로딩
+#pragma region 모델 로딩
 	lstrcpy(m_szLoadingText, TEXT("맵 로딩중 "));
-
+	m_fProgress = 50.f;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Map"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
 		return E_FAIL;
-
 	lstrcpy(m_szLoadingText, TEXT("챔피언 모델 로딩중 "));
+	m_fProgress = 60.f;
 	// 이즈리얼
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Ezreal/Ezreal.dat"))))
@@ -194,6 +194,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("건물 로딩 중"));
+	m_fProgress = 80.f;
 	// 넥서스
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Blue_NonAnim"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Nexus_Blue/Nexus_Blue.dat"))))
@@ -220,11 +221,13 @@ HRESULT CLoader::Loading_For_GamePlay()
 #pragma endregion
 
 #pragma region 텍스쳐 로딩
+	m_fProgress = 90.f;
 	lstrcpy(m_szLoadingText, TEXT("텍스쳐 로딩 중"));
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Sky_Map"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/SkyBox/riots_sru_skybox.dds"), 1))))
 		return E_FAIL;
 
+	m_fProgress = 100.f;
 	m_isFinished = true;
 
 	return S_OK;

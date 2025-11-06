@@ -103,6 +103,12 @@
     <ClInclude Include="..\Public\UI_ChampionImage.h">
       <Filter>02. GameObjects\02. UI\01. UI_Loading</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\UI_LoadingBar.h">
+      <Filter>02. GameObjects\02. UI\01. UI_Loading\UI_LoadingBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_Text.h">
+      <Filter>02. GameObjects\02. UI\02. UI_Text</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -145,9 +151,6 @@
     </Filter>
     <Filter Include="02. GameObjects\03. NonAnim\02. Sky">
       <UniqueIdentifier>{41bbd8e3-8ee6-48d1-adf5-dd3f0dafffc2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\04. Anim">
-      <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
     </Filter>
     <Filter Include="01. Level">
       <UniqueIdentifier>{e7c9e66b-9e50-485b-9868-bdd7980e642d}</UniqueIdentifier>
@@ -208,6 +211,15 @@
     </Filter>
     <Filter Include="02. GameObjects\02. UI\01. UI_Loading">
       <UniqueIdentifier>{c27dc556-5f16-4f65-8648-570190a9883d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\01. UI_Loading\UI_LoadingBar">
+      <UniqueIdentifier>{18eaac69-e116-4504-8629-35065e3c33f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\04. Anim">
+      <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\02. UI_Text">
+      <UniqueIdentifier>{f3409f9c-b1aa-4bb7-9780-c12a192fecf0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -297,6 +309,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\UI_ChampionImage.cpp">
       <Filter>02. GameObjects\02. UI\01. UI_Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_LoadingBar.cpp">
+      <Filter>02. GameObjects\02. UI\01. UI_Loading\UI_LoadingBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_Text.cpp">
+      <Filter>02. GameObjects\02. UI\02. UI_Text</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

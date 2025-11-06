@@ -7,6 +7,8 @@
 
 #include "UI_BackGround.h"
 #include "UI_ChampionImage.h"
+#include "UI_LoadingBar.h"
+#include "UI_Text.h"
 
 USING(Client)
 
@@ -46,6 +48,8 @@ HRESULT CMainApp::Initialize()
 	if (FAILED(Start_Level(LEVEL::LEVEL_LOGO)))
 		return E_FAIL;
 
+	//if (FAILED(m_pGameInstance->(m_pDevice, m_pContext, TEXT("Font_Message"), TEXT("../../../Bin/Resources/Fonts/spiegelja-regular.spritefont"))))
+	//	return E_FAIL;
 
 	return S_OK;
 }
@@ -133,19 +137,26 @@ HRESULT CMainApp::Ready_Prototype_Component()
 		CUI_ChampionImage::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_LoadingBar"),
+		CUI_LoadingBar::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_Text"),
+		CUI_Text::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Logo"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Logo/BackGround%d.dds"), 2))))
 		return E_FAIL;
  	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_ChampionImage"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/ChampionImage/ChampionImage%d.dds"), 2))))
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/ChampionImage/ChampionImage%d.dds"), 10))))
 		return E_FAIL;
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Frame"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/Frame/LoadingFrame.dds")))))
 		return E_FAIL;
-
-	
-
-
+ 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Loading_Bar"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/LoadingBar/LoadingBar.dds")))))
+		return E_FAIL;
 
 	Safe_AddRef(m_pRenderer);
 

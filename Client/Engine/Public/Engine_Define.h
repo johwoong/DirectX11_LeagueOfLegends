@@ -21,6 +21,8 @@
 
 #include <DirectXTK/DDSTextureLoader.h>
 #include <DirectXTK/WICTextureLoader.h>
+#include <directXTK/SpriteFont.h>
+#include <directXTK/SpriteBatch.h>
 
 
 // ===== Assimp =====

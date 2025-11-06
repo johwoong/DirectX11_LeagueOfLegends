@@ -17,6 +17,7 @@
 #include "Object_Manager.h"
 #include "Frustum.h"
 #include "Picking.h"
+#include "Font_Manager.h"
 
 NS_BEGIN(Engine)
 
@@ -111,6 +112,12 @@ public: /* For.PipeLine */
 	_float4x4 Get_CamWorldMatrix();
 #pragma endregion
 
+#pragma region Font
+public: /* For.Font_Manager */
+	HRESULT Add_Fonts(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pFontTag, const _tchar* pFontFilePath);
+	HRESULT Render_Font(const _tchar* pFontTag, const _tchar* pText, _fvector vPos, _fvector vColor, _float fScale = 1.f);
+#pragma endregion
+
 #pragma region Picking
 public: /* For Picking */
 	_vector Get_RayPos();
@@ -139,13 +146,13 @@ private:
 	class CInput_Device*			m_pInput_Device =		{ nullptr };
 	class CComponentManager*		m_pComponent_Manager =	{ nullptr };
 	class CPipeLine*				m_pPipeLine		=		{ nullptr };
+	class CFont_Manager*			m_pFont_Manager =		{ nullptr };
 	class CPicking*					m_pPicking =			{ nullptr };
 	class CFrustum*					m_pFrustum		=		{ nullptr };
 	class CTarget_Manager*			m_pTarget_Manager =	    { nullptr };
 
 public:
 	virtual void Free() override;
-
 };
 
 NS_END

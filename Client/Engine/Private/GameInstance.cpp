@@ -11,6 +11,7 @@ CGameInstance::CGameInstance()
 	, m_pTimer_Manager(CTimer_Manager::GetInstance())
 	, m_pComponent_Manager(CComponentManager::GetInstance())
 	, m_pPipeLine(CPipeLine::GetInstance())
+	, m_pFont_Manager(CFont_Manager::GetInstance())
 	, m_pFrustum(CFrustum::GetInstance())
 	, m_pTarget_Manager(CTarget_Manager::GetInstance())
 	, m_pPicking(CPicking::GetInstance())
@@ -18,6 +19,7 @@ CGameInstance::CGameInstance()
 	Safe_AddRef(m_pPicking);
 	Safe_AddRef(m_pTarget_Manager);
 	Safe_AddRef(m_pFrustum);
+	Safe_AddRef(m_pFont_Manager);
 	Safe_AddRef(m_pPipeLine);
 	Safe_AddRef(m_pComponent_Manager);
 	Safe_AddRef(m_pTimer_Manager);
@@ -477,6 +479,24 @@ _float4x4 CGameInstance::Get_CamWorldMatrix()
 
 #pragma endregion
 
+#pragma region Font
+HRESULT CGameInstance::Add_Fonts(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pFontTag, const _tchar* pFontFilePath)
+{
+	if (nullptr == m_pFont_Manager)
+		return E_FAIL;
+
+	return m_pFont_Manager->Add_Fonts(pDevice, pContext, pFontTag, pFontFilePath);
+}
+
+HRESULT CGameInstance::Render_Font(const _tchar* pFontTag, const _tchar* pText, _fvector vPos, _fvector vColor, _float fScale)
+{
+	if (nullptr == m_pFont_Manager)
+		return E_FAIL;
+
+	return m_pFont_Manager->Render_Font(pFontTag, pText, vPos, vColor, fScale);
+}
+#pragma endregion Font
+
 #pragma region Picking
 
 _vector CGameInstance::Get_RayPos()
@@ -537,6 +557,7 @@ void CGameInstance::Release_Engine()
 	CPipeLine::GetInstance()->DestroyInstance();
 	CTimer_Manager::GetInstance()->DestroyInstance();
 	CInput_Device::GetInstance()->DestroyInstance();
+	CFont_Manager::GetInstance()->DestroyInstance();
 	CFrustum::GetInstance()->DestroyInstance();
 	CTarget_Manager::GetInstance()->DestroyInstance();
 	CPicking::GetInstance()->DestroyInstance();
@@ -548,6 +569,7 @@ void CGameInstance::Free()
 	Safe_Release(m_pPicking);
 	Safe_Release(m_pTarget_Manager);
 	Safe_Release(m_pFrustum);
+	Safe_Release(m_pFont_Manager);
 	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pComponent_Manager);
 	Safe_Release(m_pTimer_Manager);

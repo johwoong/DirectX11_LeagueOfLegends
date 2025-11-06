@@ -27,13 +27,46 @@ HRESULT CUI_ChampionImage::Initialize(void* pArg)
 	switch (m_eChampion)
 	{
 	case EZREAL:
-		m_fPosition.x = 1250.f;
+		m_fPosition.x = 1400.f;
 		m_fPosition.y = 270.f;
 		break;
 	case RENEKTON:
-		m_fPosition.x = 400.f;
-		m_fPosition.y = 100.f;
+		m_fPosition.x = 200.f;
+		m_fPosition.y = 270.f;
 		break;
+	case LEESIN:
+		m_fPosition.x = 600.f ;
+		m_fPosition.y = 270.f;
+		break;
+	case GALIO:
+		m_fPosition.x = 1000.f;
+		m_fPosition.y = 270.f;
+		break;
+	case LEONA:
+		m_fPosition.x = 1760.f;
+		m_fPosition.y = 270.f;
+		break;
+	case GWEN:
+		m_fPosition.x = 200.f;
+		m_fPosition.y = 800.f;
+		break;
+	case VI:
+		m_fPosition.x = 600.f;
+		m_fPosition.y = 800.f;
+		break;
+	case GAREN:
+		m_fPosition.x = 1000.f;
+		m_fPosition.y = 800.f;
+		break;
+	case VAYNE:
+		m_fPosition.x = 1400.f;
+		m_fPosition.y = 800.f;
+		break;
+	case ALISTAR:
+		m_fPosition.x = 1760.f;
+		m_fPosition.y = 800.f;
+		break;
+	
 	}
 
 	m_eShaderID = UI_DEFAULT;

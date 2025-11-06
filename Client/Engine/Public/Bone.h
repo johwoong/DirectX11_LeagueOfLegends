@@ -78,7 +78,6 @@ private:
 	void Set_RootMotionMatrix(const char* pBoneName);
 
 public:
-	//static CHierarchyNode* Create(const aiNode* pNode, CHierarchyNode* pParent);
 	static CBone* Create(BINBONE tBone, CBone* pParent);
 	static CBone* Bin_Create(DATA_BINNODE* pNode); // Ãß°¡
 	virtual void Free() override;

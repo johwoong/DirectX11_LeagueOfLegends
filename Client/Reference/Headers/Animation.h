@@ -83,8 +83,6 @@ private:
 	/* For. Animation Event */
 	vector<ANIMEVENT> m_vecAnimEvent;
 
-	//public: // For. Data Ãß°¡
-	//	void Get_AnimData(DATA_BINANIM* pAnimData);
 
 public:
 	//static CAnimation* Create(class CModel* pModel, aiAnimation* pAIAnimation);
