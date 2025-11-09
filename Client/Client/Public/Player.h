@@ -27,22 +27,20 @@ public:
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render() = 0;
 
-public:
-	void HandleInput();
-	void Update_State(_float fTimeDelta);
-	void Late_Update_State(_float fTimeDelta);
-public:
+public: // GET, SET
+	CModel* Get_Model() { return m_pModelCom; }
+	CPlayerState* Get_State() { return m_pPlayerState; }
+	void Set_PlayerState(class CPlayerState* pPlayerState) { m_pPlayerState = pPlayerState; }
 	void Set_TargetPosition(_float3 vPos) { m_vTargetPos = vPos; m_bMoving = true; }
 	_float3 Get_TargetPosition() { return m_vTargetPos; }
-public:
 	PLAYERID Get_PlayerID() const { return m_ePlayerID; }
 	void Set_PlayerID(PLAYERID eID) { m_ePlayerID = eID; }
 
-public:
-	// ForState
-	CPlayerState* Get_State() { return m_pPlayerState; }
-	void Set_PlayerState(class CPlayerState* pPlayerState) { m_pPlayerState = pPlayerState; }
-
+public: // State
+	virtual _bool Is_AnimationLoop(_uint eAnimId) = 0;
+	void HandleInput();
+	void Update_State(_float fTimeDelta);
+	void Late_Update_State(_float fTimeDelta);
 	
 protected:
 	// Component

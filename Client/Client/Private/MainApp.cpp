@@ -14,7 +14,9 @@ USING(Client)
 
 CMainApp::CMainApp()
 	: m_pGameInstance { CGameInstance::GetInstance()}
+	, m_pUIManager(CUI_Manager::GetInstance())
 {
+	Safe_AddRef(m_pUIManager);
 	Safe_AddRef(m_pGameInstance);
 }
 
@@ -48,8 +50,9 @@ HRESULT CMainApp::Initialize()
 	if (FAILED(Start_Level(LEVEL::LEVEL_LOGO)))
 		return E_FAIL;
 
-	//if (FAILED(m_pGameInstance->(m_pDevice, m_pContext, TEXT("Font_Message"), TEXT("../../../Bin/Resources/Fonts/spiegelja-regular.spritefont"))))
-	//	return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Fonts(m_pDevice, m_pContext, TEXT("Font_Nexon"), TEXT("../../../Bin/Resources/Fonts/dejavusans.spritefont"))))
+		return E_FAIL;
+
 
 	return S_OK;
 }
@@ -58,6 +61,9 @@ void CMainApp::Update(_float fTimeDelta)
 {
 	if (nullptr == m_pGameInstance)
 		return;
+
+	m_pUIManager->Update_UI(fTimeDelta);
+
 	/* 내 게임의 반복적인 갱신  */
 	m_pGameInstance->Update_Engine(fTimeDelta);
 
@@ -154,7 +160,7 @@ HRESULT CMainApp::Ready_Prototype_Component()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Frame"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/Frame/LoadingFrame.dds")))))
 		return E_FAIL;
- 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Loading_Bar"),
+	 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Loading_Bar"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/LoadingBar/LoadingBar.dds")))))
 		return E_FAIL;
 
@@ -190,4 +196,7 @@ void CMainApp::Free()
 	CPickingManager::GetInstance()->DestroyInstance();
 	CPlayerManager::GetInstance()->DestroyInstance();
 	CGameInstance::Release_Engine();
+
+	Safe_Release(m_pUIManager);
+	CUI_Manager::GetInstance()->DestroyInstance();
 }

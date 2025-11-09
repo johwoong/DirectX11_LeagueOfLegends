@@ -20,6 +20,7 @@ public:
     void Update_UI(_float fTimeDelta);
     void Update_Interface(_float fTimeDelta);
     void Update_Map(_float fTimeDelta);
+    void Update_PlayerState();
 
 private:
     UITYPE      m_eUIType = UI_END;

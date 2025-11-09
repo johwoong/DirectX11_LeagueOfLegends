@@ -1076,6 +1076,9 @@ void CImGui_Manager::Set_Animation()
 		case MODEL_VAYNE:
 			lstrcat(pAnimationDataFilePath, TEXT("Champion/Vayne/Vayne_Animation_Add.dat"));
 			break;
+		case MODEL_ALISTAR:
+			lstrcat(pAnimationDataFilePath, TEXT("Champion/Alistar/Alistar_Animation_Add.dat"));
+			break;
 		case MODEL_MINION_CANNON_B:
 			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Cannon_Blue/Minion_Cannon_Blue_Animation_Add.dat"));
 			break;

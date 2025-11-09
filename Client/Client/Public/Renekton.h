@@ -11,7 +11,10 @@ public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
 
-
+private:
+	virtual void SetSkillInfo() override;
+public:
+	virtual _bool Is_AnimationLoop(_uint eAnimId) override;
 private:
 	virtual HRESULT Ready_Components(void* pArg) override;
 public:

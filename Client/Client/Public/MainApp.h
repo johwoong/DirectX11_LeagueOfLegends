@@ -2,6 +2,7 @@
 
 #include "Client_Defines.h"
 #include "Base.h"
+#include "UI_Manager.h"
 
 NS_BEGIN(Engine)
 class CGameInstance;
@@ -27,6 +28,9 @@ private:
 	ID3D11DeviceContext* m_pContext =		{ nullptr };
 	CGameInstance* m_pGameInstance =		{ nullptr };
 	CRenderer* m_pRenderer =				{ nullptr };
+	
+private:
+	CUI_Manager* m_pUIManager	=			{ nullptr };
 
 
 

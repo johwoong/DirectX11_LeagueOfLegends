@@ -3,6 +3,8 @@
 #include "Ezreal.h"
 #include "Renekton.h"
 #include "GameInstance.h"
+#include "UI_SkillMenu.h"
+#include "UI_ExpBar.h"
 
 IMPLEMENT_SINGLETON(CPlayerManager)
 
@@ -15,6 +17,22 @@ void CPlayerManager::Set_ActivePlayer(CChampion* pPlayer)
 	if (!pPlayer) return;
 
 	m_pActivePlayer = pPlayer;
+}
+
+void CPlayerManager::Set_SkillMenu(CUI_SkillMenu* pMenu)
+{
+    m_pSkillMenu = pMenu;
+    if (m_pActivePlayer && m_pSkillMenu)
+        m_pSkillMenu->Set_SkillIcons(m_pActivePlayer->Get_Skills());
+}
+
+void CPlayerManager::Set_ExpBar(CUI_ExpBar* pBar)
+{
+    m_pExpBar = pBar;
+
+    if (m_pActivePlayer && m_pExpBar)
+        m_pExpBar->Set_ChampionIcon(m_pActivePlayer->Get_ChampionIconTag());
+
 }
 
 HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -40,12 +58,23 @@ HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
     pRenekton->Set_PlayerID(CChampion::RENEKTON);
     m_vChampions.push_back(pRenekton);
 
-    // 첫 챔피언을 활성화
+    // 첫 챔피언 활성화
     m_iCurrentChampionIndex = 0;
     m_pActivePlayer = pEzreal;
 
-    // ? 반드시 Layer에 직접 등록해야 Update/Render가 동작함
+    // Layer 등록
     pGI->ReAdd_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), pEzreal);
+
+    // ? UI SkillMenu에 Ezreal의 스킬아이콘 세팅
+    m_pSkillMenu = dynamic_cast<CUI_SkillMenu*>(
+        pGI->Get_Object(LEVEL_GAMEPLAY, TEXT("Layer_UI"), 0)
+        );
+
+    if (m_pSkillMenu)
+        m_pSkillMenu->Set_SkillIcons(m_pActivePlayer->Get_Skills());
+
+    if (m_pExpBar)
+        m_pExpBar->Set_ChampionIcon(m_pActivePlayer->Get_ChampionIconTag());
 
     return S_OK;
 }
@@ -61,7 +90,6 @@ void CPlayerManager::ChangeChampion()
     if (!pGI)
         return;
 
-    // ? 현재 활성 챔피언 인덱스 찾기
     _int iCurrent = -1;
     for (_uint i = 0; i < m_vChampions.size(); ++i)
     {
@@ -71,28 +99,26 @@ void CPlayerManager::ChangeChampion()
             break;
         }
     }
-    if (iCurrent == -1) return;
 
-    // ? 다음 챔피언 인덱스 (2개만 존재하므로 토글)
+    if (iCurrent == -1)
+        return;
+
     _int iNext = (iCurrent + 1) % m_vChampions.size();
-
-    // ? 현재 위치 저장
     _vector vPos = m_pActivePlayer->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-    // ? 이전 챔피언 완전히 비활성화
-    // (Layer에서 제거하고, 렌더링/업데이트에서 제외)
     pGI->Out_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), m_pActivePlayer);
-
-    // ? 새 챔피언 교체
     m_pActivePlayer = m_vChampions[iNext];
     m_iCurrentChampionIndex = iNext;
-
-    // ? 위치 복원
     m_pActivePlayer->Get_Transform()->Set_State(CTransform::STATE_TRANSLATION, vPos);
     m_pActivePlayer->Set_Dead(false);
-
-    // ? Layer에 등록 (새로 활성화된 챔피언만)
     pGI->ReAdd_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), m_pActivePlayer);
+
+
+    if (m_pSkillMenu)
+        m_pSkillMenu->Set_SkillIcons(m_pActivePlayer->Get_Skills());
+
+    if (m_pExpBar)
+        m_pExpBar->Set_ChampionIcon(m_pActivePlayer->Get_ChampionIconTag());
 
 }
 
@@ -104,6 +130,7 @@ void CPlayerManager::Free()
         Safe_Release(pChampion);
 
     m_vChampions.clear();
+    Safe_Release(m_pExpBar);
     Safe_Release(m_pDevice);
     Safe_Release(m_pContext);
 }

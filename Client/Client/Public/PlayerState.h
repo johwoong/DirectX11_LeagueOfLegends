@@ -55,6 +55,9 @@ protected:
 	STATE_ID m_eState = STATE_IDLE;
 	_uint m_ePlayerID = 0;
 
+protected: // For Animation
+	_bool m_bIsAnimationFinished = false;
+
 };
 NS_END
 

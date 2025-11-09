@@ -23,7 +23,7 @@ HRESULT CUI_LoadingBar::Initialize(void* pArg)
 
     m_fSize.x = m_fMaxWidth;
     m_fSize.y = m_fHeight;
-    m_fPosition.x = 1000.f;
+    m_fPosition.x = 1100.f;
     m_fPosition.y = 550.f;
     m_eShaderID = UI_ALPHABLEND;
 
@@ -47,9 +47,9 @@ HRESULT CUI_LoadingBar::Initialize(void* pArg)
     if (m_pPercentText)
     {
         m_pPercentText->Set_Text(L"0%");
-        m_pPercentText->Set_Scale(1.2f);
+        m_pPercentText->Set_Scale(0.8f);
         m_pPercentText->Set_Color(_float4(1.f, 1.f, 1.f, 1.f));
-        m_pPercentText->Set_Position(_float2(m_fPosition.x, m_fPosition.y - 35.f));
+        m_pPercentText->Set_Position(_float2(m_fPosition.x - 130.f, m_fPosition.y - 45.f));
     }
     return S_OK;
 }
@@ -59,9 +59,9 @@ int CUI_LoadingBar::Update(_float fTimeDelta)
     if (!m_pLoader)
         return OBJ_NOEVENT;
 
-    float fTargetProgress = m_pLoader->Get_Progress(); 
+    float fTargetProgress = m_pLoader->Get_Progress();
 
-    float fFollowSpeed = 1.5f; 
+    float fFollowSpeed = 1.5f;
     m_fProgress += (fTargetProgress - m_fProgress) * fFollowSpeed * fTimeDelta;
 
     if (m_fProgress < 0.f)   m_fProgress = 0.f;
@@ -72,6 +72,14 @@ int CUI_LoadingBar::Update(_float fTimeDelta)
 
     m_fSize.x = m_fCurrentWidth;
     m_fPosition.x = m_fAnchorLeftX + (m_fCurrentWidth * 0.5f);
+
+    // ? 여기서 텍스트 갱신 추가
+    if (m_pPercentText)
+    {
+        wchar_t szBuffer[16] = {};
+        swprintf_s(szBuffer, L"%d%%", (int)m_fProgress);
+        m_pPercentText->Set_Text(szBuffer);
+    }
 
     return __super::Update(fTimeDelta);
 }

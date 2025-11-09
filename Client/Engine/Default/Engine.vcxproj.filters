@@ -121,17 +121,17 @@
     <Filter Include="01.Utility\07. Frustum">
       <UniqueIdentifier>{2c86afe9-4bc4-4d0b-a631-dc98f5fd6ad2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utility\08. Font">
-      <UniqueIdentifier>{88838393-4a41-43e0-a44f-25e5db6bbf12}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01.Utility\08. Font\Manager">
-      <UniqueIdentifier>{00ffc1c7-bb47-47ae-b68f-4bd80ada2613}</UniqueIdentifier>
-    </Filter>
     <Filter Include="00.System\01.Device">
       <UniqueIdentifier>{e8077f14-f5a9-4dea-a3ab-6606bc2fff7b}</UniqueIdentifier>
     </Filter>
     <Filter Include="00.System\01.Device\Graphic">
       <UniqueIdentifier>{0ae09d28-5674-4839-ae09-34abe65d6857}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\08. Font">
+      <UniqueIdentifier>{88838393-4a41-43e0-a44f-25e5db6bbf12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\08. Font\Manager">
+      <UniqueIdentifier>{00ffc1c7-bb47-47ae-b68f-4bd80ada2613}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

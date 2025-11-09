@@ -8,6 +8,15 @@
 #include "NonAnim.h"
 #include "Sky.h"
 
+// UI
+#include "UI_SkillMenu.h"
+#include "UI_SkillImage.h"
+#include "UI_ExpBar.h"
+#include "UI_ChampionIcon.h"
+#include "UI_MiniMap.h"
+#include "UI_GameInfo.h"
+#include "UI_ItemInfo.h"
+
 // Champion
 #include "Ezreal.h"
 #include "Renekton.h"
@@ -106,6 +115,30 @@ HRESULT CLoader::Loading_For_Prtotype()
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Sky"),
 		CSky::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+
+#pragma region UI_Proto
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_SkillMenu"),
+		CUI_SkillMenu::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_SkillImage"),
+		CUI_SkillImage::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_ExpBar"),
+		CUI_ExpBar::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_ChampionIcon"),
+		CUI_ChampionIcon::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_MiniMap"),
+		CUI_MiniMap::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_GameInfo"),
+		CUI_GameInfo::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_ItemInfo"),
+		CUI_ItemInfo::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+#pragma endregion 
 #pragma region Champion
 	/*For.Prototype_GameObject_Champion*/
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Ezreal"),
@@ -138,16 +171,20 @@ HRESULT CLoader::Loading_For_GamePlay()
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었슴니다."));
 	m_fProgress = 0.f;
 #pragma region 셰이더 로딩
-	m_fProgress = 20.f;
 	lstrcpy(m_szLoadingText, TEXT("원본 셰이더 로딩 중"));
 	// For Prototype Component Shader VtxNorTex
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNorTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_NorTexTerrianl.hlsl"), VTXNORTEX_DECLARATION::Elements, VTXNORTEX_DECLARATION::iNumElements))))
 		return E_FAIL;
 
-	// For Prototype Component Shader VtxNorTex
+	// For Prototype Component Shader VtxNoAnim
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxModel"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxModel.hlsl"), VTXNORTEX_DECLARATION::Elements, VTXNORTEX_DECLARATION::iNumElements))))
+		return E_FAIL;
+
+	// For Prototype Component Shader VtxAnim
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxAnimModel"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxAnimModel.hlsl"), VTXANIMMODEL_DECLARATION::Elements, VTXANIMMODEL_DECLARATION::iNumElements))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_Shader_VtxCubeTexture */
@@ -160,7 +197,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 #pragma region 버퍼 로딩
 	lstrcpy(m_szLoadingText, TEXT("버퍼 로딩 중"));
-	m_fProgress = 40.f;
+	m_fProgress = 10.f;
 	/*For.Prototype_Component_VIBuffer_Cube */
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Cube"),
 		CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
@@ -175,6 +212,9 @@ HRESULT CLoader::Loading_For_GamePlay()
 		return E_FAIL;
 
 #pragma endregion 
+	m_fProgress = 40.f;
+	if (FAILED(Loading_For_GameUI()))
+		return E_FAIL;
 
 #pragma region 모델 로딩
 	lstrcpy(m_szLoadingText, TEXT("맵 로딩중 "));
@@ -186,7 +226,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 	m_fProgress = 60.f;
 	// 이즈리얼
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Ezreal/Ezreal.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Ezreal/Ezreal.dat"))))
 		return E_FAIL;
 	// 레넥톤
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton"),
@@ -230,6 +270,73 @@ HRESULT CLoader::Loading_For_GamePlay()
 	m_fProgress = 100.f;
 	m_isFinished = true;
 
+	return S_OK;
+}
+
+HRESULT CLoader::Loading_For_GameUI()
+{
+	lstrcpy(m_szLoadingText, TEXT("UI 로딩 중"));
+	// Skill Interface
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_SkillInterface"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Interface/SkillWindow.dds"), 1))))
+		return E_FAIL;
+	// Exp Bar
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ExpBar"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Interface/ChampionExp.dds"), 1))))
+		return E_FAIL;
+	// MiniMap
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_MiniMap"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Interface/MiniMapFrame.dds"), 1))))
+		return E_FAIL;
+	// GameInfo
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_GameInfo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Interface/GameInfo.dds"), 1))))
+		return E_FAIL;
+	// ItemInfo
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ItemInfo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Interface/ItemInfo.dds"), 1))))
+		return E_FAIL;
+#pragma region Ezreal_SkillImage
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Ezreal_Icon"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Ezreal/ezreal_circle.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_EzrealSkill_Passive"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Ezreal/ezreal_passive.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_EzrealSkill_Q"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Ezreal/ezreal_q.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_EzrealSkill_W"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Ezreal/ezreal_w.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_EzrealSkill_E"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Ezreal/ezreal_e.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_EzrealSkill_R"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Ezreal/ezreal_r.dds"), 1))))
+		return E_FAIL;
+#pragma endregion
+
+#pragma region Renekton_SkillImage
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Renekton_Icon"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_circle_0.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_Passive"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_passive.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_Q"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_q.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_W"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_w.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_E"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_e.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_R"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_r.dds"), 1))))
+		return E_FAIL;
+#pragma endregion
 	return S_OK;
 }
 

@@ -85,6 +85,7 @@ void CChampion::UpdateLevelStats()
 
 }
 
+
 HRESULT CChampion::SetUp_ShaderResources()
 {
 	if (!m_pShaderCom || !m_pTransformCom)
@@ -110,5 +111,4 @@ HRESULT CChampion::SetUp_ShaderResources()
 void CChampion::Free()
 {
 	__super::Free();
-	Safe_Release(m_pModelCom);
 }

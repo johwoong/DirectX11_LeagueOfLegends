@@ -113,6 +113,5 @@ HRESULT CBuilding::SetUp_ShaderResources()
 void CBuilding::Free()
 {
 	__super::Free();
-	Safe_Release(m_pModelCom);
 }
 

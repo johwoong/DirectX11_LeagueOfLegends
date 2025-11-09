@@ -49,4 +49,6 @@ void CFont::Free()
 
 	Safe_Release(m_pDevice);
 	Safe_Release(m_pContext);
+
+
 }

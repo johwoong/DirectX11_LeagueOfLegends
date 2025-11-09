@@ -29,6 +29,7 @@ HRESULT CPlayer::Initialize(void* pArg)
 
 	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);	
 
+	Set_Scale(_float3(0.2f, 0.2f, 0.2f));
 	return S_OK;
 }
 
@@ -90,7 +91,6 @@ void CPlayer::Free()
 	__super::Free();
 	Safe_Delete(m_pPlayerState);
 	Safe_Release(m_pPlayerManager);
-	Safe_Release(m_pModelCom);
 }
 
 

@@ -480,6 +480,7 @@ _float4x4 CGameInstance::Get_CamWorldMatrix()
 #pragma endregion
 
 #pragma region Font
+
 HRESULT CGameInstance::Add_Fonts(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pFontTag, const _tchar* pFontFilePath)
 {
 	if (nullptr == m_pFont_Manager)
@@ -495,6 +496,7 @@ HRESULT CGameInstance::Render_Font(const _tchar* pFontTag, const _tchar* pText, 
 
 	return m_pFont_Manager->Render_Font(pFontTag, pText, vPos, vColor, fScale);
 }
+
 #pragma endregion Font
 
 #pragma region Picking

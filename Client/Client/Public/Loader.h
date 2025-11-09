@@ -42,6 +42,7 @@ public:
 	HRESULT Loading_For_Logo();
 	HRESULT Loading_For_Prtotype();
 	HRESULT Loading_For_GamePlay();
+	HRESULT Loading_For_GameUI();
 
 private:
 	LEVEL					m_eNextLevel = LEVEL_END;

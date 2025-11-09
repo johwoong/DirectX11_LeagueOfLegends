@@ -37,6 +37,8 @@ CPlayerState* CRunState::Update(_float fTimeDelta)
 {
     HandleInput();
     Move(fTimeDelta);
+
+    m_bIsAnimationFinished = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex()));
     return nullptr;
 }
 
@@ -50,7 +52,14 @@ CPlayerState* CRunState::Late_Update(_float fTimeDelta)
 void CRunState::Enter()
 {
     m_eState = STATE_RUN;
-    m_eStateType = STATETYPE_START; 
+    m_eStateType = STATETYPE_START;
+    switch (m_ePlayerID)
+    {
+    case CPlayer::EZREAL:
+        if (STATETYPE_START == m_eStateType)
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RUN);
+        break;
+    }
 }
 
 void CRunState::Exit()

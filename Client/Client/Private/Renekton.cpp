@@ -24,7 +24,25 @@ HRESULT CRenekton::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
+	SetSkillInfo();
+
 	return S_OK;
+}
+
+void CRenekton::SetSkillInfo()
+{
+	m_ChampionIconTag = L"Prototype_Component_Texture_Renekton_Icon";
+	// 이름, 아이콘 텍스처 태그, 쿨타임(지금은 UI용이라 쿨타임은 0으로 둬도 됨)
+	m_Skills[0] = { L"Rising Sell Force", L"Prototype_Component_Texture_RenektonSkill_Passive", 0.f };
+	m_Skills[1] = { L"Mystic Sht", L"Prototype_Component_Texture_RenektonSkill_Q", 0.f };
+	m_Skills[2] = { L"Essence lux", L"Prototype_Component_Texture_RenektonSkill_W", 0.f };
+	m_Skills[3] = { L"Arcane hift", L"Prototype_Component_Texture_RenektonSkill_E", 0.f };
+	m_Skills[4] = { L"Truesht Barrage", L"Prototype_Component_Texture_RenektonSkill_R", 0.f };
+}
+
+_bool CRenekton::Is_AnimationLoop(_uint eAnimId)
+{
+	return _bool();
 }
 
 HRESULT CRenekton::Ready_Components(void* pArg)

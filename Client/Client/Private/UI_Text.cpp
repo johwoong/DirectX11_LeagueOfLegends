@@ -1,5 +1,6 @@
 #include "UI_Text.h"
 #include "GameInstance.h"
+#include "Loader.h"
 
 CUI_Text::CUI_Text(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CUI_Base(pDevice, pContext)
@@ -26,6 +27,7 @@ HRESULT CUI_Text::Initialize(void* pArg)
 
     // 디폴트 위치 UI 중앙
     m_fPosition = _float2(g_WinSizeX * 0.5f, g_WinSizeY * 0.5f);
+    m_fAlpha = 1.f;
 
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
@@ -50,19 +52,16 @@ HRESULT CUI_Text::Render()
         return S_OK;
 
     CGameInstance* pGI = CGameInstance::GetInstance();
+    XMVECTOR vPos = XMVectorSet(m_fPosition.x, m_fPosition.y, 0.f, 1.f);
+    XMVECTOR vColor = XMLoadFloat4(&m_vColor);
 
-    // 화면 좌표 → SpriteBatch 기준 좌표로 변경
-    XMVECTOR vPos = XMVectorSet(
-        m_fPosition.x - (g_WinSizeX * 0.5f),
-        -(m_fPosition.y - (g_WinSizeY * 0.5f)),
-        0.f, 1.f
+    pGI->Render_Font(
+        TEXT("Font_Nexon"),       // 폰트 태그
+        m_strText.c_str(),        // 텍스트
+        vPos,                     // ★ 화면 좌표 그대로 사용
+        vColor,
+        m_fScale
     );
-
-    pGI->Render_Font(TEXT("Font_Message"),
-        m_strText.c_str(),
-        vPos,
-        XMLoadFloat4(&m_vColor),
-        m_fScale);
 
     return S_OK;
 }

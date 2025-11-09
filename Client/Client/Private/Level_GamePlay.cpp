@@ -29,7 +29,8 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
 		return E_FAIL;
-
+	if (FAILED(Ready_Layer_UI(TEXT("Layer_UI"))))
+		return E_FAIL;
     return S_OK;
 }
 
@@ -187,6 +188,21 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 
 	return S_OK;
 	
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_UI(const _tchar* pLayerTag)
+{
+	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_SkillMenu"), LEVEL_GAMEPLAY, pLayerTag)))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_ExpBar"), LEVEL_GAMEPLAY, pLayerTag)))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_MiniMap"), LEVEL_GAMEPLAY, pLayerTag)))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_GameInfo"), LEVEL_GAMEPLAY, pLayerTag)))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_ItemInfo"), LEVEL_GAMEPLAY, pLayerTag)))
+		return E_FAIL;
+	return S_OK;
 }
 
 

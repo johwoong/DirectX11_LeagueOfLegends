@@ -27,7 +27,7 @@ private:
     CUI_Text* m_pPercentText = nullptr; // 진행률 표시 텍스트
 
     float m_fProgress = 0.f;
-    float m_fMaxWidth = 600.f;
+    float m_fMaxWidth = 500.f;
     float m_fHeight = 20.f;
     float m_fCurrentWidth = 0.f;
 

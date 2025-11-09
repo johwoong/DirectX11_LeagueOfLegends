@@ -196,6 +196,9 @@ HRESULT CAnim::Ready_Components(void* pArg)
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Vayne"), (CComponent**)&m_pModelCom)))
 			return E_FAIL;
 		break;
+	case MODEL_ALISTAR:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Alistar"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
 		break;
 	case MODEL_MINION_CANNON_B:
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Blue"), (CComponent**)&m_pModelCom)))

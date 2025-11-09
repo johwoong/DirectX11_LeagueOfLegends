@@ -42,6 +42,14 @@ class CChampion abstract : public CPlayer
 		float MPRegen; // 초당 마나 재생
 		float MpRegenPerLevel; // 초당 마나 재생 증가량
 	};
+public:
+	struct SkillInfo
+	{
+		std::wstring Name;        // 스킬 이름
+		std::wstring IconTag;     // 텍스처 리소스 이름
+		float Cooldown;           // 쿨타임
+		float CurrentCD = 0.f;    // 현재 쿨타임
+	};
 
 protected:
 	CChampion(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -58,10 +66,19 @@ public:
 public:
 	virtual _bool Picking(_float3* PickingPoint)override;
 	virtual void PickingTrue() override;
+public: // State
+	virtual _bool Is_AnimationLoop(_uint eAnimId) = 0;
 
 protected:
 	void UpdateLevelStats();
+	virtual void SetSkillInfo() = 0;
 
+public:
+	const SkillInfo* Get_Skills() const { return m_Skills; }
+	const wstring& Get_ChampionIconTag() const { return m_ChampionIconTag; }
+protected:
+	SkillInfo m_Skills[5];
+	wstring m_ChampionIconTag;
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderResources();

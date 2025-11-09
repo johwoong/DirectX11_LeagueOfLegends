@@ -109,6 +109,27 @@
     <ClInclude Include="..\Public\UI_Text.h">
       <Filter>02. GameObjects\02. UI\02. UI_Text</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\UI_SkillMenu.h">
+      <Filter>02. GameObjects\02. UI\03. UI_SkillMenu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_SkillImage.h">
+      <Filter>02. GameObjects\02. UI\04. UI_SkillImage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_ExpBar.h">
+      <Filter>02. GameObjects\02. UI\05. UI_ExpBar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_MiniMap.h">
+      <Filter>02. GameObjects\02. UI\06. UI_MiniMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_ChampionIcon.h">
+      <Filter>02. GameObjects\02. UI\07. UI_ChampionIcon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_GameInfo.h">
+      <Filter>02. GameObjects\02. UI\08. UI_GameInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_ItemInfo.h">
+      <Filter>02. GameObjects\02. UI\09. UI_ItemInfo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -221,6 +242,27 @@
     <Filter Include="02. GameObjects\02. UI\02. UI_Text">
       <UniqueIdentifier>{f3409f9c-b1aa-4bb7-9780-c12a192fecf0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\02. UI\03. UI_SkillMenu">
+      <UniqueIdentifier>{523598c9-0ffe-4068-be56-cabc047f79c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\04. UI_SkillImage">
+      <UniqueIdentifier>{fe540d99-ad2b-4407-b2b1-ae92057fc6c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\05. UI_ExpBar">
+      <UniqueIdentifier>{cbb2232d-6c16-4975-bc8e-6db9d5191577}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\07. UI_ChampionIcon">
+      <UniqueIdentifier>{803156de-cba5-410f-bdf9-3f3c8e690aec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\06. UI_MiniMap">
+      <UniqueIdentifier>{19c7646a-18da-4d0d-b80f-aab716c6b6d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\08. UI_GameInfo">
+      <UniqueIdentifier>{04325750-dd85-477d-947f-d62ad4f6aaa7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\09. UI_ItemInfo">
+      <UniqueIdentifier>{1312dfe1-08df-44a2-8765-7558f12ca1e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -315,6 +357,27 @@
     </ClCompile>
     <ClCompile Include="..\Private\UI_Text.cpp">
       <Filter>02. GameObjects\02. UI\02. UI_Text</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_SkillMenu.cpp">
+      <Filter>02. GameObjects\02. UI\03. UI_SkillMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_SkillImage.cpp">
+      <Filter>02. GameObjects\02. UI\04. UI_SkillImage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_ExpBar.cpp">
+      <Filter>02. GameObjects\02. UI\05. UI_ExpBar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_MiniMap.cpp">
+      <Filter>02. GameObjects\02. UI\06. UI_MiniMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_ChampionIcon.cpp">
+      <Filter>02. GameObjects\02. UI\07. UI_ChampionIcon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_GameInfo.cpp">
+      <Filter>02. GameObjects\02. UI\08. UI_GameInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_ItemInfo.cpp">
+      <Filter>02. GameObjects\02. UI\09. UI_ItemInfo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

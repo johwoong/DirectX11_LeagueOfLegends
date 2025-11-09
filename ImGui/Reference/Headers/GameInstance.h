@@ -129,7 +129,7 @@ public: /* For.Frustum */
 	_bool isIn_WorldFrustum(_fvector vPosition, _float fRange = 0.f);
 #pragma endregion 
 
-
+	
 #pragma region Target
 public: /* For.Target_Manager */
 	ID3D11ShaderResourceView* Get_BackBufferCopySRV();
