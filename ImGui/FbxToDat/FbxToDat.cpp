@@ -76,10 +76,13 @@ static fs::path FindAnyTexture(const fs::path& folder) {
 
 static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDir)
 {
-    // ?? Pivot (모델 크기 정상화)
+
     FLOAT4X4 pivot{};
-    pivot.m[0] = pivot.m[5] = pivot.m[10] = 0.1;
-    pivot.m[15] = 1.f;
+    aiMatrix4x4 scale(0.1f, 0, 0, 0,
+        0, 0.1f, 0, 0,
+        0, 0, 0.1f, 0,
+        0, 0, 0, 1);
+    ToF4x4(pivot, scale);
     write_n(fp, &pivot, sizeof(pivot));
 
     unsigned numMeshes = scene->mNumMeshes; 

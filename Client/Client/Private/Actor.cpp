@@ -98,7 +98,4 @@ void CActor::Set_Scale(_float3 vScale)
 void CActor::Free()
 {
 	__super::Free();
-
-	Safe_Release(m_pRendererCom);
-	Safe_Release(m_pShaderCom);
 }

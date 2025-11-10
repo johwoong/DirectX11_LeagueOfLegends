@@ -45,14 +45,7 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 		CPlayerManager::GetInstance()->ChangeChampion();
 
 	// 마우스 클릭 시 이동 (Terrain 클릭 시만)
-	if (m_pGameInstance->Mouse_Down(DIMK_RBUTTON))
-	{
-		if (CPickingManager::GetInstance()->Picking())
-		{
-			_float3 vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
-			pPlayer->Set_TargetPosition(vClickPos);
-		}
-	}
+
 }
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)

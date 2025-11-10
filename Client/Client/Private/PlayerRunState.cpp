@@ -78,36 +78,55 @@ void CRunState::Move(_float fTimeDelta)
     CTransform* pTr = m_pOwner->Get_Transform();
     if (!pTr) return;
 
-    _vector pos = pTr->Get_State(CTransform::STATE_TRANSLATION);
-    _vector tgt = XMLoadFloat3(&m_vTargetPos);
+    _vector vPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
+    _vector vTarget = XMLoadFloat3(&m_vTargetPos);
+    vTarget = XMVectorSetY(vTarget, XMVectorGetY(vPos));
 
-    // Y 고정 (평면 이동)
-    tgt = XMVectorSetY(tgt, XMVectorGetY(pos));
+    _vector vToTarget = vTarget - vPos;
+    float fDist = XMVectorGetX(XMVector3Length(vToTarget));
 
-    _vector toTgt = tgt - pos;
-    float dist = XMVectorGetX(XMVector3Length(toTgt));
-
-    if (dist < 0.1f)
+    if (fDist < 0.05f)
     {
-        pTr->Set_State(CTransform::STATE_TRANSLATION, tgt);
+        pTr->Set_State(CTransform::STATE_TRANSLATION, vTarget);
         m_eStateType = STATETYPE_END;
         return;
     }
 
-    // 이동 방향
-    _vector moveDir = XMVector3Normalize(toTgt);
 
-    // 모델의 실제 정면은 -LOOK 이므로, 회전은 반대로
-    _vector targetLook = XMVectorNegate(moveDir);
+    _vector vDir = XMVector3Normalize(vToTarget);
+    _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
-    // 부드러운 회전
-    _vector curLook = XMVector3Normalize(pTr->Get_State(CTransform::STATE_LOOK));
-    float t = std::clamp(XMConvertToRadians(720.f) * fTimeDelta, 0.f, 1.f);
-    _vector smoothLook = XMVector3Normalize(XMVectorLerp(curLook, targetLook, t));
 
-    // 직교 기저 재구성 포함 (스케일 유지)
-    pTr->LookDir(smoothLook);
+    _vector vLook = -vDir;
+    _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+    _vector vUpFinal = XMVector3Normalize(XMVector3Cross(vLook, vRight));
 
-    // 회전 적용 후 → 이동 적용 (순서 중요)
-    pTr->Move_PosDir(fTimeDelta, moveDir);
+
+    _matrix rotMat = XMMatrixIdentity();
+    rotMat.r[0] = XMVectorSetW(vRight, 0.f);
+    rotMat.r[1] = XMVectorSetW(vUpFinal, 0.f);
+    rotMat.r[2] = XMVectorSetW(vLook, 0.f);
+
+    _vector vScale, vRotQuat, vCurPos;
+    XMMatrixDecompose(&vScale, &vRotQuat, &vCurPos, pTr->Get_WorldMatrix());
+
+    _vector vTargetScale, vTargetRotQuat, vTargetPos;
+    XMMatrixDecompose(&vTargetScale, &vTargetRotQuat, &vTargetPos, rotMat);
+
+    vRotQuat = XMQuaternionSlerp(vRotQuat, vTargetRotQuat, fTimeDelta * 10.f);
+    vRotQuat = XMQuaternionNormalize(vRotQuat);
+
+
+    float fSpeed = 6.f;
+    vPos += vDir * fSpeed * fTimeDelta;
+
+    _matrix matWorld =
+        XMMatrixScalingFromVector(vScale) *
+        XMMatrixRotationQuaternion(vRotQuat) *
+        XMMatrixTranslationFromVector(vPos);
+
+    pTr->Set_State(CTransform::STATE_RIGHT, matWorld.r[0]);
+    pTr->Set_State(CTransform::STATE_UP, matWorld.r[1]);
+    pTr->Set_State(CTransform::STATE_LOOK, matWorld.r[2]);
+    pTr->Set_State(CTransform::STATE_TRANSLATION, matWorld.r[3]);
 }
