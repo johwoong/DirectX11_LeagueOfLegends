@@ -37,8 +37,7 @@ HRESULT CEzreal::Initialize(void* pArg)
 		return E_FAIL;
 
 	SetSkillInfo(); // Ezreal 스킬 정보 설정
-
-	
+	Set_Scale(_float3(0.2f, 0.2f, 0.2f));
 	return S_OK;
 }
 

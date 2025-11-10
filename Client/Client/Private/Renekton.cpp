@@ -2,6 +2,20 @@
 
 #include "GameInstance.h"
 
+_bool CRenekton::Is_AnimationLoop(_uint eAnimId)
+{
+	switch ((ANIM)eAnimId)
+	{
+	case IDLE1:
+	case IDLE2:
+	case IDLE3:
+	case RUN1:
+		return true;
+	}
+	return false;
+}
+
+
 CRenekton::CRenekton(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CChampion(pDevice, pContext)
 {
@@ -19,13 +33,12 @@ HRESULT CRenekton::Initialize_Prototype()
 
 HRESULT CRenekton::Initialize(void* pArg)
 {
-	m_ePlayerID = EZREAL;
+	m_ePlayerID = RENEKTON;
 
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
-
+	Set_Scale(_float3(0.002f, 0.002f, 0.002f));
 	SetSkillInfo();
-
 	return S_OK;
 }
 
@@ -40,10 +53,6 @@ void CRenekton::SetSkillInfo()
 	m_Skills[4] = { L"Truesht Barrage", L"Prototype_Component_Texture_RenektonSkill_R", 0.f };
 }
 
-_bool CRenekton::Is_AnimationLoop(_uint eAnimId)
-{
-	return _bool();
-}
 
 HRESULT CRenekton::Ready_Components(void* pArg)
 {
@@ -61,7 +70,7 @@ HRESULT CRenekton::Ready_Components(void* pArg)
 
 
 	/* For.Com_Shader */
-	if (FAILED(__super::Add_Components(TEXT("Com_Shader"), LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxModel"), (CComponent**)&m_pShaderCom)))
+	if (FAILED(__super::Add_Components(TEXT("Com_Shader"), LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxAnimModel"), (CComponent**)&m_pShaderCom)))
 		return E_FAIL;
 
 	/* For.Com_Model*/

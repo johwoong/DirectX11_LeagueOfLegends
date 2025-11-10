@@ -24,19 +24,17 @@ HRESULT CChampion::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, 0.02f);
-	m_pTransformCom->Set_Scale(CTransform::STATE_UP, 0.02f);
-	m_pTransformCom->Set_Scale(CTransform::STATE_LOOK, 0.02f);
 	return S_OK;
 }
 
 int CChampion::Update(_float fTimeDelta)
 {
-	int iEvent = __super::Update(fTimeDelta);
+	int iEvent = __super::Update(fTimeDelta); 
 
 	// 부모가 Dead면 그대로 반환 (삭제 예약)
 	if (iEvent == OBJ_DEAD)
 		return OBJ_DEAD;
+
 
 	return OBJ_NOEVENT;
 }

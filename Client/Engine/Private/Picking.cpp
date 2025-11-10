@@ -50,7 +50,7 @@ void CPicking::Update()
 	_matrix		ProjMatrixInv;
 	ProjMatrixInv = pGameInstance->Get_TransformMatrix(CPipeLine::D3DTS_PROJ);
 	ProjMatrixInv = XMMatrixInverse(nullptr, ProjMatrixInv);
-	vecMousePos = XMVector2TransformCoord(vecMousePos, ProjMatrixInv);
+	vecMousePos = XMVector3TransformCoord(vecMousePos, ProjMatrixInv);
 
 	// 뷰 스페이스 상의 마우스 레이와 레이포스를 구하기
 	_vector vecRayPos = XMVectorSet(0.f, 0.f, 0.f, 1.f);

@@ -2,6 +2,7 @@
 #include "Champion.h"
 #include "Ezreal.h"
 #include "Renekton.h"
+#include "Vi.h"
 #include "GameInstance.h"
 #include "UI_SkillMenu.h"
 #include "UI_ExpBar.h"
@@ -58,6 +59,11 @@ HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
     pRenekton->Set_PlayerID(CChampion::RENEKTON);
     m_vChampions.push_back(pRenekton);
 
+    auto pVi = CVi::Create(m_pDevice, m_pContext);
+    pVi->Initialize(nullptr);
+    pVi->Set_PlayerID(CChampion::VI);
+    m_vChampions.push_back(pVi);
+
     // 첫 챔피언 활성화
     m_iCurrentChampionIndex = 0;
     m_pActivePlayer = pEzreal;
@@ -106,19 +112,29 @@ void CPlayerManager::ChangeChampion()
     _int iNext = (iCurrent + 1) % m_vChampions.size();
     _vector vPos = m_pActivePlayer->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
+    // 기존 캐릭터 레벨에서 제거
     pGI->Out_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), m_pActivePlayer);
+
+    // 새 활성 캐릭터로 변경
     m_pActivePlayer = m_vChampions[iNext];
     m_iCurrentChampionIndex = iNext;
+
+    // 위치 유지
     m_pActivePlayer->Get_Transform()->Set_State(CTransform::STATE_TRANSLATION, vPos);
     m_pActivePlayer->Set_Dead(false);
+    m_pActivePlayer->Reset_State();
+
+    // 레벨에 다시 등록
     pGI->ReAdd_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), m_pActivePlayer);
 
-
+    // UI 갱신
     if (m_pSkillMenu)
         m_pSkillMenu->Set_SkillIcons(m_pActivePlayer->Get_Skills());
 
     if (m_pExpBar)
         m_pExpBar->Set_ChampionIcon(m_pActivePlayer->Get_ChampionIconTag());
+
+
 
 }
 

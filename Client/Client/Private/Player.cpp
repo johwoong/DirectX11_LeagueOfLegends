@@ -28,8 +28,7 @@ HRESULT CPlayer::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);	
-
-	Set_Scale(_float3(0.2f, 0.2f, 0.2f));
+	
 	return S_OK;
 }
 
@@ -53,6 +52,12 @@ void CPlayer::Late_Update(_float fTimeDelta)
 	{
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 	}
+}
+
+void CPlayer::Reset_State()
+{
+	Safe_Delete(m_pPlayerState);
+	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);
 }
 
 void CPlayer::HandleInput()

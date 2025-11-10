@@ -23,8 +23,8 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if(FAILED(Ready_Layer_Terrian(TEXT("Layer_BackGround"))))
 		return E_FAIL;
-	if (FAILED(Ready_Layer_MapObject(TEXT("Layer_MapObject"))))
-		return E_FAIL;
+	//if (FAILED(Ready_Layer_MapObject(TEXT("Layer_MapObject"))))
+	//	return E_FAIL;
 	if (FAILED(Ready_Layer_Building(TEXT("Layer_Building"))))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))

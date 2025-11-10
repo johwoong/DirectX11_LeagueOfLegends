@@ -414,7 +414,7 @@ HRESULT CModel::Create_MeshContainer(HANDLE hFile, _ulong* pdwByte)
 
 HRESULT CModel::Create_Materials(HANDLE hFile, _ulong* pdwByte)
 {
-    if (nullptr == hFile)
+    if (nullptr == hFile) 
         return E_FAIL;
 
     ReadFile(hFile, &m_iNumMaterials, sizeof(_uint), pdwByte, nullptr);

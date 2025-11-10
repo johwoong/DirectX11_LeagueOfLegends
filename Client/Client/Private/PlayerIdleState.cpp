@@ -27,7 +27,7 @@ CPlayerState* CIdleState::HandleInput()
             vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
             m_pOwner->Set_TargetPosition(vClickPos);
 
-            return new CRunState(m_pOwner);
+            return new CRunState(m_pOwner, DIR_STRAIGHT);
         }
     }
 
@@ -53,6 +53,12 @@ CPlayerState* CIdleState::Late_Update(_float fTimeDelta)
             case CPlayer::EZREAL:
                 m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::IDLE);
                 break;
+            case CPlayer::RENEKTON:
+                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE1);
+                break;
+            case CPlayer::VI:
+                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVi::ANIM::IDLE1);
+                break;
             }
         }
             break;
@@ -74,6 +80,22 @@ void CIdleState::Enter()
         {
         case Client::Player::CIdleState::IDLE_MAIN:
             m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::IDLE);
+            break;
+        }
+        break;
+    case CPlayer::RENEKTON:
+        switch (m_eIdleType)
+        {
+        case Client::Player::CIdleState::IDLE_MAIN:
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE1);
+            break;
+        }
+        break;
+    case CPlayer::VI:
+        switch (m_eIdleType)
+        {
+        case Client::Player::CIdleState::IDLE_MAIN:
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE1);
             break;
         }
         break;

@@ -40,9 +40,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>98.Default</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Player.h">
-      <Filter>02. GameObjects\00. Actor\00. Player</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\NonAnim.h">
       <Filter>02. GameObjects\03. NonAnim</Filter>
     </ClInclude>
@@ -129,6 +126,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\UI_ItemInfo.h">
       <Filter>02. GameObjects\02. UI\09. UI_ItemInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Player.h">
+      <Filter>02. GameObjects\00. Actor\00. Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Vi.h">
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Vi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -263,6 +266,9 @@
     <Filter Include="02. GameObjects\02. UI\09. UI_ItemInfo">
       <UniqueIdentifier>{1312dfe1-08df-44a2-8765-7558f12ca1e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Vi">
+      <UniqueIdentifier>{72d12b63-0e20-4be1-8569-cff933386923}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -378,6 +384,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\UI_ItemInfo.cpp">
       <Filter>02. GameObjects\02. UI\09. UI_ItemInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="Vi.cpp">
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Vi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

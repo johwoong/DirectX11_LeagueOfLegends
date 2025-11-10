@@ -14,7 +14,7 @@ class CPlayerState;
 class CPlayer abstract :public CActor
 { 
 public:
-	enum PLAYERID{EZREAL, RENEKTON, };
+	enum PLAYERID{EZREAL, RENEKTON, VI, };
 protected:
 	CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CPlayer(const CPlayer& rhs);
@@ -35,6 +35,7 @@ public: // GET, SET
 	_float3 Get_TargetPosition() { return m_vTargetPos; }
 	PLAYERID Get_PlayerID() const { return m_ePlayerID; }
 	void Set_PlayerID(PLAYERID eID) { m_ePlayerID = eID; }
+	void Reset_State();
 
 public: // State
 	virtual _bool Is_AnimationLoop(_uint eAnimId) = 0;

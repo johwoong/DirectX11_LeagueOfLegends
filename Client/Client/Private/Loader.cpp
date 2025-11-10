@@ -20,6 +20,7 @@
 // Champion
 #include "Ezreal.h"
 #include "Renekton.h"
+#include "Vi.h"
 
 // Building
 #include "Nexus.h"
@@ -148,6 +149,10 @@ HRESULT CLoader::Loading_For_Prtotype()
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Renekton"),
 		CRenekton::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	/*For.Prototype_GameObject_Champion*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Vi"),
+		CVi::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 #pragma endregion
 
@@ -219,9 +224,9 @@ HRESULT CLoader::Loading_For_GamePlay()
 #pragma region ¸ðµ¨ ·Îµù
 	lstrcpy(m_szLoadingText, TEXT("¸Ê ·ÎµùÁß "));
 	m_fProgress = 50.f;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Map"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
-		return E_FAIL;
+	//if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Map"),
+	//	CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
+	//	return E_FAIL;
 	lstrcpy(m_szLoadingText, TEXT("Ã¨ÇÇ¾ð ¸ðµ¨ ·ÎµùÁß "));
 	m_fProgress = 60.f;
 	// ÀÌÁî¸®¾ó
@@ -230,7 +235,11 @@ HRESULT CLoader::Loading_For_GamePlay()
 		return E_FAIL;
 	// ·¹³ØÅæ
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Renekton/Renekton.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Renekton/Renekton.dat"))))
+		return E_FAIL;
+	// ¹ÙÀÌ
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vi"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vi/Vi.dat"))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("°Ç¹° ·Îµù Áß"));
@@ -335,6 +344,27 @@ HRESULT CLoader::Loading_For_GameUI()
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_R"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_r.dds"), 1))))
+		return E_FAIL;
+#pragma endregion
+
+#pragma region Vi_SkillImage
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Vi_Icon"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vi_circle.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_Passive"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vipassive.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_Q"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/viq.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_W"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/viw.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_E"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vie.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_R"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vir.dds"), 1))))
 		return E_FAIL;
 #pragma endregion
 	return S_OK;

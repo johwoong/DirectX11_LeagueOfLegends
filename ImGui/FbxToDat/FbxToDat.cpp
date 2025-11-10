@@ -78,7 +78,7 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
 {
     // ?? Pivot (모델 크기 정상화)
     FLOAT4X4 pivot{};
-    pivot.m[0] = pivot.m[5] = pivot.m[10] = 0.001f; // ? 0.05로 확대
+    pivot.m[0] = pivot.m[5] = pivot.m[10] = 0.1;
     pivot.m[15] = 1.f;
     write_n(fp, &pivot, sizeof(pivot));
 

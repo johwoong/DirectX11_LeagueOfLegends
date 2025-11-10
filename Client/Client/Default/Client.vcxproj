@@ -200,6 +200,7 @@
     <ClInclude Include="..\Public\UI_LoadingBar.h" />
     <ClInclude Include="..\Public\UI_Manager.h" />
     <ClInclude Include="Client.h" />
+    <ClInclude Include="Vi.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="PlayerIdleState.h" />
     <ClInclude Include="Resource.h" />
@@ -247,6 +248,7 @@
     <ClCompile Include="..\Private\UI_LoadingBar.cpp" />
     <ClCompile Include="..\Private\UI_Manager.cpp" />
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="Vi.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>

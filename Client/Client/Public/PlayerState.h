@@ -4,6 +4,7 @@
 #include "Client_Defines.h"
 #include "Ezreal.h"
 #include "Renekton.h"
+#include "Vi.h"
 
 NS_BEGIN(Engine)
 class CModel;
