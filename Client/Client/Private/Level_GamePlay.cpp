@@ -19,15 +19,15 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 
 
-	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
-		return E_FAIL;
 	if(FAILED(Ready_Layer_Terrian(TEXT("Layer_BackGround"))))
 		return E_FAIL;
-	//if (FAILED(Ready_Layer_MapObject(TEXT("Layer_MapObject"))))
-	//	return E_FAIL;
+	if (FAILED(Ready_Layer_MapObject(TEXT("Layer_MapObject"))))
+		return E_FAIL;
 	if (FAILED(Ready_Layer_Building(TEXT("Layer_Building"))))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
+		return E_FAIL;
+	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_UI(TEXT("Layer_UI"))))
 		return E_FAIL;
@@ -158,26 +158,38 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player(const _tchar* pLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 {	
-	CCamera_Dynamic::CAMERADESC_DERIVED			CameraDesc;
+	CCamera_Dynamic::CAMERADESC_DERIVED CameraDesc;
 	ZeroMemory(&CameraDesc, sizeof(CCamera_Dynamic::CAMERADESC_DERIVED));
 
-	CameraDesc.InitPostion = _float4(0.f, 0.f, 0.f, 1.f);
-	CameraDesc.vDistance = _float4(0, 10, -10, 0.f);
+	CameraDesc.InitPostion = _float4(0.f, 10.f, -10.f, 1.f);
+	CameraDesc.vDistance = _float4(0.f, 10.f, -10.f, 0.f);
 
 	CameraDesc.CameraDesc.vEye = _float4(0.f, 10.f, -10.f, 1.f);
 	CameraDesc.CameraDesc.vAt = _float4(0.f, 0.f, 0.f, 1.f);
-
 	CameraDesc.CameraDesc.fFov = XMConvertToRadians(60.0f);
 	CameraDesc.CameraDesc.fAspect = (_float)g_WinSizeX / g_WinSizeY;
 	CameraDesc.CameraDesc.fNear = 0.1f;
 	CameraDesc.CameraDesc.fFar = 1000.f;
-
 	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 20.f;
 	CameraDesc.CameraDesc.TransformDesc.fRotationPerSec = XMConvertToRadians(60.f);
 
-	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Camera_Dynamic"), LEVEL_GAMEPLAY, pLayerTag, &CameraDesc)))
+	CCamera_Dynamic* pCamera = nullptr;
+	if (FAILED(m_pGameInstance->Add_GameObject_Out(
+		TEXT("Prototype_GameObject_Camera_Dynamic"),
+		LEVEL_GAMEPLAY, pLayerTag, (CGameObject*&)pCamera, &CameraDesc)))
+	{
 		return E_FAIL;
+	}
 
+	if (pCamera)
+	{
+		CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
+		if (pPlayer)
+		{
+			pCamera->Set_Target(pPlayer);
+			pCamera->Set_CamMode(CCamera_Dynamic::CAM_GAME);
+		}
+	}
 
 	return S_OK;
 	

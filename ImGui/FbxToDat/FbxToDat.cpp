@@ -15,7 +15,6 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-// ============================= 엔진 구조 =============================
 struct float2 { float x, y; };
 struct float3 { float x, y, z; };
 struct FLOAT4X4 { float m[16]; };
@@ -35,7 +34,7 @@ struct BINANIM { char szName[MAX_PATH]; double dbDuration; double dbTickPerSecon
 struct BINCHANNEL { char szName[MAX_PATH]; int iNumKeyFrames; };
 struct KEYFRAME { float fTime; float vScale[3]; float vRotation[4]; float vPosition[3]; };
 
-// ============================= 공통 유틸 =============================
+
 static void write_n(FILE* fp, const void* p, size_t sz) {
     if (fwrite(p, 1, sz, fp) != sz) throw runtime_error("file write error");
 }
@@ -53,7 +52,6 @@ static void ToF4x4(FLOAT4X4& out, const aiMatrix4x4& m) {
     out.m[12]=m.d1; out.m[13]=m.d2; out.m[14]=m.d3; out.m[15]=m.d4;
 }
 
-// ============================= 텍스처 자동 탐색 =============================
 static fs::path FindAnyTexture(const fs::path& folder) {
     if (!fs::exists(folder) || !fs::is_directory(folder)) return {};
     // 이름 힌트 우선 (base/albedo/diffuse)
@@ -70,7 +68,7 @@ static fs::path FindAnyTexture(const fs::path& folder) {
         for (auto& key : prefer) if (lower.find(key)!=string::npos) return e.path();
         if (fallback.empty()) fallback = e.path();
     }
-    return fallback; // 없으면 빈 경로
+    return fallback; 
 }
 
 
@@ -114,8 +112,6 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
                 verts[v].fBlendWeights[i] = 0.f;
             }
         }
-
-        // ?? 본 가중치
         for (unsigned b = 0; b < mesh->mNumBones; ++b)
         {
             const aiBone* bone = mesh->mBones[b];
@@ -150,7 +146,7 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
         write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
     }
 
-    // ?? 머티리얼 (AI_TEXTURE_TYPE_MAX 구조 유지)
+
     unsigned numMats = scene->mNumMaterials;
     write_n(fp, &numMats, sizeof(numMats));
 
@@ -247,7 +243,6 @@ static void WriteAnimationData(FILE* fp, const aiScene* scene){
     WriteAnimations(fp, scene);
 }
 
-// ============================= 메인: Champion 하위 전부 자동 변환 =============================
 int wmain()
 {
     try {
@@ -257,21 +252,17 @@ int wmain()
 
         for (const auto& entry : fs::recursive_directory_iterator(srcRoot)) {
             if (!entry.is_directory()) continue;
-
-            // 이 폴더에서 FBX 하나 찾기
             fs::path fbx;
             for (const auto& f : fs::directory_iterator(entry.path())) {
                 auto ext = f.path().extension().wstring();
                 if (ext==L".fbx" || ext==L".FBX") { fbx = f.path(); break; }
             }
             if (fbx.empty()) continue;
-
-            // 출력 경로는 원본과 동일한 서브 폴더 구조 유지
             fs::path relative = fs::relative(entry.path(), srcRoot);
             fs::path outDir   = dstRoot / relative;
             fs::create_directories(outDir);
 
-            fs::path baseName = entry.path().filename(); // 폴더명 기준
+            fs::path baseName = entry.path().filename();
             fs::path outModel = outDir / (baseName.wstring() + L".dat");
             fs::path outAnim  = outDir / (baseName.wstring() + L"_Animation.dat");
 

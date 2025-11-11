@@ -36,7 +36,7 @@ HRESULT CEzreal::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	SetSkillInfo(); // Ezreal 스킬 정보 설정
+	SetSkillInfo(); 
 	Set_Scale(_float3(0.2f, 0.2f, 0.2f));
 	return S_OK;
 }
@@ -44,7 +44,6 @@ HRESULT CEzreal::Initialize(void* pArg)
 void CEzreal::SetSkillInfo()
 {
 	m_ChampionIconTag = L"Prototype_Component_Texture_Ezreal_Icon"; 
-	// 이름, 아이콘 텍스처 태그, 쿨타임(지금은 UI용이라 쿨타임은 0으로 둬도 됨)
 	m_Skills[0] = { L"Rising Spell Force", L"Prototype_Component_Texture_EzrealSkill_Passive", 0.f };
 	m_Skills[1] = { L"Mystic Shot", L"Prototype_Component_Texture_EzrealSkill_Q", 0.f };
 	m_Skills[2] = { L"Essence Flux", L"Prototype_Component_Texture_EzrealSkill_W", 0.f };

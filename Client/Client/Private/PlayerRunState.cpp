@@ -62,10 +62,10 @@ void CRunState::Enter()
         break;
     case CPlayer::RENEKTON:
         if (STATETYPE_START == m_eStateType)
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::RUN1);
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::RUN);
     case CPlayer::VI:
         if (STATETYPE_START == m_eStateType)
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::ANIM_END);
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::RUN);
     }
 }
 
@@ -87,7 +87,6 @@ void CRunState::Move(_float fTimeDelta)
 
     if (fDist < 0.05f)
     {
-        pTr->Set_State(CTransform::STATE_TRANSLATION, vTarget);
         m_eStateType = STATETYPE_END;
         return;
     }

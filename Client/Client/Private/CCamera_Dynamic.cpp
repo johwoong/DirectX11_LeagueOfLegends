@@ -120,7 +120,31 @@ void CCamera_Dynamic::Debug_Camera(_float fTimeDelta)
 
 void CCamera_Dynamic::Game_Camera(_float fTimeDelta)
 {
+	if (!m_pTarget)
+		return;
 
+	CTransform* pTargetTransform = m_pTarget->Get_Transform();
+	_vector vTargetPos = pTargetTransform->Get_State(CTransform::STATE_TRANSLATION);
+
+
+	_vector vOffset = XMVectorSet(0.f, 28.f, -32.f, 0.f);
+
+	_vector vDesiredPos = vTargetPos + vOffset;
+
+	_vector vCurPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	_vector vNewPos = XMVectorLerp(vCurPos, vDesiredPos, fTimeDelta * 5.f);
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vNewPos);
+
+	_vector vAt = vTargetPos + XMVectorSet(0.f, 5.f, 5.f, 0.f);
+	_vector vEye = vNewPos;
+	_vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+	_matrix matView = XMMatrixLookAtLH(vEye, vAt, vUp);
+	m_pGameInstance->Set_Transform(CPipeLine::D3DTS_VIEW, matView);
+
+	m_pGameInstance->Set_Transform(CPipeLine::D3DTS_PROJ,
+		XMMatrixPerspectiveFovLH(XMConvertToRadians(38.f),
+			(_float)g_WinSizeX / g_WinSizeY, 0.1f, 1000.f));
 }
 
 void CCamera_Dynamic::Set_Position(_vector vPosition)

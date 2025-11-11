@@ -36,7 +36,7 @@ CPlayerState* CIdleState::HandleInput()
 
 CPlayerState* CIdleState::Update(_float fTimeDelta)
 {
-    m_bIsAnimationFinished = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex()));
+    m_bIsAnimationFinished = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex()), nullptr, 0.1f);
 	return nullptr;
 }
 
@@ -87,7 +87,7 @@ void CIdleState::Enter()
         switch (m_eIdleType)
         {
         case Client::Player::CIdleState::IDLE_MAIN:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE1);
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE);
             break;
         }
         break;

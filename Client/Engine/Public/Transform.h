@@ -67,7 +67,6 @@ public:
 	bool Move_PosTarget(_float fTimeDelta, _vector TargetPos, class CNavigation* pNavigation = nullptr);
 	bool Move_PosDir(_float fTimeDelta, _vector vecDir, class CNavigation* pNavigation = nullptr);
 	bool Move_PosLerp(_float fTimeDelta, _vector TargetPos, _float fVecOffset);
-	void Update_TransformMatrix();
 
 public:
 	void Turn(_fvector vAxis, _float fTimeDelta);

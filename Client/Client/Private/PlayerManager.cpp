@@ -47,13 +47,11 @@ HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
     if (!pGI)
         return E_FAIL;
 
-    // Ezreal 생성
     auto pEzreal = CEzreal::Create(m_pDevice, m_pContext);
     pEzreal->Initialize(nullptr);
     pEzreal->Set_PlayerID(CChampion::EZREAL);
     m_vChampions.push_back(pEzreal);
 
-    // Renekton 생성
     auto pRenekton = CRenekton::Create(m_pDevice, m_pContext);
     pRenekton->Initialize(nullptr);
     pRenekton->Set_PlayerID(CChampion::RENEKTON);
@@ -64,14 +62,12 @@ HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
     pVi->Set_PlayerID(CChampion::VI);
     m_vChampions.push_back(pVi);
 
-    // 첫 챔피언 활성화
     m_iCurrentChampionIndex = 0;
     m_pActivePlayer = pEzreal;
 
-    // Layer 등록
-    pGI->ReAdd_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), pEzreal);
 
-    // ? UI SkillMenu에 Ezreal의 스킬아이콘 세팅
+
+    pGI->ReAdd_GameObject(LEVEL_GAMEPLAY, TEXT("Layer_Player"), pEzreal);
     m_pSkillMenu = dynamic_cast<CUI_SkillMenu*>(
         pGI->Get_Object(LEVEL_GAMEPLAY, TEXT("Layer_UI"), 0)
         );

@@ -9,7 +9,7 @@ _bool CRenekton::Is_AnimationLoop(_uint eAnimId)
 	case IDLE1:
 	case IDLE2:
 	case IDLE3:
-	case RUN1:
+	case RUN:
 		return true;
 	}
 	return false;
@@ -45,7 +45,6 @@ HRESULT CRenekton::Initialize(void* pArg)
 void CRenekton::SetSkillInfo()
 {
 	m_ChampionIconTag = L"Prototype_Component_Texture_Renekton_Icon";
-	// 이름, 아이콘 텍스처 태그, 쿨타임(지금은 UI용이라 쿨타임은 0으로 둬도 됨)
 	m_Skills[0] = { L"Rising Sell Force", L"Prototype_Component_Texture_RenektonSkill_Passive", 0.f };
 	m_Skills[1] = { L"Mystic Sht", L"Prototype_Component_Texture_RenektonSkill_Q", 0.f };
 	m_Skills[2] = { L"Essence lux", L"Prototype_Component_Texture_RenektonSkill_W", 0.f };

@@ -28,7 +28,9 @@ HRESULT CPlayer::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);	
-	
+	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	vPos = XMVectorSetY(vPos, XMVectorGetY(vPos) + 1.f); // ← 여기서 0.3f 만큼 올림
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 	return S_OK;
 }
 
@@ -46,12 +48,13 @@ int CPlayer::Update(_float fTimeDelta)
 
 void CPlayer::Late_Update(_float fTimeDelta)
 {
+	if (!m_pRendererCom)
+		return;
+
+	m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 	Late_Update_State(fTimeDelta);
 
-	if (m_pRendererCom != nullptr)
-	{
-		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
-	}
+	
 }
 
 void CPlayer::Reset_State()

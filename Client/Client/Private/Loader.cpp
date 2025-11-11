@@ -224,9 +224,9 @@ HRESULT CLoader::Loading_For_GamePlay()
 #pragma region 모델 로딩
 	lstrcpy(m_szLoadingText, TEXT("맵 로딩중 "));
 	m_fProgress = 50.f;
-	//if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Map"),
-	//	CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
-	//	return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Map"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
+		return E_FAIL;
 	lstrcpy(m_szLoadingText, TEXT("챔피언 모델 로딩중 "));
 	m_fProgress = 60.f;
 	// 이즈리얼

@@ -4,9 +4,8 @@ class CRenekton final : public CChampion
 {
 public:
 	enum ANIM {
-		ATTACK1, ATTACK2, CHANNEL, CHANNEL_WIND, CRIT,
-		DANCE, DEATH, IDLE1, IDLE2, IDLE3, JOKE, LAUGH, RUN1, Q,
-		W, W_RAGED, E, R, TAUNT, ANIM_END
+		IDLE, ATTACK1, ATTACK2, CHANNEL, CHANNEL_WIND, CRIT, DANCE, DEATH, IDLE1, IDLE2, IDLE3,
+		JOKE, LAUGH, RUN, Q, W, W_RAGED, E, R, TAUNT, ANIM_END
 	};
 private:
 	CRenekton(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
