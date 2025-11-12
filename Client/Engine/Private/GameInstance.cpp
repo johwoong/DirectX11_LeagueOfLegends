@@ -549,6 +549,11 @@ HRESULT CGameInstance::Bind_RenderTarget_SRV(const _tchar* pTargetTag, CShader* 
 
 void CGameInstance::Release_Engine()
 {
+	//auto pInstance = CGameInstance::GetInstance();
+	//while (pInstance->Release() > 0)
+	//{
+	//}
+	CGameInstance::GetInstance()->DestroyInstance();
 	CLevel_Manager::GetInstance()->DestroyInstance();
 	CObject_Manager::GetInstance()->DestroyInstance();
 	CComponentManager::GetInstance()->DestroyInstance();

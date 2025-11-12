@@ -26,7 +26,7 @@ HRESULT CModelManager::Create_Model(
     NONANIMDESC* pCustomDesc) 
 {
     CGameInstance* pGameInstance = CGameInstance::GetInstance();
-
+    pGameInstance->AddRef();
     NONANIMDESC NonAnimDesc = {};
     if (pCustomDesc) 
         memcpy(&NonAnimDesc, pCustomDesc, sizeof(NONANIMDESC));

@@ -17,7 +17,6 @@ CMainApp::CMainApp()
 	, m_pUIManager(CUI_Manager::GetInstance())
 {
 	Safe_AddRef(m_pUIManager);
-	Safe_AddRef(m_pGameInstance);
 }
 
 HRESULT CMainApp::Initialize()
@@ -191,12 +190,13 @@ void CMainApp::Free()
 	Safe_Release(m_pContext);
 
 
+
+	CPlayerManager::GetInstance()->DestroyInstance();
+	CPickingManager::GetInstance()->DestroyInstance();
+	CUI_Manager::GetInstance()->DestroyInstance();
+
 	/* 내 멤버를 정리한다. */
 	Safe_Release(m_pGameInstance);
-	CPickingManager::GetInstance()->DestroyInstance();
-	CPlayerManager::GetInstance()->DestroyInstance();
 	CGameInstance::Release_Engine();
-
 	Safe_Release(m_pUIManager);
-	CUI_Manager::GetInstance()->DestroyInstance();
 }

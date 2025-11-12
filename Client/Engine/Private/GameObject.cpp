@@ -4,15 +4,13 @@ CGameObject::CGameObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : m_pDevice(pDevice), m_pContext(pContext)
     , m_pGameInstance(CGameInstance::GetInstance())
 {
-    Safe_AddRef(m_pGameInstance);
     Safe_AddRef(m_pDevice);
     Safe_AddRef(m_pContext);
 }
 
 CGameObject::CGameObject(const CGameObject& rhs)
-    : m_pDevice(rhs.m_pDevice), m_pContext(rhs.m_pContext), m_pGameInstance(CGameInstance::GetInstance())
+    : m_pDevice(rhs.m_pDevice), m_pContext(rhs.m_pContext), m_pGameInstance(rhs.m_pGameInstance)
 {
-    Safe_AddRef(m_pGameInstance);
     Safe_AddRef(m_pDevice);
     Safe_AddRef(m_pContext);
 }
@@ -104,7 +102,6 @@ CComponent* CGameObject::Find_Component(const _tchar* pComponentTag)
 
 void CGameObject::Free()
 {
-    Safe_Release(m_pGameInstance);
     for (auto& Pair : m_Components)
         Safe_Release(Pair.second);
     m_Components.clear();

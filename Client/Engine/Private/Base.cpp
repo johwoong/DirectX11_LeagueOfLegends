@@ -11,17 +11,18 @@ unsigned int CBase::AddRef()
 
 unsigned int CBase::Release()
 {
-	if (0 == m_iRefCnt)
+	if (0 != m_iRefCnt)
+	{
+		return m_iRefCnt--;
+	}
+	else
 	{
 		Free();
 
-		/* Áö¿ìÀÚ. */
 		delete this;
 
 		return 0;
 	}
-	else
-		return m_iRefCnt--;
 }
 
 void CBase::Free()

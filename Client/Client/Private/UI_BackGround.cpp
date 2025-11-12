@@ -153,7 +153,6 @@ CGameObject* CUI_BackGround::Clone(void* pArg)
 
 void CUI_BackGround::Free()
 {
-    Safe_Release(m_pTextureCom);
     __super::Free();
 }
 

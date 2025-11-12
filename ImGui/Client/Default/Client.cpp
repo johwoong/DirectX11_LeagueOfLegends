@@ -99,7 +99,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     Safe_Release(pGameInstance);
-    Safe_Release(pMainApp);
+    if (0 != Safe_Release(pMainApp))
+        return FALSE;
 
     return (int)msg.wParam;
 }

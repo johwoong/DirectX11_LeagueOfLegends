@@ -142,7 +142,7 @@ void CPlayerManager::Free()
         Safe_Release(pChampion);
 
     m_vChampions.clear();
-    Safe_Release(m_pExpBar);
+    Safe_Release(m_pActivePlayer);
     Safe_Release(m_pDevice);
     Safe_Release(m_pContext);
 }
