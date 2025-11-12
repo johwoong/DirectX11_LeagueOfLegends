@@ -43,9 +43,6 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 		return;
 	if (GetAsyncKeyState(VK_F4) & 0x0001)
 		CPlayerManager::GetInstance()->ChangeChampion();
-
-	// 마우스 클릭 시 이동 (Terrain 클릭 시만)
-
 }
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)

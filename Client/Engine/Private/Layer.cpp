@@ -75,7 +75,7 @@ void CLayer::Update(_float fTimeDelta)
     {
         if ((*iter) != nullptr)
         {
-            int iEvent = (*iter)->Update(fTimeDelta);
+              int iEvent = (*iter)->Update(fTimeDelta);
             if (iEvent == OBJ_DEAD)
             {
                 Safe_Release(*iter);
