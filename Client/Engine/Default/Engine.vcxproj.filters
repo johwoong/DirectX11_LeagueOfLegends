@@ -103,9 +103,6 @@
     <Filter Include="01.Utility\06. RenderTargets\Manager">
       <UniqueIdentifier>{1a6f6118-5dce-45c4-a529-ceb61cbc2caa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utility\03. Components\03. Shader">
-      <UniqueIdentifier>{7505fda2-7c2e-41aa-bef8-e885cc1ff8cd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utility\03. Components\02. VIBuffer\03. Terrian">
       <UniqueIdentifier>{6022d186-9160-4c5d-8329-a7cda191d59b}</UniqueIdentifier>
     </Filter>
@@ -132,6 +129,9 @@
     </Filter>
     <Filter Include="01.Utility\08. Font\Manager">
       <UniqueIdentifier>{00ffc1c7-bb47-47ae-b68f-4bd80ada2613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03. Components\03. Shader">
+      <UniqueIdentifier>{7505fda2-7c2e-41aa-bef8-e885cc1ff8cd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

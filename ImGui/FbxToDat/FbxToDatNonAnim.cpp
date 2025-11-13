@@ -61,6 +61,7 @@ static fs::path FindTextureFile(const fs::path& texDir)
 
 static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& texDir)
 {
+    // === Pivot 설정 ===
     FLOAT4X4 pivot{};
     {
         float rotY[16] = {
@@ -71,29 +72,13 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
         };
 
         // 스케일 0.01 적용
-        pivot.m[0] = rotY[0] * 0.01f;
-        pivot.m[1] = rotY[1] * 0.01f;
-        pivot.m[2] = rotY[2] * 0.01f;
-        pivot.m[3] = rotY[3];
-
-        pivot.m[4] = rotY[4] * 0.01f;
-        pivot.m[5] = rotY[5] * 0.01f;
-        pivot.m[6] = rotY[6] * 0.01f;
-        pivot.m[7] = rotY[7];
-
-        pivot.m[8] = rotY[8] * 0.01f;
-        pivot.m[9] = rotY[9] * 0.01f;
-        pivot.m[10] = rotY[10] * 0.01f;
-        pivot.m[11] = rotY[11];
-
-        pivot.m[12] = rotY[12];
-        pivot.m[13] = rotY[13];
-        pivot.m[14] = rotY[14];
-        pivot.m[15] = rotY[15];
+        for (int i = 0; i < 16; ++i)
+            pivot.m[i] = rotY[i];
+        pivot.m[0] *= 0.01f; pivot.m[5] *= 0.01f; pivot.m[10] *= 0.01f;
     }
-
     write_n(fp, &pivot, sizeof(pivot));
 
+    // === 메시 ===
     unsigned numMeshes = scene->mNumMeshes;
     write_n(fp, &numMeshes, sizeof(numMeshes));
 
@@ -112,61 +97,63 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
         vector<VTXMODEL> verts(numVerts);
         for (unsigned v = 0; v < numVerts; ++v)
         {
-            verts[v].vPosition = {
-                mesh->mVertices[v].x,
-                mesh->mVertices[v].y,
-                mesh->mVertices[v].z
-            };
-
+            verts[v].vPosition = { mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z };
             verts[v].vNormal = mesh->HasNormals() ?
                 float3{ mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z } :
                 float3{ 0,1,0 };
-
             verts[v].vTexUV = mesh->HasTextureCoords(0) ?
                 float2{ (float)mesh->mTextureCoords[0][v].x, (float)mesh->mTextureCoords[0][v].y } :
                 float2{ 0,0 };
-
             verts[v].vTangent = mesh->HasTangentsAndBitangents() ?
                 float3{ mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z } :
                 float3{ 1,0,0 };
         }
-
         write_n(fp, verts.data(), sizeof(VTXMODEL) * verts.size());
 
         unsigned numFaces = mesh->mNumFaces;
         write_n(fp, &numFaces, sizeof(numFaces));
-
         vector<FACEINDICES32> faces(numFaces);
         for (unsigned f = 0; f < numFaces; ++f)
             faces[f] = { mesh->mFaces[f].mIndices[0], mesh->mFaces[f].mIndices[1], mesh->mFaces[f].mIndices[2] };
-
         write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
     }
 
-    // 머티리얼
-    unsigned numMats = scene->mNumMaterials;
-    write_n(fp, &numMats, sizeof(numMats));
-
-    fs::path autoTex = FindTextureFile(texDir);
-    string autoTexStr = autoTex.empty() ? "default_diffuse.png" : autoTex.string();
-
-    for (unsigned mi = 0; mi < numMats; ++mi)
+    // === 머티리얼 ===
+    wcout << L"[DEBUG] scene->mNumMaterials = " << scene->mNumMaterials << endl;
+    for (unsigned mi = 0; mi < scene->mNumMeshes; ++mi)
     {
-        aiMaterial* mat = scene->mMaterials[mi];
-        for (int t = 0; t < AI_TEXTURE_TYPE_MAX; ++t)
-        {
-            aiString tex;
-            char path[MAX_PATH]{};
+        const aiMesh* mesh = scene->mMeshes[mi];
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-            if (mat->GetTexture((aiTextureType)t, 0, &tex) == AI_SUCCESS)
-            {
-                fs::path texFile = texDir / fs::path(tex.C_Str()).filename();
-                strncpy_s(path, texFile.string().c_str(), MAX_PATH - 1);
-            }
-            else
-            {
-                strncpy_s(path, autoTexStr.c_str(), MAX_PATH - 1);
-            }
+        aiString matNameAI;
+        material->Get(AI_MATKEY_NAME, matNameAI);
+        string matName = matNameAI.C_Str();
+        string lower = matName;
+        transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+        fs::path texPath;
+        if (lower.find("folaige_mat") != string::npos)
+            texPath = texDir / L"Foliage.dds";
+        else if (lower.find("main_mat") != string::npos)
+            texPath = texDir / L"main.dds";
+        else
+            texPath = texDir / L"default_diffuse.dds";
+
+        wcout << L"[MATERIAL MATCH] Mesh[" << mi << L"]: Material="
+            << matName.c_str() << L" -> "
+            << texPath.filename().c_str() << endl;
+
+        for (int j = 0; j < AI_TEXTURE_TYPE_MAX; ++j)
+        {
+            wchar_t wbuf[MAX_PATH];
+            memset(wbuf, 0, sizeof(wbuf));
+            wcsncpy_s(wbuf, texPath.c_str(), _TRUNCATE);
+
+            char path[MAX_PATH];
+            memset(path, 0, sizeof(path));
+
+            // ? 유니코드 → ANSI 변환 (CP_ACP = 현재 시스템 코드페이지)
+            WideCharToMultiByte(CP_ACP, 0, wbuf, -1, path, MAX_PATH, nullptr, nullptr);
 
             write_n(fp, path, sizeof(path));
         }

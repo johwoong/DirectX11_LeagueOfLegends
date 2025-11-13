@@ -148,164 +148,152 @@ HRESULT CLoader::Loading_ForActor()
 	if (nullptr == pGameInstance)
 		return E_FAIL;
 
-//#pragma region Animation
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Ezreal/Ezreal.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Ezreal");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Braum"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Braum/Braum.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Braum");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Galio"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Galio/Galio.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Galio");
-//	
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("LeeSin"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Leesin/Leesin.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("LeeSin");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Renekton/Renekton.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Renekton");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Yasuo"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Yasuo/Yasuo.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Yasuo");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Garen"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Garen/Garen.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Garen");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Gwen"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Gwen/Gwen.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Gwen");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Leona"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Leona/Leona.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Leona");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vi"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vi/Vi.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Vi");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vayne"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vayne/Vayne.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Vayne");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Alistar"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Alistar/Alistar.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Alistar");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Blue"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Cannon_Blue/Minion_Cannon_Blue.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Cannon_Blue");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Red"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Cannon_Red/Minion_Cannon_Red.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Cannon_Red");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Melee_Blue"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Melee_Blue/Minion_Melee_Blue.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Melee_Blue");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Melee_Red"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Melee_Red/Minion_Melee_Red.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Melee_Red");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Range_Blue"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Range_Blue/Minion_Range_Blue.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Range_Blue");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Range_Red"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Range_Red/Minion_Range_Red.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Range_Red");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Super_Blue"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Super_Blue/Minion_Super_Blue.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Super_Blue");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Super_Red"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Super_Red/Minion_Super_Red.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Minion_Super_Red");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Inhibitor_Blue"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Inhibitor_Blue/Inhibitor_Blue.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Inhibitor_Blue");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Inhibitor_Red"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Inhibitor_Red/Inhibitor_Red.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Inhibitor_Red");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Blue"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Nexus_Blue/Nexus_Blue.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Nexus_Blue");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Red"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Nexus_Red/Nexus_Red.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Nexus_Red");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Blue"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Turret_Blue/Turret_Blue.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Turret_Blue");
-//
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Red"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Turret_Red/Turret_Red.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Turret_Red");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Shield"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Turret_Shield/Turret_Shield.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Turret_Shield");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Npc_Store"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Npc_Store/Npc_Store.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Npc_Store");
-//
-//	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Npc_StoreKeeper"),
-//		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Npc_StoreKeeper/Npc_StoreKeeper.dat"))))
-//		return E_FAIL;
-//	pImgui->m_AnimObj.push_back("Npc_StoreKeeper");
-//
-//
-//#pragma endregion Animation
+#pragma region Animation
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Ezreal/Ezreal.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Ezreal");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Braum"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Braum/Braum.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Braum");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Galio"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Galio/Galio.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Galio");
+	
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("LeeSin"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Leesin/Leesin.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("LeeSin");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Renekton/Renekton.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Renekton");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Yasuo"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Yasuo/Yasuo.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Yasuo");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Garen"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Garen/Garen.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Garen");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Gwen"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Gwen/Gwen.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Gwen");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Leona"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Leona/Leona.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Leona");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vi"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vi/Vi.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Vi");
+
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vayne"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vayne/Vayne.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Vayne");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Alistar"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Alistar/Alistar.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Alistar");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Cannon_Blue/Minion_Cannon_Blue.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Cannon_Blue");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Cannon_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Cannon_Red/Minion_Cannon_Red.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Cannon_Red");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Melee_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Melee_Blue/Minion_Melee_Blue.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Melee_Blue");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Melee_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Melee_Red/Minion_Melee_Red.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Melee_Red");
+
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Range_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Range_Blue/Minion_Range_Blue.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Range_Blue");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Range_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Range_Red/Minion_Range_Red.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Range_Red");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Super_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Super_Blue/Minion_Super_Blue.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Super_Blue");
+
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Super_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Super_Red/Minion_Super_Red.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Minion_Super_Red");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Nexus_Blue/Nexus_Blue.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Nexus_Blue");
+
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Nexus_Red/Nexus_Red.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Nexus_Red");
+
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Turret_Blue/Turret_Blue.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Turret_Blue");
+
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Turret_Red/Turret_Red.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Turret_Red");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Shield"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Turret_Shield/Turret_Shield.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Turret_Shield");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Npc_Store"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Npc_Store/Npc_Store.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Npc_Store");
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Npc_StoreKeeper"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Npc_StoreKeeper/Npc_StoreKeeper.dat"))))
+		return E_FAIL;
+	pImgui->m_AnimObj.push_back("Npc_StoreKeeper");
+
+
+#pragma endregion Animation
 
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal_NonAnim"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Ezreal/Ezreal.dat"))))
@@ -343,11 +331,6 @@ HRESULT CLoader::Loading_ForActor()
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Garen/Garen.dat"))))
 		return E_FAIL;
 	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Garen_NonAnim"));
-//
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Gwen_NonAnim"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Gwen/Gwen.dat"))))
-		return E_FAIL;
-	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Gwen_NonAnim"));
 //
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton_NonAnim"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Renekton/Renekton.dat"))))

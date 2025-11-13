@@ -240,16 +240,6 @@ HRESULT CAnim::Ready_Components(void* pArg)
 			return E_FAIL;
 		break;
 
-	case MODEL_INHIBITOR_B:
-		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Inhibitor_Blue"), (CComponent**)&m_pModelCom)))
-			return E_FAIL;
-		break;
-
-	case MODEL_INHIBITOR_R:
-		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Inhibitor_Red"), (CComponent**)&m_pModelCom)))
-			return E_FAIL;
-		break;
-
 	case MODEL_NEXUS_B:
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Nexus_Blue"), (CComponent**)&m_pModelCom)))
 			return E_FAIL;

@@ -10,6 +10,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <unordered_map>
+#include <functional>
 
 
 using namespace std;
@@ -74,7 +76,7 @@ static fs::path FindAnyTexture(const fs::path& folder) {
 
 static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDir)
 {
-
+    // === 피벗 스케일 ===
     FLOAT4X4 pivot{};
     aiMatrix4x4 scale(0.1f, 0, 0, 0,
         0, 0.1f, 0, 0,
@@ -83,9 +85,10 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
     ToF4x4(pivot, scale);
     write_n(fp, &pivot, sizeof(pivot));
 
-    unsigned numMeshes = scene->mNumMeshes; 
+    unsigned numMeshes = scene->mNumMeshes;
     write_n(fp, &numMeshes, sizeof(numMeshes));
 
+    // === 메시 데이터 ===
     for (unsigned mi = 0; mi < numMeshes; ++mi)
     {
         const aiMesh* mesh = scene->mMeshes[mi];
@@ -112,6 +115,8 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
                 verts[v].fBlendWeights[i] = 0.f;
             }
         }
+
+        // 본 정보
         for (unsigned b = 0; b < mesh->mNumBones; ++b)
         {
             const aiBone* bone = mesh->mBones[b];
@@ -119,7 +124,6 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
             {
                 unsigned vId = bone->mWeights[w].mVertexId;
                 float weight = bone->mWeights[w].mWeight;
-
                 for (int i = 0; i < 4; ++i)
                 {
                     if (verts[vId].fBlendWeights[i] == 0.f)
@@ -146,51 +150,36 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
         write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
     }
 
-
-    unsigned numMats = scene->mNumMaterials;
+    // === 머티리얼 ===
+    unsigned numMats = scene->mNumMeshes; // ? Mesh 개수 기준으로 고정
     write_n(fp, &numMats, sizeof(numMats));
 
-    fs::path autoTex = FindAnyTexture(texDir);
-    if (!autoTex.empty() && (autoTex.extension() == ".png" || autoTex.extension() == ".jpg" || autoTex.extension() == ".jpeg" || autoTex.extension() == ".tga"))
-        autoTex.replace_extension(".dds");
-    string autoTexStr = autoTex.empty()
-        ? (texDir / L"default_diffuse.dds").string()
-        : autoTex.string();
-
-    for (unsigned mi = 0; mi < numMats; ++mi)
+    for (unsigned mi = 0; mi < scene->mNumMeshes; ++mi)
     {
-        aiMaterial* mat = scene->mMaterials[mi];
-        for (int t = 0; t < AI_TEXTURE_TYPE_MAX; ++t)
+        const aiMesh* mesh = scene->mMeshes[mi];
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+        aiString matNameAI;
+        material->Get(AI_MATKEY_NAME, matNameAI);
+        string matName = matNameAI.C_Str();
+        string lower = matName;
+        transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+        fs::path texPath;
+        if (lower.find("foliage") != string::npos || lower.find("folliage") != string::npos)
+            texPath = texDir / L"Foliage.dds";
+        else if (lower.find("main") != string::npos)
+            texPath = texDir / L"Main.dds";
+        else
+            texPath = texDir / L"default_diffuse.dds";
+
+        for (int j = 0; j < AI_TEXTURE_TYPE_MAX; ++j)
         {
-            aiString tex;
-            char path[MAX_PATH]{};
-
-            if (mat->GetTexture((aiTextureType)t, 0, &tex) == AI_SUCCESS)
-            {
-                fs::path texFile = texDir / fs::path(tex.C_Str()).filename();
-
-                // ? 확장자 강제 .dds
-                texFile.replace_extension(".dds");
-
-                // ? 없으면 png fallback
-                if (!fs::exists(texFile))
-                {
-                    fs::path alt = texDir / fs::path(tex.C_Str()).filename();
-                    alt.replace_extension(".png");
-                    if (fs::exists(alt))
-                        texFile = alt;
-                    else if (!autoTex.empty())
-                        texFile = autoTex;
-                }
-
-                strncpy_s(path, texFile.string().c_str(), MAX_PATH - 1);
-            }
-            else
-            {
-                strncpy_s(path, autoTexStr.c_str(), MAX_PATH - 1);
-            }
-
-            write_n(fp, path, sizeof(path)); // ? 반드시 AI_TEXTURE_TYPE_MAX번 기록
+            string texStr = texPath.u8string();
+            char path[MAX_PATH];
+            memset(path, 0, sizeof(path));
+            memcpy(path, texStr.c_str(), min(texStr.size(), (size_t)(MAX_PATH - 1)));
+            write_n(fp, path, sizeof(path));
         }
     }
 }

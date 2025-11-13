@@ -18,7 +18,7 @@
     <ClCompile Include="GlbToDat.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="FbxToDat.cpp">
+    <ClCompile Include="FbxToNonAnimMat.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="FbxToNonAnim.cpp">

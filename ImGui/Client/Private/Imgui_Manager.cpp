@@ -170,12 +170,12 @@ void CImGui_Manager::Update_Imgui()
 			}
 			ImGui::EndTabItem();
 		}
-		//if (ImGui::BeginTabItem("Animation Tool"))
-		//{
+		if (ImGui::BeginTabItem("Animation Tool"))
+		{
 
-		//	Set_Animation();
-		//	ImGui::EndTabItem();
-		//}
+			Set_Animation();
+			ImGui::EndTabItem();
+		}
 
 		ImGui::EndTabBar();
 	}
@@ -1102,12 +1102,6 @@ void CImGui_Manager::Set_Animation()
 			break;
 		case MODEL_MINION_SUPER_R:
 			lstrcat(pAnimationDataFilePath, TEXT("Champion/Minion/Minion_Super_Red/Minion_Super_Red_Animation_Add.dat"));
-			break;
-		case MODEL_INHIBITOR_B:
-			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Inhibitor_Blue/Inhibitor_Blue_Animation_Add.dat"));
-			break;
-		case MODEL_INHIBITOR_R:
-			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Inhibitor_Red/Inhibitor_Red_Animation_Add.dat"));
 			break;
 		case MODEL_NEXUS_B:
 			lstrcat(pAnimationDataFilePath, TEXT("Champion/Buildings/Nexus_Blue/Nexus_Blue_Animation_Add.dat"));
