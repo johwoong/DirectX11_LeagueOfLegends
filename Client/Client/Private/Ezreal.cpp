@@ -37,7 +37,7 @@ HRESULT CEzreal::Initialize(void* pArg)
 		return E_FAIL;
 
 	SetSkillInfo(); 
-	Set_Scale(_float3(0.2f, 0.2f, 0.2f));
+	Set_Scale(_float3(0.12f, 0.12f, 0.12f));
 	return S_OK;
 }
 

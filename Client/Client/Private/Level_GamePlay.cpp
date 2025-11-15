@@ -68,7 +68,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_MapObject(const _tchar* pLayerTag)
 	NONANIMDESC ModelDesc;
 	_uint iNum = 0;
 
-	hFile = CreateFile(TEXT("../../../Bin/Data/Summoners'LiftData/Summoners'LiftMap.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	hFile = CreateFile(TEXT("../../../Bin/Data/Summoners'LiftData/Map.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (0 == hFile)
 		return E_FAIL;
 
@@ -139,6 +139,18 @@ HRESULT CLevel_GamePlay::Ready_Layer_Building(const _tchar* pLayerTag)
 			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Turret"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
 				return E_FAIL;
 		}
+		else if (!wcscmp(pModelTag, TEXT("Npc_StoreKeeper_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::BLUE;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Npc"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
+		else if (!wcscmp(pModelTag, TEXT("Npc_Store_NonAnim")))
+		{
+			BuildDesc.eTeamType = CBuilding::RED;
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Npc"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+				return E_FAIL;
+		}
 	}
 
 
@@ -159,7 +171,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 	ZeroMemory(&CameraDesc, sizeof(CCamera_Dynamic::CAMERADESC_DERIVED));
 
 	CameraDesc.InitPostion = _float4(0.f, 10.f, -10.f, 1.f);
-	CameraDesc.vDistance = _float4(0.f, 10.f, -10.f, 0.f);
 
 	CameraDesc.CameraDesc.vEye = _float4(0.f, 10.f, -10.f, 1.f);
 	CameraDesc.CameraDesc.vAt = _float4(0.f, 0.f, 0.f, 1.f);

@@ -134,7 +134,7 @@ static void WriteNonAnimModel(FILE* fp, const aiScene* scene, const fs::path& te
         fs::path texPath;
         if (lower.find("folaige_mat") != string::npos)
             texPath = texDir / L"Foliage.dds";
-        else if (lower.find("main_mat") != string::npos)
+        else if (lower.find("main_mat") != string::npos) 
             texPath = texDir / L"main.dds";
         else
             texPath = texDir / L"default_diffuse.dds";

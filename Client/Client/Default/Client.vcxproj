@@ -162,6 +162,7 @@
     <ClInclude Include="..\Public\Building.h" />
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
     <ClInclude Include="..\Public\Champion.h" />
+    <ClInclude Include="..\Public\StoreNpc.h" />
     <ClInclude Include="..\Public\UI_GameInfo.h" />
     <ClInclude Include="..\Public\UI_ChampionIcon.h" />
     <ClInclude Include="..\Public\UI_ExpBar.h" />
@@ -211,6 +212,7 @@
     <ClCompile Include="..\Private\Building.cpp" />
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
     <ClCompile Include="..\Private\Champion.cpp" />
+    <ClCompile Include="..\Private\StoreNpc.cpp" />
     <ClCompile Include="..\Private\UI_GameInfo.cpp" />
     <ClCompile Include="..\Private\UI_ChampionIcon.cpp" />
     <ClCompile Include="..\Private\UI_ExpBar.cpp" />

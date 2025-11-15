@@ -82,9 +82,9 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 	CameraDesc.CameraDesc.fFov = XMConvertToRadians(60.0f);
 	CameraDesc.CameraDesc.fAspect= (_float)g_WinSizeX / g_WinSizeY;
 	CameraDesc.CameraDesc.fNear = 0.2f;
-	CameraDesc.CameraDesc.fFar = 60000.f;
+	CameraDesc.CameraDesc.fFar = 4000.f;
 
-	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 60.f;
+	CameraDesc.CameraDesc.TransformDesc.fSpeedPerSec = 20.f;
 	CameraDesc.CameraDesc.TransformDesc.fRotationPerSec = XMConvertToRadians(90.0f);
 
 	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Camera_Dynamic"), LEVEL_GAMEPLAY, pLayerTag, &CameraDesc)))

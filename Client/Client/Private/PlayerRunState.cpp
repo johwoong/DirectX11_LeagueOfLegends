@@ -124,8 +124,6 @@ void CRunState::Move(_float fTimeDelta)
         XMMatrixRotationQuaternion(vRotQuat) *
         XMMatrixTranslationFromVector(vPos);
 
-    pTr->Set_State(CTransform::STATE_RIGHT, matWorld.r[0]);
-    pTr->Set_State(CTransform::STATE_UP, matWorld.r[1]);
-    pTr->Set_State(CTransform::STATE_LOOK, matWorld.r[2]);
-    pTr->Set_State(CTransform::STATE_TRANSLATION, matWorld.r[3]);
+    pTr->Set_WorldMatrix(matWorld);
+
 }

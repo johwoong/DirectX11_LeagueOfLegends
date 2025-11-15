@@ -65,28 +65,36 @@ VS_OUT VS_MAIN(VS_IN In)
 {
     VS_OUT Out = (VS_OUT) 0;
 
-    matrix matWV, matWVP;
-    matWV = mul(g_WorldMatrix, g_ViewMatrix);
-    matWVP = mul(matWV, g_ProjMatrix);
+    matrix matWV = mul(g_WorldMatrix, g_ViewMatrix);
+    matrix matWVP = mul(matWV, g_ProjMatrix);
 
     float fW = 1.f - (In.vBlendWeight.x + In.vBlendWeight.y + In.vBlendWeight.z);
 
-    matrix BoneMatrix = g_BoneMatrices[In.vBlendIndex.x] * In.vBlendWeight.x +
-		g_BoneMatrices[In.vBlendIndex.y] * In.vBlendWeight.y +
-		g_BoneMatrices[In.vBlendIndex.z] * In.vBlendWeight.z +
-		g_BoneMatrices[In.vBlendIndex.w] * fW;
+    matrix BoneMatrix =
+        g_BoneMatrices[In.vBlendIndex.x] * In.vBlendWeight.x +
+        g_BoneMatrices[In.vBlendIndex.y] * In.vBlendWeight.y +
+        g_BoneMatrices[In.vBlendIndex.z] * In.vBlendWeight.z +
+        g_BoneMatrices[In.vBlendIndex.w] * fW;
 
+    // ---- 본 변환 적용 ----
     vector vPosition = mul(vector(In.vPosition, 1.f), BoneMatrix);
     vector vNormal = mul(vector(In.vNormal, 0.f), BoneMatrix);
-    vNormal = normalize(mul(vNormal, g_WorldMatrix));
 
-	/* 정점의 위치에 월드 뷰 투영행렬을 곱한다. 현재 정점은 ViewSpace에 존재하낟. */
-	/* 투영행렬까지 곱하면 정점위치의 w에 뷰스페이스 상의 z를 보관한다. == Out.vPosition이 반드시 float4이어야하는 이유. */
+    // ? X축 반전 (mirror 보정)
+    vPosition.x *= -1.f;
+    vNormal.x *= -1.f;
+
+    // ---- 월드/뷰/프로젝션 ----
+    vNormal = normalize(mul(vNormal, g_WorldMatrix));
     Out.vPosition = mul(vPosition, matWVP);
     Out.vNormal = vNormal.xyz;
     Out.vTexUV = In.vTexUV;
     Out.vProjPos = Out.vPosition;
+
+    // 탄젠트/바이노멀도 동일하게 처리
     Out.vTangent = normalize(mul(vector(In.vTangent, 0.f), g_WorldMatrix)).xyz;
+    Out.vTangent.x *= -1.f;
+
     Out.vBinormal = cross(Out.vNormal, Out.vTangent);
 
     return Out;

@@ -26,6 +26,7 @@
 #include "Nexus.h"
 #include "Turret.h"
 #include "Inhibitor.h"
+#include "StoreNpc.h"
 
 
 
@@ -166,6 +167,9 @@ HRESULT CLoader::Loading_For_Prtotype()
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Turret"),
 		CInhibitor::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Npc"),
+		CStoreNpc::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 #pragma endregion Building
 
 	return S_OK;
@@ -211,7 +215,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 	HANDLE hFile = 0;
 	_ulong dwByte = 0;
 	_uint iNum = 0;
-	hFile = CreateFile(TEXT("../../../Bin/Data/Summoners'LiftData/MapTest.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	hFile = CreateFile(TEXT("../../../Bin/Data/Summoners'LiftData/Terrian.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
  	if(FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Summoners_Rift"), CVIBuffer_Terrian::Create(m_pDevice, m_pContext, hFile, dwByte))))
 		return E_FAIL;
@@ -222,7 +226,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 		return E_FAIL;
 
 #pragma region ¸ðµ¨ ·Îµù
-	lstrcpy(m_szLoadingText, TEXT("¸Ê ·ÎµùÁß "));
+	lstrcpy(m_szLoadingText, TEXT("¸Ê ·ÎµùÁß ")); 
 	m_fProgress = 50.f;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Map"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Map/Map.dat"))))
@@ -264,6 +268,13 @@ HRESULT CLoader::Loading_For_GamePlay()
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Inhibitor_Red_NonAnim"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Inhibitor_Red/Inhibitor_Red.dat"))))
+		return E_FAIL;
+	// Npc
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Npc_StoreKeeper_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Npc_StoreKeeper/Npc_StoreKeeper.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Npc_Store_NonAnim"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Npc_Store/Npc_Store.dat"))))
 		return E_FAIL;
 
 
