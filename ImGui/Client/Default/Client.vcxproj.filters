@@ -73,6 +73,9 @@
     <Filter Include="97. Camera\Dynamic">
       <UniqueIdentifier>{b7fc6d64-aad1-4951-8ad2-2ee2ba8b3fed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03. ToolManager\03. NavigationManager">
+      <UniqueIdentifier>{4fbbd4da-4b1b-4576-8f97-eaa67c8209f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -168,6 +171,9 @@
     <ClInclude Include="..\Public\NonAnim.h">
       <Filter>02. GameObjects\02. NonAnimModel</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Navigation_Manager.h">
+      <Filter>03. ToolManager\03. NavigationManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -261,6 +267,9 @@
     <ClCompile Include="..\Private\TerrianManager.cpp">
       <Filter>03. ToolManager\02. TerrianManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\Navigation_Manager.cpp">
+      <Filter>03. ToolManager\03. NavigationManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
@@ -273,6 +282,9 @@
       <Filter>03. ToolManager\96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_NorTexTerrianl.hlsl">
+      <Filter>03. ToolManager\96. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxCubeTexture.hlsl">
       <Filter>03. ToolManager\96. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

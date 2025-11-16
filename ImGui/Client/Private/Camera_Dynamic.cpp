@@ -37,8 +37,6 @@ HRESULT CCamera_Dynamic::Initialize(void* pArg)
 
 int CCamera_Dynamic::Update(_float fTimeDelta)
 {
-	//if (CCamera_Manager::GetInstance()->Get_CamMode() != CCamera_Manager::DYNAMIC)
-	//	return OBJ_NOEVENT;
 
 	__super::Update(fTimeDelta);
 
@@ -78,57 +76,6 @@ HRESULT CCamera_Dynamic::Render()
 
 int CCamera_Dynamic::PlayCamera(_float fTimeDelta)
 {
-	//m_fTime += fTimeDelta;
-
-	//_float fStartTime = m_CamDatas[m_iIndex].fStartTime * m_fPlayTime;
-	//_float fEndTime = m_CamDatas[m_iIndex].fEndTime * m_fPlayTime;
-	//_float fValue = (m_fTime - fStartTime) / (fEndTime - fStartTime);
-
-	////_vector pTargetLook = m_pTarget->Get_TransformState(CTransform::STATE_LOOK);
-	////_vector pTargetPosition = m_pTarget->Get_TransformState(CTransform::STATE_TRANSLATION);
-	//_vector pPlayertoCameraDir;
-
-	//_matrix		RotationMatrix = XMMatrixRotationAxis(XMVectorSet(0.f, 1.f, 0.f, 0.f), m_CamDatas[m_iIndex].fRadian);
-	//pPlayertoCameraDir = XMVector3TransformNormal(pTargetLook, RotationMatrix);
-	//_vector vCameraPos = pTargetPosition + pPlayertoCameraDir * m_CamDatas[m_iIndex].fLength;
-	//vCameraPos = XMVectorSetY(vCameraPos, XMVectorGetY(vCameraPos) + m_CamDatas[m_iIndex].fYoffset);
-
-	//_vector FinalPos = XMVectorLerp(m_vInitPos, vCameraPos, fValue); //_float4 저장 y올리기 
-
-	//m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, FinalPos);
-
-	////_vector vAtPosition = pTargetPosition + XMLoadFloat4(&m_CamDatas[m_iIndex].vLookDir);
-	////_vector vAtPosition = pTargetPosition + XMLoadFloat4(&m_CamDatas[m_iIndex].vLook);
-	//_vector vAtPosition = XMVectorSetY(pTargetPosition, XMVectorGetY(pTargetPosition) + 4.f);
-	//_vector vAt = XMVectorLerp(m_vInitAt, vAtPosition, fValue);
-	//m_pTransform->LookAt(vAt);
-	////m_pTransform->LookDir(vAt);
-
-
-	//if (m_fTime >= fEndTime)
-	//{
-	//	m_vInitAt = vAtPosition;
-	//	//m_vInitAt = pTargetPosition + XMLoadFloat4(&m_CamDatas[m_iIndex].vLook);
-	//	//m_vInitAt =  XMLoadFloat4(&m_CamDatas[m_iIndex].vLookDir);
-	//	m_iIndex++;
-	//	m_vInitPos = m_pTransform->Get_State(CTransform::STATE_TRANSLATION);
-
-	//	_vector vCameraLook = m_pTransform->Get_State(CTransform::STATE_LOOK);
-	//	_vector vCameraCurrentPos = m_pTransform->Get_State(CTransform::STATE_TRANSLATION);
-	//	_vector vCurrentAt = vCameraCurrentPos + XMVectorSetW(vCameraLook, 0.f);
-
-
-
-	//	if (m_iIndex >= m_CamDatas.size())
-	//	{
-	//		m_iIndex = 0;
-	//		m_bPlay = false;
-	//		CImgui_Manager::Get_Instance()->Set_Play(false);
-	//		Set_CamMode(CAM_DEBUG);
-	//	}
-	//}
-
-	//return OBJ_NOEVENT;
 	return OBJ_NOEVENT;
 }
 

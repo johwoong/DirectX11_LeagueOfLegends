@@ -58,26 +58,17 @@ HRESULT CCamera_Dynamic::Render()
 	return S_OK;
 }
 
-// =============================================================
-// ?? League of Legends 스타일 카메라
-// =============================================================
 void CCamera_Dynamic::Game_Camera(_float fTimeDelta)
 {
 	if (!m_pTarget)
 		return;
 
-	//------------------------------------------------------------
-	// LoL 고정 카메라 방향 (절대 회전 안 변함)
-	//------------------------------------------------------------
-	_vector vLook = XMVector3Normalize(XMVectorSet(0.12f, -0.94f, -0.33f, 0.f));
-	_vector vUp = XMVector3Normalize(XMVectorSet(0.10f, 0.34f, -0.93f, 0.f));
-	_vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook)); // 반드시 이 순서
+	_vector vLook = XMVector3Normalize(XMVectorSet(0.057f, -0.864f, -0.500f, 0.f));
+	_vector vUp = XMVector3Normalize(XMVectorSet(-0.064f, 0.497f, -0.865f, 0.f));
+	_vector vRight = XMVector3Normalize(XMVectorSet(-0.996f, -0.081f, 0.027f, 0.f));
 
-	//------------------------------------------------------------
-	// Zoom
-	//------------------------------------------------------------
 	static float fZoom = 0.f;
-	const float baseDist = 20.f;
+	const float baseDist = 14.f;
 
 	long wheel = m_pGameInstance->Get_DIMMoveState(DIMM_WHEEL);
 	if (wheel != 0)
@@ -86,34 +77,16 @@ void CCamera_Dynamic::Game_Camera(_float fTimeDelta)
 		fZoom = max(-8.f, min(0.f, fZoom));
 	}
 
-	//------------------------------------------------------------
-	// 플레이어 위치
-	//------------------------------------------------------------
 	_vector vPlayerPos = m_pTarget->Get_TransformState(CTransform::STATE_TRANSLATION);
-
-	//------------------------------------------------------------
-	// 카메라 오프셋 (Look 방향 뒤 + Up 약간 + Right 약간)
-	//------------------------------------------------------------
 	_vector vCamPos =
 		vPlayerPos
 		- vLook * (baseDist + fZoom)
-		+ vUp * 1.2f
-		+ vRight * -4.3f;     // ★ LoL은 살짝 왼쪽인데 일단 0으로 두자. 테스트 후 조정.
-
-	//------------------------------------------------------------
-	// 반전 보정
-	//------------------------------------------------------------
-	vCamPos = XMVectorSetX(vCamPos, -XMVectorGetX(vCamPos));
-
-	//------------------------------------------------------------
-	// 부드럽게 lerp 이동
-	//------------------------------------------------------------
+		+ vUp * 1.4f
+		+ vRight * 0.f;     
 	_vector vCurCam = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
 	_vector vNewCam = XMVectorLerp(vCurCam, vCamPos, fTimeDelta * 5.f);
 
-	//------------------------------------------------------------
-	// View / World
-	//------------------------------------------------------------
+
 	_matrix matView = XMMatrixLookToLH(vNewCam, vLook, vUp);
 	_matrix matWorld = XMMatrixInverse(nullptr, matView);
 
@@ -123,10 +96,7 @@ void CCamera_Dynamic::Game_Camera(_float fTimeDelta)
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vNewCam);
 	m_pTransformCom->Set_WorldMatrix(matWorld);
 
-	//------------------------------------------------------------
-	// Projection
-	//------------------------------------------------------------
-	float FOV = XMConvertToRadians(38.f);
+	float FOV = XMConvertToRadians(30.f);
 	_matrix matProj = XMMatrixPerspectiveFovLH(
 		FOV,
 		m_CameraDesc.fAspect,
@@ -134,13 +104,8 @@ void CCamera_Dynamic::Game_Camera(_float fTimeDelta)
 		m_CameraDesc.fFar
 	);
 
-	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_VIEW, matView);
-	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ, matProj);
 }
 
-// =============================================================
-// ?? Debug Camera (기존 이동 그대로)
-// =============================================================
 void CCamera_Dynamic::Debug_Camera(_float fTimeDelta)
 {
 	if (m_pGameInstance->Key_Pressing(DIK_LSHIFT))

@@ -28,7 +28,15 @@ HRESULT CStoreNpc::Initialize(void* pArg)
 	case RED:
 		break;
 	}
+	m_eState = IDLE;
+	m_pModelCom->Set_CurrentAnimIndex(m_eState);
 
+	_float3 fixedScale = m_vScale;
+	fixedScale.x *= 10.f;
+	fixedScale.y *= 10.f;
+	fixedScale.z *= 10.f;
+
+	Set_Scale(fixedScale);
 	return S_OK;
 }
 
@@ -36,7 +44,7 @@ HRESULT CStoreNpc::Initialize(void* pArg)
 _int CStoreNpc::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
-
+	Update_State(fTimeDelta);
 
 	return OBJ_NOEVENT;
 }
@@ -44,6 +52,21 @@ _int CStoreNpc::Update(_float fTimeDelta)
 void CStoreNpc::Late_Update(_float fTimeDelta)
 {
 	__super::Late_Update(fTimeDelta);
+	LateUpdate_State(fTimeDelta);
+}
+
+_bool CStoreNpc::Is_AnimationLoop(_uint eAnimId)
+{
+	return true;
+}
+
+void CStoreNpc::Update_State(_float fTimeDelta)
+{
+	m_pModelCom->Play_Animation(fTimeDelta, true);
+}
+
+void CStoreNpc::LateUpdate_State(_float fTimeDelta)
+{
 }
 
 
@@ -62,7 +85,7 @@ HRESULT CStoreNpc::Ready_Components(void* pArg)
 		return E_FAIL;
 
 	/* For.Com_Shader */
-	if (FAILED(__super::Add_Components(TEXT("Com_Shader"), LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxModel"), (CComponent**)&m_pShaderCom)))
+	if (FAILED(__super::Add_Components(TEXT("Com_Shader"), LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxAnimModel"), (CComponent**)&m_pShaderCom)))
 		return E_FAIL;
 
 	_tchar			szModeltag[MAX_PATH] = TEXT("");

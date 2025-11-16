@@ -8,8 +8,6 @@ class CInhibitor final : public CBuilding
 public:
 	enum TEAMTYPE{RED, BLUE};
 
-	enum STATE {IDLE, DESTORY};
-
 private:
 	CInhibitor(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CInhibitor(const CInhibitor& rhs);
@@ -25,8 +23,6 @@ public:
 private:
 	virtual HRESULT Ready_Components(void* pArg);
 
-private:
-	_uint m_eState = IDLE;
 
 public:
 	static CInhibitor* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

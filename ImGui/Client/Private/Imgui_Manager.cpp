@@ -170,12 +170,12 @@ void CImGui_Manager::Update_Imgui()
 			}
 			ImGui::EndTabItem();
 		}
-		if (ImGui::BeginTabItem("Animation Tool"))
-		{
+		//if (ImGui::BeginTabItem("Animation Tool"))
+		//{
 
-			Set_Animation();
-			ImGui::EndTabItem();
-		}
+		//	Set_Animation();
+		//	ImGui::EndTabItem();
+		//}
 
 		ImGui::EndTabBar();
 	}
@@ -1018,6 +1018,9 @@ void CImGui_Manager::BrowseForFolder()
 		m_bLoad = false;
 	}
 }
+
+
+
 
 void CImGui_Manager::Set_Animation()
 {

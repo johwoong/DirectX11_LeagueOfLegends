@@ -166,6 +166,9 @@ int wmain(int argc, wchar_t** wargv) {
                 verts[i].vTangent = mesh->HasTangentsAndBitangents()
                     ? float3{ mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z }
                 : float3{ 1,0,0 };
+                verts[i].vPosition.x *= -1.f;
+                verts[i].vNormal.x *= -1.f;
+                verts[i].vTangent.x *= -1.f;
             }
             write_n(fp, verts.data(), sizeof(VTXMODEL) * verts.size());
 
@@ -175,7 +178,8 @@ int wmain(int argc, wchar_t** wargv) {
             vector<FACEINDICES32> faces(numFaces);
             for (uint32_t f = 0; f < numFaces; ++f) {
                 const aiFace& face = mesh->mFaces[f];
-                faces[f] = { face.mIndices[0], face.mIndices[1], face.mIndices[2] };
+                // 좌우 반전 시 Winding Order 반드시 뒤집어야 함
+                faces[f] = { face.mIndices[0], face.mIndices[2], face.mIndices[1] };
             }
             write_n(fp, faces.data(), sizeof(FACEINDICES32) * faces.size());
         }
@@ -192,21 +196,36 @@ int wmain(int argc, wchar_t** wargv) {
             for (uint32_t t = 0; t < AI_TEXTURE_TYPE_MAX; ++t) {
                 aiString tex;
                 string texPath;
+
+                // diffuse / normal 만 처리
                 if (t == aiTextureType_DIFFUSE || t == aiTextureType_NORMALS) {
                     if (AI_SUCCESS == mat->GetTexture((aiTextureType)t, 0, &tex)) {
+
+                        // 경우 1) Embedded texture  (ex: "*0")
                         if (tex.C_Str()[0] == '*') {
                             int embeddedIdx = atoi(tex.C_Str() + 1);
-                            if (embeddedIdx < extractedTexPaths.size())
-                                texPath = extractedTexPaths[embeddedIdx];
+
+                            // embedded PNG 대신 .dds 경로를 기록
+                            fs::path ddsPath =
+                                fs::path("C:\\DirectX11_LeagueOfLegends\\Bin\\Resources\\Meshes\\NonAnim\\ExtractedTextures")
+                                / ("Embedded_" + to_string(embeddedIdx) + ".dds");
+
+                            texPath = ddsPath.u8string();
                         }
+
+                        // 경우 2) 외부 파일 (png → dds 교체)
                         else {
                             fs::path rel = fs::u8path(tex.C_Str());
                             fs::path abs = rel.is_absolute() ? rel : (baseDir / rel);
                             abs = abs.lexically_normal();
+
+                            // 확장자만 .dds 로 교체
+                            abs.replace_extension(".dds");
                             texPath = abs.u8string();
                         }
                     }
                 }
+
                 put_str_fixed(fp, texPath);
             }
         }

@@ -3,6 +3,7 @@
 #include "Client_Defines.h"
 #include "Model.h"
 #include "NonAnim.h"
+#include "SpawnBox.h"
 
 NS_BEGIN(Client)
 

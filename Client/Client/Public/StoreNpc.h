@@ -6,7 +6,7 @@ class CStoreNpc :
 public:
 	enum TEAMTYPE { RED, BLUE };
 
-	enum STATE { IDLE, DESTORY };
+	enum STATE { IDLE, SPAWN };
 
 private:
 	CStoreNpc(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -19,6 +19,10 @@ public:
 	virtual int		Update(_float fTimeDelta);
 	virtual void	Late_Update(_float fTimeDelta);
 
+public: /*For.State*/
+	virtual _bool	Is_AnimationLoop(_uint eAnimId);
+	void			Update_State(_float fTimeDelta);
+	void			LateUpdate_State(_float fTimeDelta);
 
 private:
 	virtual HRESULT Ready_Components(void* pArg);

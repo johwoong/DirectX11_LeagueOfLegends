@@ -151,7 +151,6 @@ void CModelManager::Clear_Layer()
     m_ModelTags.clear();
 }
 
-
 void CModelManager::Free()
 {
     for (auto& iter : m_ModelTags)

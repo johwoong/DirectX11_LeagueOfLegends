@@ -6,6 +6,7 @@
 #include "ModelManager.h"
 #include "TerrianManager.h"
 #include "NonAnim.h"
+#include "SpawnBox.h"
 
 NS_BEGIN(Engine)
 class CGameObject;
@@ -53,6 +54,7 @@ public:
 	void Show_CurrentModelList();
 	void BrowseForFolder();
 
+
 	void Set_Play(_bool bPlay) { m_bIsPlaying = bPlay; }
 
 	/* For Animation*/
@@ -93,6 +95,7 @@ private:
 	_int									m_iBmpTerrainNum = 0;
 	_float									m_fDist = 1.f;
 	_float3									m_vfOffset = _float3(0.f, 0.f, 0.f);
+
 
 	/* For Picking */
 	_float3									m_vPickedObjPos = _float3(1.f, 1.f, 1.f);

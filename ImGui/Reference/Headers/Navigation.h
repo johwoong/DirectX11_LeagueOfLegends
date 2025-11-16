@@ -11,6 +11,7 @@ public:
 		_int	iCurrentCellIndex = -1;
 	}NAVDESC;
 
+
 private:
 	CNavigation(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CNavigation(const CNavigation& rhs);

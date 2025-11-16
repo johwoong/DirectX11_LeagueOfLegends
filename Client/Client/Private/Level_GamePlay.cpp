@@ -145,12 +145,12 @@ HRESULT CLevel_GamePlay::Ready_Layer_Building(const _tchar* pLayerTag)
 			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Npc"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
 				return E_FAIL;
 		}
-		else if (!wcscmp(pModelTag, TEXT("Npc_Store_NonAnim")))
-		{
-			BuildDesc.eTeamType = CBuilding::RED;
-			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Npc"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
-				return E_FAIL;
-		}
+		//else if (!wcscmp(pModelTag, TEXT("Npc_Store_NonAnim")))
+		//{
+		//	BuildDesc.eTeamType = CBuilding::RED;
+		//	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Npc"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+		//		return E_FAIL;
+		//}
 	}
 
 

@@ -21,14 +21,6 @@ HRESULT CInhibitor::Initialize(void* pArg)
 {
 	__super::Initialize(pArg);
 
-	switch (m_BuildDesc.eTeamType)
-	{
-	case BLUE:
-		break;
-	case RED:
-		break;
-	}
-
 	return S_OK;
 }
 

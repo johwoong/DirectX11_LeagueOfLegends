@@ -80,21 +80,15 @@ VS_OUT VS_MAIN(VS_IN In)
     vector vPosition = mul(vector(In.vPosition, 1.f), BoneMatrix);
     vector vNormal = mul(vector(In.vNormal, 0.f), BoneMatrix);
 
-    // ? X축 반전 (mirror 보정)
-    vPosition.x *= -1.f;
-    vNormal.x *= -1.f;
-
     // ---- 월드/뷰/프로젝션 ----
     vNormal = normalize(mul(vNormal, g_WorldMatrix));
     Out.vPosition = mul(vPosition, matWVP);
     Out.vNormal = vNormal.xyz;
+
     Out.vTexUV = In.vTexUV;
     Out.vProjPos = Out.vPosition;
 
-    // 탄젠트/바이노멀도 동일하게 처리
     Out.vTangent = normalize(mul(vector(In.vTangent, 0.f), g_WorldMatrix)).xyz;
-    Out.vTangent.x *= -1.f;
-
     Out.vBinormal = cross(Out.vNormal, Out.vTangent);
 
     return Out;

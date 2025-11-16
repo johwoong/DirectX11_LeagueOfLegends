@@ -62,11 +62,10 @@ HRESULT CCamera::Bind_OnPipeLine()
         return E_FAIL;
 
     _matrix matView = XMMatrixInverse(nullptr, m_pTransformCom->Get_WorldMatrix());
-    _matrix matMirror = XMMatrixScaling(-1.f, 1.f, 1.f);
-    matView = matMirror * matView;
 
     m_pPipeLine->Set_Transform(CPipeLine::D3DTS_VIEW, matView);
-    m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_CameraDesc.fFov, m_CameraDesc.fAspect, m_CameraDesc.fNear, m_CameraDesc.fFar));
+    m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ,
+        XMMatrixPerspectiveFovLH(m_CameraDesc.fFov, m_CameraDesc.fAspect, m_CameraDesc.fNear, m_CameraDesc.fFar));
 
     return S_OK;
 }
