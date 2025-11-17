@@ -101,6 +101,10 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxAnimModel.hlsl"), VTXANIMMODEL_DECLARATION::Elements, VTXANIMMODEL_DECLARATION::iNumElements))))
 		return E_FAIL;
 
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Picking_Symbol"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Symbol/Symbol.dat"))))
+		return E_FAIL;
+
 	lstrcpy(m_szLoadingText, TEXT("Loading For Prototype"));
 
 	/*For.Prototype_GameObject_Player*/
@@ -295,6 +299,11 @@ HRESULT CLoader::Loading_ForActor()
 
 #pragma endregion Animation
 
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Cube"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Symbol/Symbol.dat"))))
+		return E_FAIL;
+	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Cube"));
+
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal_NonAnim"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Ezreal/Ezreal.dat"))))
 		return E_FAIL;
@@ -336,11 +345,6 @@ HRESULT CLoader::Loading_ForActor()
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Renekton/Renekton.dat"))))
 		return E_FAIL;
 	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Renekton_NonAnim"));
-//
-	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Smolder_NonAnim"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Smolder/Smolder.dat"))))
-		return E_FAIL;
-	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Smolder_NonAnim"));
 //
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Yasuo_NonAnim"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Yasuo/Yasuo.dat"))))

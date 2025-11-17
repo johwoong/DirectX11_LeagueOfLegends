@@ -33,6 +33,8 @@ public:
 	virtual _bool Picking(_float3* PickingPoint);
 	virtual void PickingTrue();
 
+public:
+	void Set_Picked();
 
 private:
 	virtual HRESULT Ready_Components(void* pArg)override;
@@ -40,7 +42,6 @@ private:
 	virtual HRESULT SetUp_ShaderResources()override;
 
 public:
-	void Set_Picked();
 	void Save_Terrain(HANDLE hFile, _ulong* dwByte);
 
 private:

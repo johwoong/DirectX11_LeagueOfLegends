@@ -68,6 +68,7 @@ string CutOnSpecificDecimalPt(string num, int pos)
 CImGui_Manager::CImGui_Manager()
 	: m_pTerrianManager(CTerrianManager::GetInstance())
 	, m_pModel_Manager(CModelManager::GetInstance())
+	, m_pNavigation_Manager(CNavigation_Manager::GetInstance())
 {
 	Safe_AddRef(m_pModel_Manager);
 
@@ -170,12 +171,21 @@ void CImGui_Manager::Update_Imgui()
 			}
 			ImGui::EndTabItem();
 		}
-		//if (ImGui::BeginTabItem("Animation Tool"))
-		//{
+		if (ImGui::BeginTabItem("Navigation Tool"))
+		{
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.f, 1.0f), "Picking For Navigation"); ImGui::SameLine();
+			ImGui::Checkbox("Picking for Navigation", &m_bNaviPicking);
 
-		//	Set_Animation();
-		//	ImGui::EndTabItem();
-		//}
+			ImGui::SameLine();
+
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.f, 1.0f), "Show Only Navigation"); ImGui::SameLine();
+			ImGui::Checkbox("Show Navigation", &m_bNaviPicking);
+
+			ImGui::Text("Navigation Tool");
+			Set_Navigation();
+			ImGui::EndTabItem();
+		}
+		
 
 		ImGui::EndTabBar();
 	}
@@ -1019,6 +1029,223 @@ void CImGui_Manager::BrowseForFolder()
 	}
 }
 
+void CImGui_Manager::Set_Navigation()
+{
+	static int selected = 0;
+
+	// Left Panel
+	{
+		ImGui::BeginChild("left pane", ImVec2(150, 0), true);
+
+		if ((int)m_pNavigation_Manager->Get_CellsSize() != 0)
+		{
+			for (_uint i = 0; i < m_pNavigation_Manager->Get_CellsSize();)
+			{
+				char szLayerTag[MAX_PATH] = "Cell";
+
+				char label[MAX_PATH] = "Cell";
+				char buffer[MAX_PATH];
+				sprintf(buffer, "%d", i);
+				strcat(label, buffer);
+				if (ImGui::Selectable(label, m_iCellIndex == i))
+				{
+					m_iCellIndex = i;
+				}
+				i++;
+			}
+		}
+		ImGui::EndChild();
+	}
+	ImGui::SameLine();
+	// - Right Panel
+	{
+		ImGui::BeginGroup();
+		ImGui::BeginChild("Cell View", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()));
+
+		ImGui::CollapsingHeader("Show Current Cell");
+
+		ImGui::Text("Selected Index :  "); ImGui::SameLine(); ImGui::Text("%d", m_iCellIndex);
+		m_pNavigation_Manager->Set_ClickedCellIndex(m_iCellIndex);
+		CCell* pCurrentCell = m_pNavigation_Manager->Get_Cell();
+
+		static float fPointA[3] = { 0, 0, 0 };
+		static float fPointB[3] = { 0, 0, 0 };
+		static float fPointC[3] = { 0, 0, 0 };
+		static float fClickedPosition[3]{ m_fClickPoint.x, m_fClickPoint.y, m_fClickPoint.z };
+		fClickedPosition[0] = m_fClickPoint.x;
+		fClickedPosition[1] = m_fClickPoint.y;
+		fClickedPosition[2] = m_fClickPoint.z;
+
+		if (pCurrentCell != nullptr)
+		{
+			fPointA[0] = pCurrentCell->Get_PointValue(CCell::POINT_A).x;
+			fPointA[1] = pCurrentCell->Get_PointValue(CCell::POINT_A).y;
+			fPointA[2] = pCurrentCell->Get_PointValue(CCell::POINT_A).z;
+
+			fPointB[0] = pCurrentCell->Get_PointValue(CCell::POINT_B).x;
+			fPointB[1] = pCurrentCell->Get_PointValue(CCell::POINT_B).y;
+			fPointB[2] = pCurrentCell->Get_PointValue(CCell::POINT_B).z;
+
+			fPointC[0] = pCurrentCell->Get_PointValue(CCell::POINT_C).x;
+			fPointC[1] = pCurrentCell->Get_PointValue(CCell::POINT_C).y;
+			fPointC[2] = pCurrentCell->Get_PointValue(CCell::POINT_C).z;
+
+			m_iCellType = pCurrentCell->Get_CellType();
+		}
+
+		ImGui::Text("PointA :"); ImGui::SameLine(); ImGui::InputFloat3("##PointA", fPointA);
+		ImGui::Text("PointB :"); ImGui::SameLine(); ImGui::InputFloat3("##PointB", fPointB);
+		ImGui::Text("PointC :"); ImGui::SameLine(); ImGui::InputFloat3("##PointC", fPointC);
+
+		ImGui::Text("ClickPoint : "); ImGui::SameLine(); ImGui::DragFloat3("##ClickPoint", fClickedPosition, 0.01f);
+		m_fClickPoint = _float3(fClickedPosition[0], fClickedPosition[1], fClickedPosition[2]);
+		m_pNavigation_Manager->Update_ClickedPostion(m_fClickPoint);
+
+		if (ImGui::Button("Cancel"))
+			m_pNavigation_Manager->Cancle_Cell();
+		if (ImGui::Button("Delete Picked Cell"))
+			m_pNavigation_Manager->Erase_Cell();
+		if (ImGui::Button("Clear Cell"))
+			m_pNavigation_Manager->Clear_Cells();
+
+		ImGui::CollapsingHeader("Setting Cell Type");
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Default "); ImGui::SameLine();
+		if (ImGui::RadioButton("##Default", &m_iCellType, 0))
+			m_pNavigation_Manager->Set_CellType((CCell::CELLTYPE)m_iCellType);
+
+		if (ImGui::Button("Save"))
+		{
+			Save_Navigation();
+		}
+		if (ImGui::Button("Load"))
+		{
+			Load_Navigation();
+		}
+
+		ImGui::EndChild();
+		ImGui::EndGroup();
+	}
+
+	if (CGameInstance::GetInstance()->Key_Up(DIK_X))
+	{
+		if (CPickingMgr::GetInstance()->Picking())
+		{
+			_float3 fPosition = CPickingMgr::GetInstance()->Get_PickingPos();
+			_vector vPosition = XMLoadFloat3(&fPosition);
+			vPosition = XMVectorSetW(vPosition, 1.f);
+			m_pNavigation_Manager->Click_Position(vPosition);
+			m_fClickPoint = m_pNavigation_Manager->Get_ClickedPos();
+		}
+	}
+	else if (m_bNaviPicking && CGameInstance::GetInstance()->Mouse_Up(DIMK_RBUTTON))
+	{
+		if (CPickingMgr::GetInstance()->Picking())
+		{
+			_float3 fPosition = CPickingMgr::GetInstance()->Get_PickingPos();
+			_vector vPosition = XMLoadFloat3(&fPosition);
+			vPosition = XMVectorSetW(vPosition, 1.f);
+			m_pNavigation_Manager->Find_PickingCell(vPosition);
+
+			m_iCellIndex = m_pNavigation_Manager->Get_CurrentCellIndex();
+		}
+	}
+}
+
+void CImGui_Manager::Save_Navigation()
+{
+	OPENFILENAME OFN;
+	TCHAR filePathName[300] = L"";
+	TCHAR lpstrFile[300] = L"";
+	static TCHAR filter[] = L"데이터파일\0*.dat\0텍스트 파일\0.txt";
+
+	memset(&OFN, 0, sizeof(OPENFILENAME));
+	OFN.lStructSize = sizeof(OPENFILENAME);
+	OFN.hwndOwner = g_hWnd;
+	OFN.lpstrFilter = filter;
+	OFN.nMaxFile = 300;
+	OFN.lpstrInitialDir = L".";
+	OFN.Flags = OFN_SHOWHELP | OFN_OVERWRITEPROMPT;
+
+	if (GetSaveFileName(&OFN))
+	{
+		HANDLE hFile = 0;
+		_ulong dwByte = 0;
+		_uint iNum = 0;
+		_float3 vPoints[3];
+		CCell::CELLTYPE eCellType;
+		m_iCurrentLevel = (LEVEL)CGameInstance::GetInstance()->Get_CurrentLevelIndex();
+
+		iNum = (_int)m_pNavigation_Manager->Get_CellsSize();
+		;
+		hFile = CreateFile(OFN.lpstrFile, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+		if (0 == hFile)
+			return;
+
+		// Cell 사이즈 갯수 저장
+		WriteFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+
+		for (_uint i = 0; i < iNum; ++i)
+		{
+			CCell* pCell = m_pNavigation_Manager->Get_Cell(i);
+			vPoints[0] = pCell->Get_PointValue(CCell::POINT_A);
+			vPoints[1] = pCell->Get_PointValue(CCell::POINT_B);
+			vPoints[2] = pCell->Get_PointValue(CCell::POINT_C);
+			eCellType = pCell->Get_CellType();
+
+			WriteFile(hFile, vPoints, sizeof(_float3) * 3, &dwByte, nullptr);
+			WriteFile(hFile, &eCellType, sizeof(CCell::CELLTYPE), &dwByte, nullptr);
+		}
+		
+		CloseHandle(hFile);
+	}
+}
+
+void CImGui_Manager::Load_Navigation()
+{
+	OPENFILENAME OFN;
+	TCHAR filePathName[300] = L"";
+	TCHAR lpstrFile[300] = L"";
+	static TCHAR filter[] = L"데이터 파일\0*.dat\0텍스트 파일\0*.txt";
+
+	memset(&OFN, 0, sizeof(OPENFILENAME));
+	OFN.lStructSize = sizeof(OPENFILENAME);
+	OFN.hwndOwner = g_hWnd;
+	OFN.lpstrFilter = filter;
+	OFN.lpstrFile = lpstrFile;
+	OFN.nMaxFile = 300;
+	OFN.lpstrInitialDir = L".";
+
+	if (GetOpenFileName(&OFN) != 0) {
+		wsprintf(filePathName, L"%s 파일을 열겠습니까?", OFN.lpstrFile);
+		MessageBox(g_hWnd, filePathName, L"열기 선택", MB_OK);
+
+		HANDLE hFile = 0;
+		_ulong dwByte = 0;
+		_uint iNum = 0;
+		CCell::CELLTYPE eCellType;
+		_float3 vPoints[3];
+
+		hFile = CreateFile(OFN.lpstrFile, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+		if (0 == hFile)
+			return;
+
+		ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+		
+		for (_uint i = 0; i < iNum; ++i)
+		{
+			ReadFile(hFile, vPoints, sizeof(_float3) * 3, &dwByte, nullptr);
+			ReadFile(hFile, &eCellType, sizeof(CCell::CELLTYPE), &dwByte, nullptr);
+			if (0 == dwByte)
+				break;
+
+			m_pNavigation_Manager->Add_Cell(vPoints, eCellType);
+		}
+		CloseHandle(hFile);
+	}
+
+
+}
+
 
 
 
@@ -1778,11 +2005,12 @@ void CImGui_Manager::Free()
 		Safe_Delete(iter);
 	m_TempLayerTags.clear();
 	m_stLayerTags.clear();
+	Safe_Release(m_pNavigation_Manager);
 	Safe_Release(m_pTerrianManager);
 	Safe_Release(m_pModel_Manager);
 
 	CModelManager::GetInstance()->DestroyInstance();
-
+	CNavigation_Manager::GetInstance()->DestroyInstance();
 	Safe_Release(m_pDevice);
 	Safe_Release(m_pContext);
 }

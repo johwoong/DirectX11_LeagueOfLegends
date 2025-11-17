@@ -157,7 +157,7 @@ CGameObject* CObject_Manager::Get_Objects(_uint iLevelIdx, const _tchar* pLayerT
     if (pLayer == nullptr)
         return nullptr;
 
-    return pLayer->Get_Object(iLevelIdx);
+    return pLayer->Get_Object(iIdx);
 }
 
 list<CGameObject*>* CObject_Manager::Get_ObjectList(_uint iSceneID, const _tchar* pLayerTag)

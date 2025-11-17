@@ -141,7 +141,7 @@ _bool CTerrian::Picking(_float3* PickingPoint)
         return true;
     }
     else
-    {
+    { 
         ZeroMemory(&m_vMousePickPos, sizeof(_float3));
     }
 
@@ -150,7 +150,7 @@ _bool CTerrian::Picking(_float3* PickingPoint)
 
 void CTerrian::PickingTrue()
 {
-    
+    Set_Picked();
 }
 
 HRESULT CTerrian::Ready_Components(void* pArg)
@@ -226,7 +226,7 @@ HRESULT CTerrian::SetUp_ShaderResources()
         return E_FAIL;
 
     _float4x4 WorldMatrix = m_pTransformCom->Get_World_TP();
-    _float4x4 ViewMatrix = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
+    _float4x4 ViewMatrix = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW); 
     _float4x4 ProjMatrix = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
 
     if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &WorldMatrix, sizeof(_float4x4))))
@@ -243,12 +243,10 @@ HRESULT CTerrian::SetUp_ShaderResources()
 
 void CTerrian::Set_Picked()
 {
+    m_bPicked = true;
     if (m_pGameInstance->Mouse_Down(DIMK::DIMK_LBUTTON))
     {
-        if (m_bPicked)
-            CPickingMgr::GetInstance()->Set_PickedObj(nullptr);
-        else
-            CPickingMgr::GetInstance()->Set_PickedObj(this);
+        CPickingMgr::GetInstance()->Set_PickedObj(this);
     }
 }
 

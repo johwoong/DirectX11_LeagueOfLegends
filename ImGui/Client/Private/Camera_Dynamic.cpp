@@ -119,7 +119,6 @@ void CCamera_Dynamic::Set_Play(_bool type)
 		_vector vCurrentAt = vCameraCurrentPos + vCameraLook;
 
 		m_vInitAt = vCurrentAt;
-		//m_vInitAt = vCameraLook;
 	}
 
 }

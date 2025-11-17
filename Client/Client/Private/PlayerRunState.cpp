@@ -21,13 +21,14 @@ CPlayerState* CRunState::HandleInput()
 
     if (pGameInstance->Mouse_Down(DIMK_RBUTTON))
     {
+
         _float3 vClickPos = {};
 
         if (CPickingManager::GetInstance()->Picking())
         { 
             vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
             m_pOwner->Set_TargetPosition(vClickPos);
-            m_vTargetPos = vClickPos; // ? 즉시 갱신
+            m_vTargetPos = vClickPos;
         }
     }
 

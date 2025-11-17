@@ -5,8 +5,10 @@
 #include "Level_Manager.h"
 #include "ModelManager.h"
 #include "TerrianManager.h"
+#include "Navigation_Manager.h"
 #include "NonAnim.h"
 #include "SpawnBox.h"
+
 
 NS_BEGIN(Engine)
 class CGameObject;
@@ -54,6 +56,11 @@ public:
 	void Show_CurrentModelList();
 	void BrowseForFolder();
 
+	/* For Navigation Tool */
+	void Set_Navigation();
+	void Save_Navigation();
+	void Load_Navigation();
+	_bool Get_ShowOnlyNavi() { return m_bShowOnlyNavi; }
 
 	void Set_Play(_bool bPlay) { m_bIsPlaying = bPlay; }
 
@@ -103,6 +110,14 @@ private:
 	_int									m_PickingType = 0;
 	_float3									m_vPickedRotAxis = _float3(0.f, 1.f, 0.f);
 	_float									m_fRotAngle = 0.f;
+	/*For Navigation*/
+	CNavigation_Manager* m_pNavigation_Manager = nullptr;
+	_bool									m_bNaviPicking = false;
+	_int									m_iCellIndex = 0;
+	_int									m_iCellType = 0;
+	_float3									m_fClickPoint = _float3(0.f, 0.f, 0.f);
+	_bool									m_bShowOnlyNavi = false;
+
 
 	/* For. Animation */
 public:

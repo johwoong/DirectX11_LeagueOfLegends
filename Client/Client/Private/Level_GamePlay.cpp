@@ -153,8 +153,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_Building(const _tchar* pLayerTag)
 		//}
 	}
 
-
-
 	return S_OK;
 }
 

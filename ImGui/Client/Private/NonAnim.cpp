@@ -235,6 +235,7 @@ HRESULT CNonAnim::SetUp_ShaderResources()
 
 HRESULT CNonAnim::SetUp_ShaderID()
 {
+	
 	if (m_bPicked)
 		m_eShaderID = SHADER_PICKED;
 	else

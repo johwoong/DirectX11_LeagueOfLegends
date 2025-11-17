@@ -94,7 +94,7 @@ HRESULT CNavigation_Manager::Add_ClickedSymbol(_float3 vClickPos, SYMBOL SymbolT
 	WideCharToMultiByte(CP_ACP, 0, TEXT("Picking_Symbol"), MAX_PATH, cModelTag, MAX_PATH, NULL, NULL);
 	strcpy(NonAnimDesc.pModeltag, cModelTag);
 	NonAnimDesc.vPosition = vClickPos;
-	NonAnimDesc.vScale = _float3(0.5, 0.5, 0.5);
+	NonAnimDesc.vScale = _float3(60.f, 60.f, 60.f);
 
 	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_NonAnim"), LEVEL_GAMEPLAY, TEXT("Layer_PickingSymbol"), &NonAnimDesc)))
 	{
@@ -385,10 +385,6 @@ HRESULT CNavigation_Manager::Render()
 			switch (eType)
 			{
 			case Engine::CCell::DEFAULT:
-				vColor = _float4(1.f, 0.f, 0.f, 1.f);
-				m_pShader->Set_RawValue("g_vColor", &vColor, sizeof(_float4));
-				break;
-			case Engine::CCell::ONLYJUMP:
 				vColor = _float4(0.f, 0.f, 1.f, 1.f);
 				m_pShader->Set_RawValue("g_vColor", &vColor, sizeof(_float4));
 				break;

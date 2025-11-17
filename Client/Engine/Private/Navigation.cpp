@@ -31,7 +31,6 @@ HRESULT CNavigation::Initialize_Prototype(const _tchar* pNavigationData)
     CCell::CELLTYPE eCellType;
     _float3 vPoints[3];
 
-    // 타일의 개수 받아옵니다.
     ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
 
     for (_uint i = 0; i < iNum; ++i)
@@ -76,14 +75,11 @@ _bool CNavigation::isMove(_fvector vPosition)
 {
     _int       iNeighborIndex = -1;
 
-    // 현재 존재하는 셀안에서 움직인 경우
     if (true == m_Cells[m_NaviDesc.iCurrentCellIndex]->isIn(vPosition, &iNeighborIndex, &m_vLastNormal))
         return true;
 
-    // 현재 존재하는 셀을 벗어난다.
     else
     {
-        // 나간 방향에 아웃셀이 존재한다.
         if (0 <= iNeighborIndex)
         {
             while (true)
@@ -98,7 +94,6 @@ _bool CNavigation::isMove(_fvector vPosition)
                 return true;
             }
         }
-        // 나간 방향에 아웃셀이 존재하지 않는다.
         else
         {
             return false;
@@ -120,7 +115,6 @@ _float CNavigation::Compute_Height(_vector vPosition, _float foffset)
 
     _vector vPlane = XMPlaneFromPoints(PointA, PointB, PointC);
 
-    // _float		fHeight = (-ax - cz - d) / b;
     _float		fHeight = (-XMVectorGetX(vPlane) * XMVectorGetX(vPosition) - XMVectorGetZ(vPlane) * XMVectorGetZ(vPosition) - XMVectorGetW(vPlane)) / XMVectorGetY(vPlane) + foffset;
 
     return fHeight;
