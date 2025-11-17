@@ -174,12 +174,12 @@ void CImGui_Manager::Update_Imgui()
 		if (ImGui::BeginTabItem("Navigation Tool"))
 		{
 			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.f, 1.0f), "Picking For Navigation"); ImGui::SameLine();
-			ImGui::Checkbox("Picking for Navigation", &m_bNaviPicking);
+			ImGui::Checkbox("Picking", &m_bNaviPicking);
 
 			ImGui::SameLine();
 
 			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.f, 1.0f), "Show Only Navigation"); ImGui::SameLine();
-			ImGui::Checkbox("Show Navigation", &m_bNaviPicking);
+			ImGui::Checkbox("Show Navigation", &m_bShowOnlyNavi);
 
 			ImGui::Text("Navigation Tool");
 			Set_Navigation();
@@ -1133,7 +1133,7 @@ void CImGui_Manager::Set_Navigation()
 			_float3 fPosition = CPickingMgr::GetInstance()->Get_PickingPos();
 			_vector vPosition = XMLoadFloat3(&fPosition);
 			vPosition = XMVectorSetW(vPosition, 1.f);
-			m_pNavigation_Manager->Click_Position(vPosition);
+ 			m_pNavigation_Manager->Click_Position(vPosition);
 			m_fClickPoint = m_pNavigation_Manager->Get_ClickedPos();
 		}
 	}
@@ -1149,6 +1149,8 @@ void CImGui_Manager::Set_Navigation()
 			m_iCellIndex = m_pNavigation_Manager->Get_CurrentCellIndex();
 		}
 	}
+
+	m_pNavigation_Manager->Render();
 }
 
 void CImGui_Manager::Save_Navigation()

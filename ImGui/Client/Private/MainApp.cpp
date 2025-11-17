@@ -34,7 +34,9 @@ HRESULT CMainApp::Initialize()
 	if(FAILED(Open_Level(LEVEL_LOGO)))
 		return E_FAIL;
 	
-	
+
+	if (FAILED(CNavigation_Manager::GetInstance()->Initialize(m_pDevice, m_pContext)))
+		return E_FAIL;
 
 	return S_OK;
 }

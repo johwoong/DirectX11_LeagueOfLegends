@@ -64,9 +64,6 @@
     <Filter Include="100. IMGUI\Default\Manager">
       <UniqueIdentifier>{747acbf4-c554-40b0-b54f-2173bcc73fb3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03. ToolManager\96. ShaderFiles">
-      <UniqueIdentifier>{d1b26620-fd19-4e03-a176-8064bc795a7a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="97. Camera">
       <UniqueIdentifier>{1b8112bc-0f69-41df-9a28-58f6c2826225}</UniqueIdentifier>
     </Filter>
@@ -75,6 +72,9 @@
     </Filter>
     <Filter Include="03. ToolManager\03. NavigationManager">
       <UniqueIdentifier>{4fbbd4da-4b1b-4576-8f97-eaa67c8209f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="96. ShaderFiles">
+      <UniqueIdentifier>{d1b26620-fd19-4e03-a176-8064bc795a7a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -273,24 +273,24 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
-      <Filter>03. ToolManager\96. ShaderFiles</Filter>
+      <Filter>96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Client_Shader_Defines.hlsl">
-      <Filter>03. ToolManager\96. ShaderFiles</Filter>
+      <Filter>96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl">
-      <Filter>03. ToolManager\96. ShaderFiles</Filter>
+      <Filter>96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_NorTexTerrianl.hlsl">
-      <Filter>03. ToolManager\96. ShaderFiles</Filter>
+      <Filter>96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxCubeTexture.hlsl">
-      <Filter>03. ToolManager\96. ShaderFiles</Filter>
+      <Filter>96. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\Bin\ShaderFiles\Shader_VtxModelTool.hlsl">
-      <Filter>03. ToolManager\96. ShaderFiles</Filter>
+      <Filter>96. ShaderFiles</Filter>
     </None>
   </ItemGroup>
 </Project>

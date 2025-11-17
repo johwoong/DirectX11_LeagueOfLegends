@@ -103,7 +103,7 @@ void CTerrian::Late_Update(_float fTimeDelta)
 {
     __super::Late_Update(fTimeDelta);
 
-    if (nullptr != m_pRenderCom)
+    if (nullptr != m_pRenderCom && nullptr != m_pRenderCom && CImGui_Manager::GetInstance()->Get_ShowOnlyNavi() == false)
         m_pRenderCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 }
 

@@ -31,7 +31,6 @@ HRESULT CNonAnim::Initialize(void* pArg)
 
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
-
 	if (strcmp(m_ModelDesc.pModeltag, "Picking_Symbol"))
 		CPickingMgr::GetInstance()->Add_PickingGroup(this);
 
@@ -50,6 +49,7 @@ HRESULT CNonAnim::Initialize(void* pArg)
 		if (m_ModelDesc.m_fAngle != 0)
 			m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(m_ModelDesc.m_fAngle));
 	}
+
 	
 	CModelManager::GetInstance()->Add_CreatedModel(this);
 
@@ -66,7 +66,7 @@ int CNonAnim::Update(_float fTimeDelta)
 
 void CNonAnim::Late_Update(_float fTimeDelta)
 {
-	if (nullptr != m_pRenderCom)
+	if (nullptr != m_pRenderCom && CImGui_Manager::GetInstance()->Get_ShowOnlyNavi() == false)
 		m_pRenderCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 
 	XMStoreFloat3(&m_ModelDesc.vPosition, Get_Position());
@@ -76,6 +76,8 @@ void CNonAnim::Late_Update(_float fTimeDelta)
 
 HRESULT CNonAnim::Render()
 {
+	_float4x4 mat = m_pTransformCom->Get_World_TP();
+	printf("M11= %f\n", mat.m[0][0]);
 	if (nullptr == m_pShaderCom ||
 		nullptr == m_pModelCom)
 		return E_FAIL;
@@ -129,7 +131,8 @@ HRESULT CNonAnim::Render()
 		if (FAILED(m_pModelCom->Render(m_pShaderCom, i, m_eShaderID)))
 			return E_FAIL;
 	}
-
+	printf(">>> Rendering Symbol, ShaderID = %d\n", m_eShaderID);
+	printf(">>> Shader Pass = %d\n", m_eShaderID);
 	return S_OK;
 }
 
@@ -160,6 +163,7 @@ void CNonAnim::PickingTrue()
 void CNonAnim::Set_Picked()
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	pGameInstance->AddRef();
 	if (pGameInstance->Mouse_Up(DIMK::DIMK_LBUTTON))
 	{
 		if (m_bPicked)
@@ -174,6 +178,8 @@ void CNonAnim::Set_Picked()
 		}
 
 	}
+	
+	pGameInstance->Release();
 }
 
 void CNonAnim::Turn(_float3 vAxis, _float fAngle)
@@ -223,7 +229,10 @@ HRESULT CNonAnim::SetUp_ShaderResources()
 	const _float4x4& worldTP = m_pTransformCom->Get_World_TP();
 	if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &worldTP, sizeof(_float4x4))))
 		return E_FAIL;
-
+	printf(">>> Symbol Position = %.2f %.2f %.2f\n",
+		m_ModelDesc.vPosition.x,
+		m_ModelDesc.vPosition.y,
+		m_ModelDesc.vPosition.z);
 	CGameInstance* pGI = CGameInstance::GetInstance();
 	const _float4x4& viewTP = pGI->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
 	const _float4x4& projTP = pGI->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);

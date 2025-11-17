@@ -102,7 +102,7 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 		return E_FAIL;
 
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Picking_Symbol"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Symbol/Symbol.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Picking_Symbol/Picking_Symbol.dat"))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("Loading For Prototype"));
@@ -300,7 +300,7 @@ HRESULT CLoader::Loading_ForActor()
 #pragma endregion Animation
 
 	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Cube"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Symbol/Symbol.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Picking_Symbol/Picking_Symbol.dat"))))
 		return E_FAIL;
 	CModelManager::GetInstance()->Add_PrototypeTag(TEXT("Cube"));
 

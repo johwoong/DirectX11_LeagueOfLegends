@@ -21,7 +21,7 @@ HRESULT CNavigation_Manager::Initialize(ID3D11Device* pDevice, ID3D11DeviceConte
 	Safe_AddRef(pDevice);
 	Safe_AddRef(pContext);
 
-	m_pShader = CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_Navigation.hlsl"), VTXPOS_DECLARATION::Elements, VTXPOS_DECLARATION::iNumElements);
+	m_pShader = CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_Nav.hlsl"), VTXPOS_DECLARATION::Elements, VTXPOS_DECLARATION::iNumElements);
 	if (nullptr == m_pShader)
 		return E_FAIL;
 
@@ -34,11 +34,11 @@ void CNavigation_Manager::Click_Position(_vector vPosition)
 {
 	_float3 vClickPosition;
 
-	// 셀이 1개 이상 있으면 점을 찍을 때 가장 가까운 점이 있는지를 확인
-	// 찍은 점의 위치가 기존 셀의 점의 위치와 비슷하다면 해당 점을 찍게한다.
+	//셀이 1개 이상 있으면 점을 찍을 때 가장 가까운 점이 있는지 확인.
+	//찍은 점의 위치가 기존 셀의 점의 위치와 비슷하다면 해당 점을 찍게한다.
 	vClickPosition = Find_MinDistacne(vPosition);
 
-	// 만약 순회해서 찾은 셀의 점이 거리가 멀다면 그냥 기존에 찍은 점을 push
+	//만약 순회해서 찾은 셀의 점이 거리가 멀다면 그냥 기존에 찍은 점을 pushback하게 한다.
 	if (m_fMinDistance > 0.7f)
 		XMStoreFloat3(&vClickPosition, vPosition);
 
@@ -54,14 +54,14 @@ void CNavigation_Manager::Click_Position(_vector vPosition)
 	m_vClickedPoints.push_back(vClickPosition);
 	m_vClickedPos = vClickPosition;
 
-	// 찍은 점의 갯수가 3개가 된다면 삼각형이 그려지니 Cell에 추가한다.
+	//찍은 점의 개수가 3개가 된다면. 삼각형이 그려지니 Cell에 추가한다.
 	if (3 == m_vClickedPoints.size())
 	{
-		_float3 vPos[3];
+		_float3 vPoss[3];
 		for (_int i = 0; i < 3; ++i)
-			vPos[i] = m_vClickedPoints[i];
+			vPoss[i] = m_vClickedPoints[i];
 
-		Add_Cell(vPos, m_eCellType, true);
+		Add_Cell(vPoss, m_eCellType, true);
 		Clear_ClickedPosition();
 	}
 }
@@ -89,20 +89,28 @@ HRESULT CNavigation_Manager::Add_ClickedSymbol(_float3 vClickPos, SYMBOL SymbolT
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	pGameInstance->AddRef();
-	NONANIMDESC NonAnimDesc;
+
+	NONANIMDESC NonAnimDesc = {};
+	XMStoreFloat4x4(&NonAnimDesc.WorldMatrix, XMMatrixIdentity());
+
 	char cModelTag[MAX_PATH] = "";
 	WideCharToMultiByte(CP_ACP, 0, TEXT("Picking_Symbol"), MAX_PATH, cModelTag, MAX_PATH, NULL, NULL);
 	strcpy(NonAnimDesc.pModeltag, cModelTag);
-	NonAnimDesc.vPosition = vClickPos;
-	NonAnimDesc.vScale = _float3(60.f, 60.f, 60.f);
 
-	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_NonAnim"), LEVEL_GAMEPLAY, TEXT("Layer_PickingSymbol"), &NonAnimDesc)))
+	NonAnimDesc.vPosition = vClickPos;
+	NonAnimDesc.vScale = _float3(0.5f, 0.5f, 0.5f);
+	NonAnimDesc.vRotation = _float3(0.f, 1.f, 0.f);
+	NonAnimDesc.m_fAngle = 0.f;
+
+	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_NonAnim"),
+		LEVEL_GAMEPLAY, TEXT("Layer_PickingSymbol"), &NonAnimDesc)))
 	{
 		Safe_Release(pGameInstance);
 		return E_FAIL;
 	}
 
-	m_pClickedSymbol[SymbolType] = dynamic_cast<CNonAnim*>(pGameInstance->Get_Object(LEVEL_GAMEPLAY, TEXT("Layer_PickingSymbol"), SymbolType));
+	m_pClickedSymbol[SymbolType] =
+		dynamic_cast<CNonAnim*>(pGameInstance->Get_Object(LEVEL_GAMEPLAY, TEXT("Layer_PickingSymbol"), SymbolType));
 	m_pClickedSymbol[SymbolType]->Setting_PickingSymbol(SymbolType);
 
 	Safe_Release(pGameInstance);
@@ -256,7 +264,7 @@ void CNavigation_Manager::Sort_CellByDot(_float3* vPos)
 		vPos[0] = vPos[2];
 		vPos[2] = vTemp;
 	}
-	
+
 	pGameInstance->Release();
 }
 
@@ -385,7 +393,7 @@ HRESULT CNavigation_Manager::Render()
 			switch (eType)
 			{
 			case Engine::CCell::DEFAULT:
-				vColor = _float4(0.f, 0.f, 1.f, 1.f);
+				vColor = _float4(0.f, 1.f, 0.f, 1.f);
 				m_pShader->Set_RawValue("g_vColor", &vColor, sizeof(_float4));
 				break;
 			default:
@@ -430,8 +438,7 @@ void CNavigation_Manager::Set_CellType(CCell::CELLTYPE eType)
 void CNavigation_Manager::Free()
 {
 	Clear_Cells();
-
-
-
+		Safe_Release(m_pDevice);
+	Safe_Release(m_pContext);
 	Safe_Release(m_pShader);
 }
