@@ -39,7 +39,7 @@ void CNavigation_Manager::Click_Position(_vector vPosition)
 	vClickPosition = Find_MinDistacne(vPosition);
 
 	//만약 순회해서 찾은 셀의 점이 거리가 멀다면 그냥 기존에 찍은 점을 pushback하게 한다.
-	if (m_fMinDistance > 0.7f)
+	if (m_fMinDistance > 0.15f)
 		XMStoreFloat3(&vClickPosition, vPosition);
 
 	m_fMinDistance = 9999;
@@ -433,12 +433,18 @@ void CNavigation_Manager::Set_CellType(CCell::CELLTYPE eType)
 	m_eCellType = eType;
 }
 
+void CNavigation_Manager::Set_CellPoint(_uint index, CCell::POINT ePoint, const _float3& vPos)
+{
+	if (index >= m_Cells.size()) return;
+	m_Cells[index]->Set_PointValue(ePoint, vPos);
+}
+
 
 
 void CNavigation_Manager::Free()
 {
 	Clear_Cells();
-		Safe_Release(m_pDevice);
+	Safe_Release(m_pDevice);
 	Safe_Release(m_pContext);
 	Safe_Release(m_pShader);
 }

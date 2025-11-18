@@ -46,7 +46,7 @@ public: // State
 	void Late_Update_State(_float fTimeDelta);
 
 public: // Navigation
-	void Chek_Navigation();
+	void Check_Navigation();
 	void Compute_CurrentIndex();
 	
 protected:

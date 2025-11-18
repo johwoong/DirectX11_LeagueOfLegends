@@ -27,13 +27,19 @@ HRESULT CPlayer::Initialize(void* pArg)
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
 
+	CNavigation::NAVDESC NaviDesc;
+	ZeroMemory(&NaviDesc, sizeof NaviDesc);
+	if (FAILED(__super::Add_Components(TEXT("Com_Navigation"), LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"), (CComponent**)&m_pNavigationCom, &NaviDesc)))
+		return E_FAIL;
+
+	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 2.f);
+	vPos = XMVectorSetX(vPos, XMVectorGetZ(vPos)  - 2.f);
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(Get_TransformState(CTransform::STATE_TRANSLATION));
 
 	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);	
-	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-	vPos = XMVectorSetY(vPos, XMVectorGetY(vPos) + 1.f); // ← 여기서 0.3f 만큼 올림
-	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 	return S_OK;
 }
 
@@ -102,7 +108,7 @@ void CPlayer::Late_Update_State(_float fTimeDelta)
 		m_pPlayerState = m_pPlayerState->ChangeState(m_pPlayerState, pNewState);
 }
 
-void CPlayer::Chek_Navigation()
+void CPlayer::Check_Navigation()
 {
 	_vector vPosition = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
 	_float m_fWlakingHeight = m_pNavigationCom->Compute_Height(vPosition, 0.f);

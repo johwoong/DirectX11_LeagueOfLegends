@@ -173,14 +173,11 @@ void CImGui_Manager::Update_Imgui()
 		}
 		if (ImGui::BeginTabItem("Navigation Tool"))
 		{
-			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.f, 1.0f), "Picking For Navigation"); ImGui::SameLine();
 			ImGui::Checkbox("Picking", &m_bNaviPicking);
-
 			ImGui::SameLine();
-
-			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.f, 1.0f), "Show Only Navigation"); ImGui::SameLine();
 			ImGui::Checkbox("Show Navigation", &m_bShowOnlyNavi);
-
+			ImGui::SameLine();
+			ImGui::Checkbox("Show Map", &m_bShowMap);
 			ImGui::Text("Navigation Tool");
 			Set_Navigation();
 			ImGui::EndTabItem();
@@ -1033,94 +1030,114 @@ void CImGui_Manager::Set_Navigation()
 {
 	static int selected = 0;
 
-	// Left Panel
 	{
 		ImGui::BeginChild("left pane", ImVec2(150, 0), true);
 
+		ImGui::TextColored(ImVec4(0.9f, 0.8f, 0.3f, 1), "Cell List");
+		ImGui::Separator();
+
 		if ((int)m_pNavigation_Manager->Get_CellsSize() != 0)
 		{
-			for (_uint i = 0; i < m_pNavigation_Manager->Get_CellsSize();)
+			for (_uint i = 0; i < m_pNavigation_Manager->Get_CellsSize(); i++)
 			{
-				char szLayerTag[MAX_PATH] = "Cell";
+				char label[64];
+				sprintf(label, "Cell %d", i);
 
-				char label[MAX_PATH] = "Cell";
-				char buffer[MAX_PATH];
-				sprintf(buffer, "%d", i);
-				strcat(label, buffer);
 				if (ImGui::Selectable(label, m_iCellIndex == i))
-				{
 					m_iCellIndex = i;
-				}
-				i++;
 			}
 		}
+		else
+		{
+			ImGui::TextDisabled("No Cells");
+		}
+
 		ImGui::EndChild();
 	}
+
 	ImGui::SameLine();
-	// - Right Panel
+
 	{
 		ImGui::BeginGroup();
 		ImGui::BeginChild("Cell View", ImVec2(0, -ImGui::GetFrameHeightWithSpacing()));
 
-		ImGui::CollapsingHeader("Show Current Cell");
+		ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.5f, 1), "Cell");
+		ImGui::Separator();
 
-		ImGui::Text("Selected Index :  "); ImGui::SameLine(); ImGui::Text("%d", m_iCellIndex);
+		ImGui::Text("Current Index: ");
+		ImGui::SameLine();
+		ImGui::TextColored(ImVec4(1, 0.7f, 0.2f, 1), "%d", m_iCellIndex);
+
 		m_pNavigation_Manager->Set_ClickedCellIndex(m_iCellIndex);
 		CCell* pCurrentCell = m_pNavigation_Manager->Get_Cell();
 
-		static float fPointA[3] = { 0, 0, 0 };
-		static float fPointB[3] = { 0, 0, 0 };
-		static float fPointC[3] = { 0, 0, 0 };
-		static float fClickedPosition[3]{ m_fClickPoint.x, m_fClickPoint.y, m_fClickPoint.z };
+		static float fPointA[3], fPointB[3], fPointC[3];
+		static float fClickedPosition[3];
+
 		fClickedPosition[0] = m_fClickPoint.x;
 		fClickedPosition[1] = m_fClickPoint.y;
 		fClickedPosition[2] = m_fClickPoint.z;
 
 		if (pCurrentCell != nullptr)
 		{
-			fPointA[0] = pCurrentCell->Get_PointValue(CCell::POINT_A).x;
-			fPointA[1] = pCurrentCell->Get_PointValue(CCell::POINT_A).y;
-			fPointA[2] = pCurrentCell->Get_PointValue(CCell::POINT_A).z;
-
-			fPointB[0] = pCurrentCell->Get_PointValue(CCell::POINT_B).x;
-			fPointB[1] = pCurrentCell->Get_PointValue(CCell::POINT_B).y;
-			fPointB[2] = pCurrentCell->Get_PointValue(CCell::POINT_B).z;
-
-			fPointC[0] = pCurrentCell->Get_PointValue(CCell::POINT_C).x;
-			fPointC[1] = pCurrentCell->Get_PointValue(CCell::POINT_C).y;
-			fPointC[2] = pCurrentCell->Get_PointValue(CCell::POINT_C).z;
+			memcpy(fPointA, &pCurrentCell->Get_PointValue(CCell::POINT_A), sizeof(fPointA));
+			memcpy(fPointB, &pCurrentCell->Get_PointValue(CCell::POINT_B), sizeof(fPointB));
+			memcpy(fPointC, &pCurrentCell->Get_PointValue(CCell::POINT_C), sizeof(fPointC));
 
 			m_iCellType = pCurrentCell->Get_CellType();
 		}
 
-		ImGui::Text("PointA :"); ImGui::SameLine(); ImGui::InputFloat3("##PointA", fPointA);
-		ImGui::Text("PointB :"); ImGui::SameLine(); ImGui::InputFloat3("##PointB", fPointB);
-		ImGui::Text("PointC :"); ImGui::SameLine(); ImGui::InputFloat3("##PointC", fPointC);
 
-		ImGui::Text("ClickPoint : "); ImGui::SameLine(); ImGui::DragFloat3("##ClickPoint", fClickedPosition, 0.01f);
-		m_fClickPoint = _float3(fClickedPosition[0], fClickedPosition[1], fClickedPosition[2]);
-		m_pNavigation_Manager->Update_ClickedPostion(m_fClickPoint);
+		ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1), "POINT");
+
+		if (ImGui::DragFloat3("Point A", fPointA, 0.01f))
+			m_pNavigation_Manager->Set_CellPoint(m_iCellIndex, CCell::POINT_A, _float3(fPointA[0], fPointA[1], fPointA[2]));
+
+		if (ImGui::DragFloat3("Point B", fPointB, 0.01f))
+			m_pNavigation_Manager->Set_CellPoint(m_iCellIndex, CCell::POINT_B, _float3(fPointB[0], fPointB[1], fPointB[2]));
+
+		if (ImGui::DragFloat3("Point C", fPointC, 0.01f))
+			m_pNavigation_Manager->Set_CellPoint(m_iCellIndex, CCell::POINT_C, _float3(fPointC[0], fPointC[1], fPointC[2]));
+
+
+		ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1), "Click Pos");
+		ImGui::Text("ClickPoint:");
+		ImGui::SameLine();
+
+		if (ImGui::DragFloat3("ClickPoint", fClickedPosition, 0.01f))
+		{
+			m_fClickPoint = _float3(fClickedPosition[0], fClickedPosition[1], fClickedPosition[2]);
+			m_pNavigation_Manager->Update_ClickedPostion(m_fClickPoint);
+		}
+
+
+		ImGui::Spacing();
+		ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Utils");
 
 		if (ImGui::Button("Cancel"))
 			m_pNavigation_Manager->Cancle_Cell();
-		if (ImGui::Button("Delete Picked Cell"))
+
+		if (ImGui::Button("Delete Selected"))
 			m_pNavigation_Manager->Erase_Cell();
-		if (ImGui::Button("Clear Cell"))
+
+		if (ImGui::Button("Clear"))
 			m_pNavigation_Manager->Clear_Cells();
 
-		ImGui::CollapsingHeader("Setting Cell Type");
-		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Default "); ImGui::SameLine();
-		if (ImGui::RadioButton("##Default", &m_iCellType, 0))
+		ImGui::Spacing();
+		ImGui::TextColored(ImVec4(1, 0.7f, 0.3f, 1), "Cell Type");
+
+		if (ImGui::RadioButton("Default", &m_iCellType, 0))
 			m_pNavigation_Manager->Set_CellType((CCell::CELLTYPE)m_iCellType);
 
+		// -----------------------
+		// Save / Load
+		// -----------------------
+
 		if (ImGui::Button("Save"))
-		{
 			Save_Navigation();
-		}
+
 		if (ImGui::Button("Load"))
-		{
 			Load_Navigation();
-		}
 
 		ImGui::EndChild();
 		ImGui::EndGroup();
@@ -1133,7 +1150,7 @@ void CImGui_Manager::Set_Navigation()
 			_float3 fPosition = CPickingMgr::GetInstance()->Get_PickingPos();
 			_vector vPosition = XMLoadFloat3(&fPosition);
 			vPosition = XMVectorSetW(vPosition, 1.f);
- 			m_pNavigation_Manager->Click_Position(vPosition);
+			m_pNavigation_Manager->Click_Position(vPosition);
 			m_fClickPoint = m_pNavigation_Manager->Get_ClickedPos();
 		}
 	}

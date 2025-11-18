@@ -8,6 +8,30 @@ CCell::CCell(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	Safe_AddRef(m_pContext);
 }
 
+void CCell::Set_PointValue(POINT ePoint, const _float3& vPos)
+{
+	// 좌표 갱신
+	m_vPoints[ePoint] = vPos;
+
+	// Normal 재계산
+	_float3 vLines[LINE_END];
+
+	XMStoreFloat3(&vLines[LINE_AB], XMLoadFloat3(&m_vPoints[POINT_B]) - XMLoadFloat3(&m_vPoints[POINT_A]));
+	m_vNormals[LINE_AB] = _float3(vLines[LINE_AB].z * -1.f, 0.f, vLines[LINE_AB].x);
+
+	XMStoreFloat3(&vLines[LINE_BC], XMLoadFloat3(&m_vPoints[POINT_C]) - XMLoadFloat3(&m_vPoints[POINT_B]));
+	m_vNormals[LINE_BC] = _float3(vLines[LINE_BC].z * -1.f, 0.f, vLines[LINE_BC].x);
+
+	XMStoreFloat3(&vLines[LINE_CA], XMLoadFloat3(&m_vPoints[POINT_A]) - XMLoadFloat3(&m_vPoints[POINT_C]));
+	m_vNormals[LINE_CA] = _float3(vLines[LINE_CA].z * -1.f, 0.f, vLines[LINE_CA].x);
+
+#ifdef _DEBUG
+	// VIBuffer 재생성 (변화된 삼각형을 위한)
+	Safe_Release(m_pVIBuffer);
+	m_pVIBuffer = CVIBuffer_Nav::Create(m_pDevice, m_pContext, m_vPoints);
+#endif
+}
+
 HRESULT CCell::Initialize(const _float3* pPoints, _int iIndex)
 {
 	m_iIndex = iIndex;
@@ -23,7 +47,7 @@ HRESULT CCell::Initialize(const _float3* pPoints, _int iIndex)
 	m_vNormals[LINE_BC] = _float3(vLines[LINE_BC].z * -1.f, 0.f, vLines[LINE_BC].x);
 
 	XMStoreFloat3(&vLines[LINE_CA], XMLoadFloat3(&m_vPoints[POINT_A]) - XMLoadFloat3(&m_vPoints[POINT_C]));
-
+	m_vNormals[LINE_CA] = _float3(vLines[LINE_CA].z * -1.f, 0.f, vLines[LINE_CA].x);
 #ifdef _DEBUG
 	m_pVIBuffer = CVIBuffer_Nav::Create(m_pDevice, m_pContext, m_vPoints);
 	if (nullptr == m_pVIBuffer)

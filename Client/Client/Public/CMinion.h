@@ -16,7 +16,6 @@ class CMinion abstract: public CActor
 		_float m_fCurrentHp = 10.f;
 		_float m_fAttackPower = 10.f;
 		_float m_fWalkSpeed = 3.f;
-
 	};
 };
 NS_END

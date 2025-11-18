@@ -35,6 +35,7 @@ public:
 	void Set_ClickedCellIndex(_uint iIndex) { m_iClickedCellIndex = iIndex; }
 	void Set_CellType(CCell::CELLTYPE eType);
 	CCell::CELLTYPE Get_CellType() { return m_Cells[m_iClickedCellIndex]->Get_CellType(); }
+	void Set_CellPoint(_uint index, CCell::POINT ePoint, const _float3& vPos);
 
 public:
 	HRESULT Add_ClickedSymbol(_float3 vClickPos, SYMBOL SymbolType);

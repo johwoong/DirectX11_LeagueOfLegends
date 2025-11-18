@@ -140,6 +140,8 @@ HRESULT CRenderer::Render_Debug()
         return E_FAIL;
     }
 
+    
+
     for (auto& pComponent : m_DebugComponents)
     {
         if (m_bRenderComponentDebug)
@@ -153,9 +155,9 @@ HRESULT CRenderer::Render_Debug()
 
     m_DebugComponents.clear();
 
-    if (CGameInstance::GetInstance()->Key_Up(DIK_BACKSPACE))
+    if (CGameInstance::GetInstance()->Key_Up(DIK_F6))
         m_bRenderDebug = !m_bRenderDebug;
-    if (CGameInstance::GetInstance()->Key_Up(DIK_EQUALS))
+    if (CGameInstance::GetInstance()->Key_Up(DIK_F7))
         m_bRenderComponentDebug = !m_bRenderComponentDebug;
 
     return S_OK;

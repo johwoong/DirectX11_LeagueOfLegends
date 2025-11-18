@@ -54,7 +54,7 @@ HRESULT CNavigation::Initialize_Prototype(const _tchar* pNavigationData)
         return E_FAIL;
 
 #ifdef _DEBUG
-    m_pShader = CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_Navigation.hlsl"), VTXPOS_DECLARATION::Elements, VTXPOS_DECLARATION::iNumElements);
+    m_pShader = CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_Nav.hlsl"), VTXPOS_DECLARATION::Elements, VTXPOS_DECLARATION::iNumElements);
     if (nullptr == m_pShader)
         return E_FAIL;
 
@@ -75,11 +75,14 @@ _bool CNavigation::isMove(_fvector vPosition)
 {
     _int       iNeighborIndex = -1;
 
+    // 현재 존재하는 셀안에서 움직임
     if (true == m_Cells[m_NaviDesc.iCurrentCellIndex]->isIn(vPosition, &iNeighborIndex, &m_vLastNormal))
         return true;
 
+    // 현재 존재하는 셀에서 벗어남
     else
     {
+        // 나간 방향이 이웃셀이 존재하면?
         if (0 <= iNeighborIndex)
         {
             while (true)
@@ -89,16 +92,18 @@ _bool CNavigation::isMove(_fvector vPosition)
 
                 if (true == m_Cells[iNeighborIndex]->isIn(vPosition, &iNeighborIndex, &m_vLastNormal))
                     break;
-
-                m_NaviDesc.iCurrentCellIndex = iNeighborIndex;
-                return true;
             }
+
+            m_NaviDesc.iCurrentCellIndex = iNeighborIndex;
+            return true;
         }
+        // 나간 방향에 이웃셀이 존재하지않음
         else
         {
             return false;
         }
     }
+    return _bool();
 }
 
 _float CNavigation::Compute_Height(_vector vPosition, _float foffset)
@@ -145,7 +150,7 @@ void CNavigation::Compute_CurrentIndex_byXZ(_vector vPosition)
 
 _uint CNavigation::Get_CurrentCellType()
 {
-    if (m_NaviDesc.iCurrentCellIndex <= 1)
+    if (m_NaviDesc.iCurrentCellIndex == 1)
         return false;
 
     return static_cast<_uint>(m_Cells[m_NaviDesc.iCurrentCellIndex]->Get_CellType());
@@ -159,54 +164,45 @@ _vector CNavigation::Get_CurrentCellCenter()
 #ifdef _DEBUG
 HRESULT CNavigation::Render()
 {
-    _float4x4       WorldMatrix;
+    _float4x4 WorldMatrix;
     XMStoreFloat4x4(&WorldMatrix, XMMatrixIdentity());
 
     CPipeLine* pPipeLine = CPipeLine::GetInstance();
 
-    m_pShader->Set_RawValue("g_ViewMatrix", &pPipeLine->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW), sizeof(_float4x4));
-    m_pShader->Set_RawValue("g_ProjMatrix", &pPipeLine->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ), sizeof(_float4));
+    m_pShader->Set_RawValue("g_ViewMatrix",
+        &pPipeLine->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW),
+        sizeof(_float4x4));
+
+    m_pShader->Set_RawValue("g_ProjMatrix",
+        &pPipeLine->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ),
+        sizeof(_float4x4));
 
     pPipeLine->Release();
 
-    if (-1 == m_NaviDesc.iCurrentCellIndex)
-    {
-        m_pShader->Set_RawValue("g_WorldMatrix", &WorldMatrix, sizeof(_float4x4));
-        XMVECTOR vColor = XMVectorSet(0.f, 1.f, 0.f, 1.f);
-        m_pShader->Set_RawValue("g_vColor", &vColor, sizeof(_float4));
 
-        for (auto& pCell : m_Cells)
+    // 모든 셀 렌더링 (조건 제거)
+    for (UINT i = 0; i < m_Cells.size(); i++)
+    {
+        CCell* pCell = m_Cells[i];
+        if (!pCell) continue;
+
+        XMVECTOR vColor;
+
+        // 플레이어가 위치한 셀 → 빨강
+        if (i == m_NaviDesc.iCurrentCellIndex)
         {
-            if (nullptr != pCell)
-            {
-                if (nullptr != pCell)
-                {
-                    switch (pCell->Get_CellType())
-                    {
-                    case CCell::DEFAULT:
-                        vColor = XMVectorSet(1.f, 0.f, 0.f, 1.f);
-                        m_pShader->Set_RawValue("g_vColor", &vColor, sizeof(_float4));
-                        break;
-                    case CCell::ONLYJUMP:
-                        vColor = XMVectorSet(0.f, 0.f, 1.f, 1.f);
-                        m_pShader->Set_RawValue("g_vColor", &vColor, sizeof(_float4));
-                        break;
-                    }
-                }
-                m_pShader->Begin(0);
-                pCell->Render();
-            }
+            vColor = XMVectorSet(1.f, 0.f, 0.f, 1.f); // RED
         }
-    }
+        else
+        {
+            vColor = XMVectorSet(0.f, 1.f, 0.f, 1.f); // GREEN
+        }
 
-    else
-    {
-        WorldMatrix._24 = 0.1f;
         m_pShader->Set_RawValue("g_WorldMatrix", &WorldMatrix, sizeof(_float4x4));
-        XMVECTOR vColor = XMVectorSet(1.f, 1.f, 1.f, 1.f);
         m_pShader->Set_RawValue("g_vColor", &vColor, sizeof(_float4));
+
         m_pShader->Begin(0);
-        m_Cells[m_NaviDesc.iCurrentCellIndex]->Render();
+        pCell->Render();
     }
 
     return S_OK;

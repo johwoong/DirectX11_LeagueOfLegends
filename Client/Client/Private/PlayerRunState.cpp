@@ -39,7 +39,7 @@ CPlayerState* CRunState::Update(_float fTimeDelta)
 {
     HandleInput();
     Move(fTimeDelta);
-
+    m_pOwner->Check_Navigation();
     m_bIsAnimationFinished = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex()));
     return nullptr;
 }
@@ -79,6 +79,9 @@ void CRunState::Move(_float fTimeDelta)
     CTransform* pTr = m_pOwner->Get_Transform();
     if (!pTr) return;
 
+    CNavigation* pNavi = m_pOwner->Get_Navigation();
+    if (!pNavi) return;
+
     _vector vPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
     _vector vTarget = XMLoadFloat3(&m_vTargetPos);
     vTarget = XMVectorSetY(vTarget, XMVectorGetY(vPos));
@@ -92,15 +95,27 @@ void CRunState::Move(_float fTimeDelta)
         return;
     }
 
-
     _vector vDir = XMVector3Normalize(vToTarget);
+
+    // 네비게이션 이동 검사
+    _vector vNextPos = vPos + vDir * 6.f * fTimeDelta;
+
+    // 이동 가능 위치인지 판단
+    if (pNavi->isMove(vNextPos) == false)
+    {
+        // 이동 불가능 → 강제로 IDLE 상태 전환
+        m_eStateType = STATETYPE_END;
+        return;
+    }
+
+    // 이동 가능 → 위치 반영
+    vPos = vNextPos;
+
+    // ===== 회전 처리 =====
     _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-
-
     _vector vLook = -vDir;
     _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
     _vector vUpFinal = XMVector3Normalize(XMVector3Cross(vLook, vRight));
-
 
     _matrix rotMat = XMMatrixIdentity();
     rotMat.r[0] = XMVectorSetW(vRight, 0.f);
@@ -115,10 +130,6 @@ void CRunState::Move(_float fTimeDelta)
 
     vRotQuat = XMQuaternionSlerp(vRotQuat, vTargetRotQuat, fTimeDelta * 10.f);
     vRotQuat = XMQuaternionNormalize(vRotQuat);
-
-
-    float fSpeed = 6.f;
-    vPos += vDir * fSpeed * fTimeDelta;
 
     _matrix matWorld =
         XMMatrixScalingFromVector(vScale) *

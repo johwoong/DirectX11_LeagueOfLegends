@@ -31,8 +31,8 @@ HRESULT CNonAnim::Initialize(void* pArg)
 
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
-	if (strcmp(m_ModelDesc.pModeltag, "Picking_Symbol"))
-		CPickingMgr::GetInstance()->Add_PickingGroup(this);
+	//if (strcmp(m_ModelDesc.pModeltag, "Picking_Symbol"))
+	//	CPickingMgr::GetInstance()->Add_PickingGroup(this);
 
 	m_eObjectID = OBJ_BLOCK;
 
@@ -66,7 +66,7 @@ int CNonAnim::Update(_float fTimeDelta)
 
 void CNonAnim::Late_Update(_float fTimeDelta)
 {
-	if (nullptr != m_pRenderCom && CImGui_Manager::GetInstance()->Get_ShowOnlyNavi() == false)
+	if (nullptr != m_pRenderCom && CImGui_Manager::GetInstance()->Get_ShowOnlyNavi() == false && CImGui_Manager::GetInstance()->Get_ShowMap() == false)
 		m_pRenderCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 
 	XMStoreFloat3(&m_ModelDesc.vPosition, Get_Position());

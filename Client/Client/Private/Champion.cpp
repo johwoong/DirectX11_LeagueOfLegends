@@ -23,7 +23,8 @@ HRESULT CChampion::Initialize(void* pArg)
 {
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
-
+	m_pNavigationCom->Compute_CurrentIndex_byXZ(Get_TransformState(CTransform::STATE_TRANSLATION));
+	Check_Navigation();
 	return S_OK;
 }
 

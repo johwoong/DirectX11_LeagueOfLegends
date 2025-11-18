@@ -61,6 +61,7 @@ public:
 	void Save_Navigation();
 	void Load_Navigation();
 	_bool Get_ShowOnlyNavi() { return m_bShowOnlyNavi; }
+	_bool Get_ShowMap() { return m_bShowMap; }
 
 	void Set_Play(_bool bPlay) { m_bIsPlaying = bPlay; }
 
@@ -117,6 +118,7 @@ private:
 	_int									m_iCellType = 0;
 	_float3									m_fClickPoint = _float3(0.f, 0.f, 0.f);
 	_bool									m_bShowOnlyNavi = false;
+	_bool									m_bShowMap = false;
 
 
 	/* For. Animation */

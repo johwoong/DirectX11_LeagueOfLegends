@@ -247,7 +247,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("건물 로딩 중"));
-	m_fProgress = 80.f;
+	m_fProgress = 70.f;
 	// 넥서스
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Blue_NonAnim"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Nexus_Blue/Nexus_Blue.dat"))))
@@ -279,6 +279,13 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 
 #pragma endregion
+
+#pragma region 네비게이션 로딩
+	m_fProgress = 80.f;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"),
+		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Data/NavDat/Test.dat")))))
+		return E_FAIL;
+#pragma rendregion
 
 #pragma region 텍스쳐 로딩
 	m_fProgress = 90.f;

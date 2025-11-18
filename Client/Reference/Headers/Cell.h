@@ -21,6 +21,7 @@ public:
 	const _float3&		   Get_PointValue(POINT ePoint) const { return m_vPoints[ePoint]; }
 	void		   SetUp_Neighbor(LINE eLine, const CCell* pCell) { m_iNeighborIndices[eLine] = pCell->m_iIndex; }
 	void		   Set_CellType(CELLTYPE eType) { m_eCellType = eType; }
+	void Set_PointValue(POINT ePoint, const _float3& vPos);
 
 public:
 	HRESULT Initialize(const _float3* pPoints, _int iIndex);

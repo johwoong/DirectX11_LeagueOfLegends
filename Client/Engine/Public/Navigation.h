@@ -32,6 +32,9 @@ public: // Getter Setter
 	_vector Get_CurrentCellCenter();
 	_vector Get_LastNormal() { return XMLoadFloat3(&m_vLastNormal); }
 	
+
+	// юс╫ц
+	void Set_DebugViewProj(const _float4x4& view, const _float4x4& proj);
 #ifdef _DEBUG
 public:
 	HRESULT Render();

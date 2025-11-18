@@ -50,6 +50,8 @@ HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
     auto pEzreal = CEzreal::Create(m_pDevice, m_pContext);
     pEzreal->Initialize(nullptr);
     pEzreal->Set_PlayerID(CChampion::EZREAL);
+    pEzreal->Compute_CurrentIndex();
+    pEzreal->Check_Navigation();
     m_vChampions.push_back(pEzreal);
 
     auto pRenekton = CRenekton::Create(m_pDevice, m_pContext);
