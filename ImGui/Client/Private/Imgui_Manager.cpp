@@ -1164,6 +1164,7 @@ void CImGui_Manager::Save_Navigation()
 	OFN.lStructSize = sizeof(OPENFILENAME);
 	OFN.hwndOwner = g_hWnd;
 	OFN.lpstrFilter = filter;
+	OFN.lpstrFile = lpstrFile;
 	OFN.nMaxFile = 300;
 	OFN.lpstrInitialDir = L".";
 	OFN.Flags = OFN_SHOWHELP | OFN_OVERWRITEPROMPT;

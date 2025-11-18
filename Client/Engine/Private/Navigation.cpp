@@ -114,7 +114,7 @@ _float CNavigation::Compute_Height(_vector vPosition, _float foffset)
     PointC = XMVectorSetW(PointC, 1.f);
 
     _vector vPlane = XMPlaneFromPoints(PointA, PointB, PointC);
-
+    
     _float		fHeight = (-XMVectorGetX(vPlane) * XMVectorGetX(vPosition) - XMVectorGetZ(vPlane) * XMVectorGetZ(vPosition) - XMVectorGetW(vPlane)) / XMVectorGetY(vPlane) + foffset;
 
     return fHeight;

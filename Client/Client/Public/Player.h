@@ -7,6 +7,7 @@
 
 NS_BEGIN(Engine)
 class CModel;
+class CNavigation;
 NS_END
 
 NS_BEGIN(Client)
@@ -29,6 +30,7 @@ public:
 
 public: // GET, SET
 	CModel* Get_Model() { return m_pModelCom; }
+	CNavigation* Get_Navigation(void) { return m_pNavigationCom; }
 	CPlayerState* Get_State() { return m_pPlayerState; }
 	void Set_PlayerState(class CPlayerState* pPlayerState) { m_pPlayerState = pPlayerState; }
 	void Set_TargetPosition(_float3 vPos) { m_vTargetPos = vPos; m_bMoving = true; }
@@ -42,11 +44,15 @@ public: // State
 	void HandleInput();
 	void Update_State(_float fTimeDelta);
 	void Late_Update_State(_float fTimeDelta);
+
+public: // Navigation
+	void Chek_Navigation();
+	void Compute_CurrentIndex();
 	
 protected:
 	// Component
 	CModel*		m_pModelCom =		 { nullptr };
-
+	CNavigation* m_pNavigationCom = { nullptr };
 protected: // Ã¨ÇÇ¾ð ±³Ã¼
 	PLAYERID	m_ePlayerID = EZREAL;
 	CPlayerState* m_pPlayerState = { nullptr };

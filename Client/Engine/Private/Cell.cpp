@@ -94,7 +94,7 @@ HRESULT CCell::Render()
 {
 	if (nullptr == m_pVIBuffer)
 		return E_FAIL;
-	m_pVIBuffer->Render();
+	m_pVIBuffer->Render(); 
 
 	return S_OK;
 }

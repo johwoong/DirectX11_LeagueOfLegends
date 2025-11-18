@@ -98,8 +98,8 @@ HRESULT CNavigation_Manager::Add_ClickedSymbol(_float3 vClickPos, SYMBOL SymbolT
 	strcpy(NonAnimDesc.pModeltag, cModelTag);
 
 	NonAnimDesc.vPosition = vClickPos;
-	NonAnimDesc.vScale = _float3(0.5f, 0.5f, 0.5f);
-	NonAnimDesc.vRotation = _float3(0.f, 1.f, 0.f);
+	NonAnimDesc.vScale = _float3(0.2f, 0.2f, 0.2f);
+	NonAnimDesc.vRotation = _float3(0.f, 0.f, 0.f);
 	NonAnimDesc.m_fAngle = 0.f;
 
 	if (FAILED(pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_NonAnim"),

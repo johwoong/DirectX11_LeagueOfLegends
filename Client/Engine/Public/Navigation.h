@@ -8,7 +8,7 @@ class ENGINE_DLL CNavigation final : public CComponent
 public:
 	typedef struct tagNavigationDesc
 	{
-		_int	iCurrentCellIndex = -1;
+		_int	iCurrentCellIndex = -1; 
 	}NAVDESC;
 
 

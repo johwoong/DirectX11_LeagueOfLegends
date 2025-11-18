@@ -5,7 +5,7 @@
 NS_BEGIN(Engine)
 class CTexture;
 
-class ENGINE_DLL CVIBuffer_Terrian final : public CVIBuffer
+class ENGINE_DLL CVIBuffer_Terrian final : public CVIBuffer 
 {
 public:
 	typedef struct TerrianTagDesc
