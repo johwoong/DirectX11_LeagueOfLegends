@@ -80,9 +80,13 @@ public:
 	void LookAt(_fvector vAt);
 	void LookDir(_fvector vDir);
 	void LookAtExceptY(_fvector vAt);
-
+	void SmoothLookAt(_vector vTargetDir, float fDeltaTime, float fRotateSpeed);
 public:
 	void RoamingTurn(_matrix WorldMatrix, _float fRadian);
+
+public:
+	void Set_Destination(_vector vDest, CNavigation* pNavi);
+	bool Move_ByPath(_float fDeltaTime, CNavigation* pNavi);
 
 private:
 	_float4x4 m_WorldMatrix;
@@ -91,6 +95,13 @@ private:
 	_float m_fCurrentRotationX = 0.f;
 	_float m_fCurrentRotationY = 0.f;
 	_float m_fCurrentRotationZ = 0.f;
+
+private: // Navigation  A* + Funnel 
+	bool m_bHasDestination = false;
+	_vector m_vDestination;
+
+	vector<_vector> m_PathPoints;
+	int m_iPathIndex = 0;
 
 public:
 	static CTransform* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

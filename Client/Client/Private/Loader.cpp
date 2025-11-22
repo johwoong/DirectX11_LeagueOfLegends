@@ -283,7 +283,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 #pragma region 네비게이션 로딩
 	m_fProgress = 80.f;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"),
-		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Data/NavDat/Test.dat")))))
+		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Data/NavDat/Champion_Nav.dat")))))
 		return E_FAIL;
 #pragma rendregion
 

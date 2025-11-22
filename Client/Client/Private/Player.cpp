@@ -32,12 +32,14 @@ HRESULT CPlayer::Initialize(void* pArg)
 	if (FAILED(__super::Add_Components(TEXT("Com_Navigation"), LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"), (CComponent**)&m_pNavigationCom, &NaviDesc)))
 		return E_FAIL;
 
+	// 정상 코드
 	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 2.f);
-	vPos = XMVectorSetX(vPos, XMVectorGetZ(vPos)  - 2.f);
+	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 4.f);
+	vPos = XMVectorSetX(vPos, XMVectorGetX(vPos) - 2.f);
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 
-	m_pNavigationCom->Compute_CurrentIndex_byXZ(Get_TransformState(CTransform::STATE_TRANSLATION));
+	// 반드시 셀 기준 업데이트
+	m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
 
 	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);	
 	return S_OK;

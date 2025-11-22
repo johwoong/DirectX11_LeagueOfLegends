@@ -27,8 +27,9 @@ CPlayerState* CRunState::HandleInput()
         if (CPickingManager::GetInstance()->Picking())
         { 
             vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
-            m_pOwner->Set_TargetPosition(vClickPos);
-            m_vTargetPos = vClickPos;
+
+            m_pOwner->Get_Transform()->Set_Destination(XMLoadFloat3(&vClickPos),
+                m_pOwner->Get_Navigation());
         }
     }
 
@@ -53,6 +54,7 @@ CPlayerState* CRunState::Late_Update(_float fTimeDelta)
 
 void CRunState::Enter()
 {
+
     m_eState = STATE_RUN; 
     m_eStateType = STATETYPE_START;
     switch (m_ePlayerID)
@@ -76,66 +78,15 @@ void CRunState::Exit()
 
 void CRunState::Move(_float fTimeDelta)
 {
-    CTransform* pTr = m_pOwner->Get_Transform();
-    if (!pTr) return;
-
+       CTransform* pTr = m_pOwner->Get_Transform();
     CNavigation* pNavi = m_pOwner->Get_Navigation();
-    if (!pNavi) return;
 
-    _vector vPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
-    _vector vTarget = XMLoadFloat3(&m_vTargetPos);
-    vTarget = XMVectorSetY(vTarget, XMVectorGetY(vPos));
-
-    _vector vToTarget = vTarget - vPos;
-    float fDist = XMVectorGetX(XMVector3Length(vToTarget));
-
-    if (fDist < 0.05f)
+    // Transform이 스스로 경로 따라 감
+    if (!pTr->Move_ByPath(fTimeDelta, pNavi))
     {
         m_eStateType = STATETYPE_END;
         return;
     }
-
-    _vector vDir = XMVector3Normalize(vToTarget);
-
-    // 네비게이션 이동 검사
-    _vector vNextPos = vPos + vDir * 6.f * fTimeDelta;
-
-    // 이동 가능 위치인지 판단
-    if (pNavi->isMove(vNextPos) == false)
-    {
-        // 이동 불가능 → 강제로 IDLE 상태 전환
-        m_eStateType = STATETYPE_END;
-        return;
-    }
-
-    // 이동 가능 → 위치 반영
-    vPos = vNextPos;
-
-    // ===== 회전 처리 =====
-    _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-    _vector vLook = -vDir;
-    _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
-    _vector vUpFinal = XMVector3Normalize(XMVector3Cross(vLook, vRight));
-
-    _matrix rotMat = XMMatrixIdentity();
-    rotMat.r[0] = XMVectorSetW(vRight, 0.f);
-    rotMat.r[1] = XMVectorSetW(vUpFinal, 0.f);
-    rotMat.r[2] = XMVectorSetW(vLook, 0.f);
-
-    _vector vScale, vRotQuat, vCurPos;
-    XMMatrixDecompose(&vScale, &vRotQuat, &vCurPos, pTr->Get_WorldMatrix());
-
-    _vector vTargetScale, vTargetRotQuat, vTargetPos;
-    XMMatrixDecompose(&vTargetScale, &vTargetRotQuat, &vTargetPos, rotMat);
-
-    vRotQuat = XMQuaternionSlerp(vRotQuat, vTargetRotQuat, fTimeDelta * 10.f);
-    vRotQuat = XMQuaternionNormalize(vRotQuat);
-
-    _matrix matWorld =
-        XMMatrixScalingFromVector(vScale) *
-        XMMatrixRotationQuaternion(vRotQuat) *
-        XMMatrixTranslationFromVector(vPos);
-
-    pTr->Set_WorldMatrix(matWorld);
-
 }
+
+

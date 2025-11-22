@@ -163,6 +163,7 @@
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
     <ClInclude Include="..\Public\Champion.h" />
     <ClInclude Include="..\Public\CMinion.h" />
+    <ClInclude Include="..\Public\PoolManager.h" />
     <ClInclude Include="..\Public\StoreNpc.h" />
     <ClInclude Include="..\Public\UI_GameInfo.h" />
     <ClInclude Include="..\Public\UI_ChampionIcon.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
     <ClCompile Include="..\Private\Champion.cpp" />
     <ClCompile Include="..\Private\CMinion.cpp" />
+    <ClCompile Include="..\Private\PoolManager.cpp" />
     <ClCompile Include="..\Private\StoreNpc.cpp" />
     <ClCompile Include="..\Private\UI_GameInfo.cpp" />
     <ClCompile Include="..\Private\UI_ChampionIcon.cpp" />

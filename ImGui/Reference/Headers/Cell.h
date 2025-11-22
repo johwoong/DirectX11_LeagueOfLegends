@@ -9,6 +9,11 @@ public:
 	enum LINE{LINE_AB, LINE_BC, LINE_CA, LINE_END};
 	enum CELLTYPE {DEFAULT, ONLYJUMP, CELL_END};
 
+	bool CompareTwoPoint(const _float3& a, const _float3& b)
+	{
+		return XMVector3Equal(XMLoadFloat3(&a), XMLoadFloat3(&b));
+	}
+
 private:
 	CCell(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual ~CCell() = default;
@@ -49,6 +54,8 @@ private:
 	class CVIBuffer_Nav* m_pVIBuffer = { nullptr };
 #endif
 
+private:
+	friend class CNavigation;
 public:
 	static CCell* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _float3* pPoints, _int iIndex);
 	virtual void Free() override;

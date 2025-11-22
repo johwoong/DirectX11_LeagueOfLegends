@@ -136,7 +136,12 @@
     <ClInclude Include="..\Public\StoreNpc.h">
       <Filter>02. GameObjects\00. Actor\01. Building\04. Npc</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\CMinion.h" />
+    <ClInclude Include="..\Public\CMinion.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PoolManager.h">
+      <Filter>05. PoolingManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -279,6 +284,9 @@
     <Filter Include="02. GameObjects\00. Actor\02. Minion">
       <UniqueIdentifier>{f7c77ae0-5301-4127-ba02-333bae55700e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="05. PoolingManager">
+      <UniqueIdentifier>{c7a474a7-da43-49e8-bec2-c72ec948da01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -401,7 +409,12 @@
     <ClCompile Include="..\Private\StoreNpc.cpp">
       <Filter>02. GameObjects\00. Actor\01. Building\04. Npc</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\CMinion.cpp" />
+    <ClCompile Include="..\Private\CMinion.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PoolManager.cpp">
+      <Filter>05. PoolingManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc">
