@@ -34,6 +34,9 @@ CModel::CModel(const CModel& rhs)
     for (auto& pMeshContainer : rhs.m_Meshes)
         m_Meshes.push_back((CMesh*)pMeshContainer->Clone());
 
+    for (auto& pMeshContainer_Instance : rhs.m_InstanceMeshes)
+        m_InstanceMeshes.push_back((CMesh_Instance*)pMeshContainer_Instance->Clone());
+
     for (auto& Material : m_Materials)
         for (_uint i = 0; i < AI_TEXTURE_TYPE_MAX; ++i)
             Safe_AddRef(Material.pMaterials[i]);
@@ -67,6 +70,8 @@ void CModel::Get_MoveTransformationMatrix(const char* pBoneName, _vector* pTrans
         if (!strcmp(pBoneName, pBone->Get_Name()))
         {
             _vector vecMoveTranslation = m_bInterupted ? XMVectorSet(0.f, 0.f, 0.f, 1.f) : pBone->Get_Translation();
+            if (m_bInterupted)
+                vecMoveTranslation = XMVectorSet(0.f, 0.f, 0.f, 1.f);
             _float Rotation = pBone->Get_RotationRadian();
 
             memcpy(pTranslation, &vecMoveTranslation, sizeof(_vector));

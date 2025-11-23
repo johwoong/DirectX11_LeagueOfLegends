@@ -136,11 +136,38 @@
     <ClInclude Include="..\Public\StoreNpc.h">
       <Filter>02. GameObjects\00. Actor\01. Building\04. Npc</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\CMinion.h">
+    <ClInclude Include="..\Public\Minion.h">
       <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PoolManager.h">
       <Filter>05. PoolingManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_State.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_Melee.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Melee</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_IdleState.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_MoveState.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MinionManager.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_Range.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Range</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_ChaseState.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_AttackState.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Minion_DeadState.h">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -287,6 +314,18 @@
     <Filter Include="05. PoolingManager">
       <UniqueIdentifier>{c7a474a7-da43-49e8-bec2-c72ec948da01}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. Minion\Minion_Melee">
+      <UniqueIdentifier>{d9bb48e4-5a77-4e62-99f1-bab39ab1b24e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. Minion\State">
+      <UniqueIdentifier>{6eb7c75c-0675-4a69-aaa4-ee5e8551dbf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. Minion\Manager">
+      <UniqueIdentifier>{806a9581-99c2-4c8c-a1b8-d23f7de8ebc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. Minion\Minion_Range">
+      <UniqueIdentifier>{222d7195-60c1-4796-9a61-1d798275e6c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -409,11 +448,35 @@
     <ClCompile Include="..\Private\StoreNpc.cpp">
       <Filter>02. GameObjects\00. Actor\01. Building\04. Npc</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\CMinion.cpp">
+    <ClCompile Include="..\Private\Minion.cpp">
       <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PoolManager.cpp">
       <Filter>05. PoolingManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_Melee.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Melee</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_IdleState.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_MoveState.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MinionManager.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_Range.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Range</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_ChaseState.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_AttackState.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_DeadState.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

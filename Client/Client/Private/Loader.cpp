@@ -28,6 +28,10 @@
 #include "Inhibitor.h"
 #include "StoreNpc.h"
 
+// Minion
+#include "Minion_Melee.h"
+#include "Minion_Range.h"
+
 
 
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -172,6 +176,14 @@ HRESULT CLoader::Loading_For_Prtotype()
 		return E_FAIL;
 #pragma endregion Building
 
+#pragma region Minion
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Minion_Melee"),
+		CMinion_Melee::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Minion_Range"),
+		CMinion_Range::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+#pragma endregion Minion
 	return S_OK;
 }
 
@@ -244,6 +256,22 @@ HRESULT CLoader::Loading_For_GamePlay()
 	// 바이
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vi"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vi/Vi.dat"))))
+		return E_FAIL;
+
+	// 근거리 미니언
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Melee_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Melee_Blue/Minion_Melee_Blue.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Melee_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Melee_Red/Minion_Melee_Red.dat"))))
+		return E_FAIL;
+
+	// 원거리 미니언
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Range_Blue"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Range_Blue/Minion_Range_Blue.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Minion_Range_Red"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Minion/Minion_Range_Red/Minion_Range_Red.dat"))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("건물 로딩 중"));

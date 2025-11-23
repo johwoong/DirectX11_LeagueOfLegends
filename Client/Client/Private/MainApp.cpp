@@ -4,6 +4,7 @@
 #include "Level_Loading.h"
 #include "PickingManager.h"
 #include "PlayerManager.h"
+#include "PoolManager.h"
 
 #include "UI_BackGround.h"
 #include "UI_ChampionImage.h"
@@ -184,13 +185,13 @@ CMainApp* CMainApp::Create()
 void CMainApp::Free()
 {
 	__super::Free();
-
+	CPoolManager::GetInstance()->Clear_AllPooling_Layer();
 	Safe_Release(m_pRenderer);
 	Safe_Release(m_pDevice);
 	Safe_Release(m_pContext);
 
 
-
+	CPoolManager::GetInstance()->DestroyInstance();
 	CPlayerManager::GetInstance()->DestroyInstance();
 	CPickingManager::GetInstance()->DestroyInstance();
 	CUI_Manager::GetInstance()->DestroyInstance();

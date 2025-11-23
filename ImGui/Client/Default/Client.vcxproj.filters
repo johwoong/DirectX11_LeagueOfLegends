@@ -22,9 +22,6 @@
     <Filter Include="01. Levels\00. Loader">
       <UniqueIdentifier>{55167f9b-1279-4c4f-bd36-643f5bd807c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Levels\01. Logo">
-      <UniqueIdentifier>{27aae03c-2db9-4dcd-8d80-ee767bd5d3bc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01. Levels\02. GamePlay">
       <UniqueIdentifier>{d0f08c20-99ee-4a66-9ba4-28a43944535e}</UniqueIdentifier>
     </Filter>
@@ -75,6 +72,9 @@
     </Filter>
     <Filter Include="96. ShaderFiles">
       <UniqueIdentifier>{d1b26620-fd19-4e03-a176-8064bc795a7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Levels\00. Loader\01. Logo">
+      <UniqueIdentifier>{27aae03c-2db9-4dcd-8d80-ee767bd5d3bc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -133,7 +133,7 @@
       <Filter>03. ToolManager\00. CameraManager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_Logo.h">
-      <Filter>01. Levels\01. Logo</Filter>
+      <Filter>01. Levels\00. Loader\01. Logo</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_GamePlay.h">
       <Filter>01. Levels\02. GamePlay</Filter>
@@ -229,7 +229,7 @@
       <Filter>03. ToolManager\00. CameraManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_Logo.cpp">
-      <Filter>01. Levels\01. Logo</Filter>
+      <Filter>01. Levels\00. Loader\01. Logo</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>98. Default</Filter>

@@ -7,6 +7,8 @@
 #include "Ezreal.h"
 #include "Renekton.h"
 #include "Building.h"
+#include "PoolManager.h"
+#include "MinionManager.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
@@ -31,13 +33,29 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if (FAILED(Ready_Layer_UI(TEXT("Layer_UI"))))
 		return E_FAIL;
+
+
+	// ★ 미니언 풀 재사용 또는 새로 생성
+	// 블루 미니언 레이어가 풀에 없으면 -> 처음 진입한 거라고 보고 둘 다 생성
+	if (CPoolManager::GetInstance()->Reuse_Pooling_Layer(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee")) == false)
+	{
+		if (FAILED(Ready_Layer_Minion()))
+			return E_FAIL;
+	}
+
+
+	// ★ MinionManager 초기화 (이 레벨에서 운영)
+	if (FAILED(CMinionManager::GetInstance()->Initialize(LEVEL_GAMEPLAY)))
+		return E_FAIL;
+
     return S_OK;
 }
 
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
-
+	// ★ 미니언 웨이브/스폰 처리
+	CMinionManager::GetInstance()->Update(fTimeDelta);
 	CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
 	if (!pPlayer)
 		return;
@@ -216,6 +234,102 @@ HRESULT CLevel_GamePlay::Ready_Layer_UI(const _tchar* pLayerTag)
 	return S_OK;
 }
 
+HRESULT CLevel_GamePlay::Ready_Layer_Minion()
+{
+	constexpr int MELEE_POOL_COUNT = 30;
+	constexpr int CASTER_POOL_COUNT = 30;
+
+	// 1) 블루 근접 미니언 풀
+	{
+		const _tchar* pLayerTag = TEXT("Layer_Minion_Blue_Melee");
+		MINION_SPAWNDESC desc{};
+		desc.eTeam = TEAM_BLUE;
+		desc.eLane = LANE_MID;        // 초기값 의미 없음
+		desc.eMinionType = MINION_MELEE;
+		desc.vSpawnPos = _float3(0.f, 0.f, 0.f);
+
+		for (int i = 0; i < MELEE_POOL_COUNT; ++i)
+		{
+			if (FAILED(m_pGameInstance->Add_GameObject(
+				TEXT("Prototype_GameObject_Minion_Melee"),
+				LEVEL_GAMEPLAY, pLayerTag, &desc)))
+			{
+				return E_FAIL;
+			}
+		}
+
+		CPoolManager::GetInstance()->Add_Pooling_Layer(LEVEL_GAMEPLAY, pLayerTag);
+	}
+
+	// 2) 레드 근접 미니언 풀
+	{
+		const _tchar* pLayerTag = TEXT("Layer_Minion_Red_Melee");
+		MINION_SPAWNDESC desc{};
+		desc.eTeam = TEAM_RED;
+		desc.eLane = LANE_MID;
+		desc.eMinionType = MINION_MELEE;
+		desc.vSpawnPos = _float3(0.f, 0.f, 0.f);
+
+		for (int i = 0; i < MELEE_POOL_COUNT; ++i)
+		{
+			if (FAILED(m_pGameInstance->Add_GameObject(
+				TEXT("Prototype_GameObject_Minion_Melee"),
+				LEVEL_GAMEPLAY, pLayerTag, &desc)))
+			{
+				return E_FAIL;
+			}
+		}
+
+		CPoolManager::GetInstance()->Add_Pooling_Layer(LEVEL_GAMEPLAY, pLayerTag);
+	}
+
+	// 3) 블루 원거리 미니언 풀
+	{
+		const _tchar* pLayerTag = TEXT("Layer_Minion_Blue_Range");
+		MINION_SPAWNDESC desc{};
+		desc.eTeam = TEAM_BLUE;
+		desc.eLane = LANE_MID;
+		desc.eMinionType = MINION_CASTER;
+		desc.vSpawnPos = _float3(0.f, 0.f, 0.f);
+
+		for (int i = 0; i < CASTER_POOL_COUNT; ++i)
+		{
+			if (FAILED(m_pGameInstance->Add_GameObject(
+				TEXT("Prototype_GameObject_Minion_Range"), // ← 캐스터 프로토타입 이름 맞게
+				LEVEL_GAMEPLAY, pLayerTag, &desc)))
+			{
+				return E_FAIL;
+			}
+		}
+
+		CPoolManager::GetInstance()->Add_Pooling_Layer(LEVEL_GAMEPLAY, pLayerTag);
+	}
+
+	// 4) 레드 원거리 미니언 풀
+	{
+		const _tchar* pLayerTag = TEXT("Layer_Minion_Red_Range");
+		MINION_SPAWNDESC desc{};
+		desc.eTeam = TEAM_RED;
+		desc.eLane = LANE_MID;
+		desc.eMinionType = MINION_CASTER;
+		desc.vSpawnPos = _float3(0.f, 0.f, 0.f);
+
+		for (int i = 0; i < CASTER_POOL_COUNT; ++i)
+		{
+			if (FAILED(m_pGameInstance->Add_GameObject(
+				TEXT("Prototype_GameObject_Minion_Range"), // ← 이 이름도 네 프로젝트에 맞게
+				LEVEL_GAMEPLAY, pLayerTag, &desc)))
+			{
+				return E_FAIL;
+			}
+		}
+
+		CPoolManager::GetInstance()->Add_Pooling_Layer(LEVEL_GAMEPLAY, pLayerTag);
+	}
+
+	return S_OK;
+}
+
 
 
 CLevel_GamePlay* CLevel_GamePlay::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -234,4 +348,5 @@ CLevel_GamePlay* CLevel_GamePlay::Create(ID3D11Device* pDevice, ID3D11DeviceCont
 void CLevel_GamePlay::Free()
 {
     __super::Free();
+	CMinionManager::GetInstance()->DestroyInstance();
 }

@@ -92,11 +92,6 @@ HRESULT CChampion::SetUp_ShaderResources()
 	_float4x4 ViewMatrix = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
 	_float4x4 ProjMatrix = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
 
-	// ? 디버그 출력
-	wchar_t buf[256];
-	swprintf(buf, 256, L"[WorldMatrix Pos] (%.2f, %.2f, %.2f, %.2f)\n",
-		WorldMatrix._41, WorldMatrix._42, WorldMatrix._43, WorldMatrix._44);
-	OutputDebugString(buf);
 
 	if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &WorldMatrix, sizeof(_float4x4))))
 		return E_FAIL;

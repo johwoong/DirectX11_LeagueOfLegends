@@ -182,7 +182,11 @@ void CImGui_Manager::Update_Imgui()
 			Set_Navigation();
 			ImGui::EndTabItem();
 		}
-		
+		if (ImGui::BeginTabItem("Animation Tool"))
+		{
+			Set_Animation();
+			ImGui::EndTabItem();
+		}
 
 		ImGui::EndTabBar();
 	}

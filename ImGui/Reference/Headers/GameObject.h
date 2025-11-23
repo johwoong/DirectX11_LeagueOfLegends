@@ -28,6 +28,7 @@ public:
     virtual HRESULT Render_Glow() { return 0; }
     virtual HRESULT Render_Distort() { return 0; }
     virtual HRESULT Render_EdgeDetection() { return 0; }
+    virtual void ReUse_Setting(void* pArg) {};
     virtual void Set_Info(void* pArg) {};
     virtual _bool Picking(_float3* PickingPoint) { return false; }
     virtual void PickingTrue() { return; }

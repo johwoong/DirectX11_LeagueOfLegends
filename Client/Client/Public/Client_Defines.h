@@ -9,6 +9,7 @@ namespace Client
 
 	// SHADER 
 	enum SHADER_NONANIMID {SHADER_NOANIM_DEFAULT};
+	enum SHADER_ANIMID {SHADER_ANIMDEFAULT,};
 	enum OBJECT_ID {PLAYER, ENEMY, NPC, TEAM, OBJECT_END};
 
 	enum STATETYPE
@@ -17,6 +18,28 @@ namespace Client
 		STATETYPE_MAIN,
 		STATETYPE_END,
 		STATETYPE_DEFAULT
+	};
+
+	enum TEAMTYPE
+	{
+		TEAM_BLUE,
+		TEAM_RED,
+	};
+
+	enum LANE_TYPE
+	{
+		LANE_TOP,
+		LANE_MID,
+		LANE_BOT,
+		LANE_END
+	};
+
+	enum MINION_TYPE
+	{
+		MINION_MELEE,
+		MINION_CASTER,
+		MINION_SIEGE,   // ´ëÆ÷
+		MINION_SUPER,
 	};
 }
 
