@@ -35,9 +35,9 @@ HRESULT CEzreal::Initialize(void* pArg)
 
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
-
+	m_tStat.AttackRange = 300.f;
+	Set_Scale(_float3(1.2f, 1.2f, 1.2f));
 	SetSkillInfo(); 
-	Set_Scale(_float3(0.12f, 0.12f, 0.12f));
 	return S_OK;
 }
 

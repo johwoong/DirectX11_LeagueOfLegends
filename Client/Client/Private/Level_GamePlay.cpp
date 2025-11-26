@@ -29,10 +29,37 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
 		return E_FAIL;
+	if (FAILED(Ready_Layer_Enemy(TEXT("Layer_Enemy"))))
+		return E_FAIL;
 	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
 		return E_FAIL;
 	if (FAILED(Ready_Layer_UI(TEXT("Layer_UI"))))
 		return E_FAIL;
+
+	CPlayerManager* pPM = CPlayerManager::GetInstance();
+	CChampion* pActiveChampion = dynamic_cast<CChampion*>(pPM->Get_ActivePlayer());
+	if (!pActiveChampion)
+		return E_FAIL;
+
+	CGameObject* pObj = nullptr;
+
+	if (FAILED(m_pGameInstance->Add_GameObject_Out(
+		TEXT("Prototype_GameObject_UI_AttackRange"), // 새 프로토타입
+		LEVEL_GAMEPLAY,
+		TEXT("Layer_Effect"),                     // UI말고 이펙트 레이어 추천
+		pObj,
+		pActiveChampion)))                        // owner로 챔피언 넘김
+	{
+		return E_FAIL;
+	}
+
+	CAttackRange* pRange = dynamic_cast<CAttackRange*>(pObj);
+	if (pRange)
+	{
+		pRange->Set_Owner(pActiveChampion);
+		pActiveChampion->Set_AttackRangeObj(pRange);
+	}
+
 
 
 	// ★ 미니언 풀 재사용 또는 새로 생성
@@ -181,6 +208,13 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player(const _tchar* pLayerTag)
 	return S_OK;
 }
 
+HRESULT CLevel_GamePlay::Ready_Layer_Enemy(const _tchar* pLayerTag)
+{
+	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Vayne"), LEVEL_GAMEPLAY, pLayerTag, nullptr)))
+		return E_FAIL;
+	return S_OK;
+}
+
 HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar* pLayerTag)
 {	
 	CCamera_Dynamic::CAMERADESC_DERIVED CameraDesc;
@@ -231,6 +265,8 @@ HRESULT CLevel_GamePlay::Ready_Layer_UI(const _tchar* pLayerTag)
 		return E_FAIL;
 	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_ItemInfo"), LEVEL_GAMEPLAY, pLayerTag)))
 		return E_FAIL;
+
+
 	return S_OK;
 }
 

@@ -13,22 +13,34 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\NonAnim">
+      <UniqueIdentifier>{405308f5-2019-40ee-967b-493e542daae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Anim">
+      <UniqueIdentifier>{c0fa831d-3e36-44e9-808b-f9e3932ff2bb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GlbToDat.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="FbxToNonAnimMat.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="FbxToDatNonAnim.cpp">
+      <Filter>소스 파일\NonAnim</Filter>
     </ClCompile>
     <ClCompile Include="FbxToNonAnim.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\NonAnim</Filter>
     </ClCompile>
-    <ClCompile Include="FbxToDatNonAnim.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="GlbToDat.cpp">
+      <Filter>소스 파일\NonAnim</Filter>
+    </ClCompile>
+    <ClCompile Include="FbxToNoAnimReverse.cpp">
+      <Filter>소스 파일\NonAnim</Filter>
     </ClCompile>
     <ClCompile Include="FbxToDat.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="FbxToNonAnimMat.cpp">
+      <Filter>소스 파일\Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="FbxToAnimReverse.cpp">
+      <Filter>소스 파일\Anim</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

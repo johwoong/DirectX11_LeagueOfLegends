@@ -76,9 +76,9 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 
 	m_pPipeLine->Update();
 	m_pPicking->Update();
-	m_pFrustum->Transform_ToWorldSpace();
 
 	m_pLevel_Manager->Late_Update(fTimeDelta);
+	m_pFrustum->Transform_ToWorldSpace();
 	m_pObject_Manager->Late_Update(fTimeDelta);
 }
 

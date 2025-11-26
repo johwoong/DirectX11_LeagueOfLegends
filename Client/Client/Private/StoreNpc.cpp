@@ -32,9 +32,9 @@ HRESULT CStoreNpc::Initialize(void* pArg)
 	m_pModelCom->Set_CurrentAnimIndex(m_eState);
 
 	_float3 fixedScale = m_vScale;
-	fixedScale.x *= 10.f;
-	fixedScale.y *= 10.f;
-	fixedScale.z *= 10.f;
+	fixedScale.x *= 100.f;
+	fixedScale.y *= 100.f;
+	fixedScale.z *= 100.f;
 
 	Set_Scale(fixedScale);
 	return S_OK;

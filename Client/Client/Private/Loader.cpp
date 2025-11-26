@@ -16,11 +16,15 @@
 #include "UI_MiniMap.h"
 #include "UI_GameInfo.h"
 #include "UI_ItemInfo.h"
+#include "UI_AttackRange.h"
 
 // Champion
 #include "Ezreal.h"
 #include "Renekton.h"
 #include "Vi.h"
+
+// Enemy
+#include "Vayne.h"
 
 // Building
 #include "Nexus.h"
@@ -144,6 +148,9 @@ HRESULT CLoader::Loading_For_Prtotype()
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_ItemInfo"),
 		CUI_ItemInfo::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_AttackRange"),
+		CAttackRange::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 #pragma endregion 
 #pragma region Champion
 	/*For.Prototype_GameObject_Champion*/
@@ -159,6 +166,13 @@ HRESULT CLoader::Loading_For_Prtotype()
 		CVi::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+#pragma endregion
+
+#pragma region Enemy
+	/*For.Prototype_GameObject_Champion*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Vayne"),
+		CVayne::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 #pragma endregion
 
 #pragma region Building
@@ -223,6 +237,10 @@ HRESULT CLoader::Loading_For_GamePlay()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Cube"),
 		CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	/*For.Prototype_Component_VIBuffer_Quad */
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Quad"),
+		CVIBuffer_Quad::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	HANDLE hFile = 0;
 	_ulong dwByte = 0;
@@ -256,6 +274,11 @@ HRESULT CLoader::Loading_For_GamePlay()
 	// 바이
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vi"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vi/Vi.dat"))))
+		return E_FAIL;
+
+	// 베인
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vayne"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vayne/Vayne.dat"))))
 		return E_FAIL;
 
 	// 근거리 미니언
@@ -350,6 +373,10 @@ HRESULT CLoader::Loading_For_GameUI()
 	// ItemInfo
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ItemInfo"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Interface/ItemInfo.dds"), 1))))
+		return E_FAIL;
+	// Champion Attack Range 표시
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_AttackRange"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillRange/SkillRange.dds"), 1))))
 		return E_FAIL;
 #pragma region Ezreal_SkillImage
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Ezreal_Icon"),

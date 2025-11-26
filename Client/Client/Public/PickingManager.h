@@ -27,7 +27,6 @@ public:
 public: /*Get*/
 	_float3 Get_PickingPos() { return m_vPickingPos; }
 	class CGameObject* Get_PickedObj() { return m_pPickedObj; }
-
 public:
 	_bool	Picking();
 

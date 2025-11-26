@@ -128,7 +128,6 @@ HRESULT CMainApp::Ready_Prototype_Component()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/ShaderFiles/Shader_VtxTex.hlsl"), VTXTEX_DECLARATION::Elements, VTXTEX_DECLARATION::iNumElements))))
 		return E_FAIL;
 
-
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_UI"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Shaderfiles/Shader_UI.hlsl"), VTXTEX_DECLARATION::Elements, VTXTEX_DECLARATION::iNumElements))))
 		return E_FAIL;
@@ -184,7 +183,6 @@ CMainApp* CMainApp::Create()
 
 void CMainApp::Free()
 {
-	__super::Free();
 	CPoolManager::GetInstance()->Clear_AllPooling_Layer();
 	Safe_Release(m_pRenderer);
 	Safe_Release(m_pDevice);

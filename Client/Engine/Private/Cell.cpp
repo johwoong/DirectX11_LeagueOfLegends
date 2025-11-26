@@ -26,7 +26,7 @@ void CCell::Set_PointValue(POINT ePoint, const _float3& vPos)
 	m_vNormals[LINE_CA] = _float3(vLines[LINE_CA].z * -1.f, 0.f, vLines[LINE_CA].x);
 
 #ifdef _DEBUG
-	// VIBuffer 재생성 (변화된 삼각형을 위한)
+	// VIBuffer 재생성 
 	Safe_Release(m_pVIBuffer);
 	m_pVIBuffer = CVIBuffer_Nav::Create(m_pDevice, m_pContext, m_vPoints);
 #endif

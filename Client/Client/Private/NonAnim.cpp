@@ -96,7 +96,7 @@ HRESULT CNonAnim::Render()
 _float CNonAnim::Check_CullingRadius()
 {
 	if (!strcmp(m_ModelDesc.pModeltag, "Map"))
-		return 3000.f;
+		return 100.f;
 	return 0.f;
 }
 

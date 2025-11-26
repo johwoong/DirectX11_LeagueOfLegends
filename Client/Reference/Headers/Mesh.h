@@ -32,7 +32,7 @@ public:
 	HRESULT SetUp_Bones(HANDLE hFile, _ulong* pdwByte, class CModel* pModel);
 	HRESULT Bin_SetUp_Bones(class CModel* pModel, DATA_BINMESH* pAIMesh); // Ãß°¡
 	_bool Picking(CTransform* pTransform, _float3* pOut);
-
+	void Update_PickingVertices(_float4x4* pBoneMatrices, _fmatrix PivotMatrix);
 private:
 	char						m_szName[MAX_PATH] = "";
 	const aiMesh* m_pAIMesh = nullptr;

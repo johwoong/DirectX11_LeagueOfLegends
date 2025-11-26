@@ -20,6 +20,39 @@ _bool CMinion_Melee::Is_AnimationLoop(_uint eAnimId)
     return false;
 }
 
+void CMinion_Melee::ReUse_Setting(void* pArg)
+{
+    // 1) 공통 리셋 (팀/라인/HP/위치/네비 인덱스 등)
+    __super::ReUse_Setting(pArg);
+
+    // 2) 이전 상태 정리 (DeadState 포함)
+    if (m_pState)
+    {
+        m_pState->Exit();
+        Safe_Delete(m_pState);
+        m_pState = nullptr;
+    }
+
+    // 3) 다시 처음처럼 IdleState로 시작
+    m_pState = new Minion::CIdleState(this);
+    m_pState->Enter();
+
+    // 4) 논리 상태도 살아있는 상태로
+    m_eState = STATE_MOVE;     // 또는 STATE_IDLE, 너 스타일대로
+
+    // 5) 애니메이션도 초기 상태로 (Idle 또는 Run)
+    if (m_pModelCom)
+    {
+        // Idle에서 걷기로 넘어가는 구조면 Idle로
+        m_pModelCom->Set_CurrentAnimIndex(IDLE);
+        // 또는 바로 달리게 하고 싶으면 RUN으로
+        // m_pModelCom->Set_CurrentAnimIndex(RUN);
+    }
+
+    // 공격 관련도 한 번 더 클리어하고 싶으면
+    m_fAttackTimer = 0.f;
+}
+
 CMinion_Melee::CMinion_Melee(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CMinion(pDevice, pContext)
 {
@@ -76,17 +109,33 @@ HRESULT CMinion_Melee::Initialize(void* pArg)
 
 int CMinion_Melee::Update(_float fTimeDelta)
 {
-    int iSuper = __super::Update(fTimeDelta);
-    if (iSuper < 0)
-        return iSuper;
+    // 1) 먼저 CMinion::Update 호출 + 리턴값 확인
+    int iExit = __super::Update(fTimeDelta);
 
-    if (!m_pState)
-        return iSuper;
+    // 2) 풀로 보내거나(OBJ_POOL) 완전 삭제(OBJ_DEAD)해야 하면
+    //    더 이상 상태 머신 업데이트 하지 말고 그대로 리턴
+    if (iExit == OBJ_POOL || iExit == OBJ_DEAD)
+        return iExit;
 
-    AI_Behavior(fTimeDelta);
-    Update_State(fTimeDelta);
+    // 3) 여기서부터는 살아있는 동안의 상태 머신 처리
+    if (m_pState)
+    {
+        if (CMinionState* pNew = m_pState->AI_Behaviour(fTimeDelta))
+        {
+            Safe_Delete(m_pState);
+            m_pState = pNew;
+            m_pState->Enter();
+        }
 
-    return iSuper;
+        if (CMinionState* pNew = m_pState->Update(fTimeDelta))
+        {
+            Safe_Delete(m_pState);
+            m_pState = pNew;
+            m_pState->Enter();
+        }
+    }
+
+    return 0;
 }
 
 void CMinion_Melee::Late_Update(_float fTimeDelta)
@@ -242,7 +291,7 @@ CGameObject* CMinion_Melee::Clone(void* pArg)
 
 void CMinion_Melee::Free()
 {
-    __super::Free();
 
     Safe_Delete(m_pState);
+    __super::Free();
 }

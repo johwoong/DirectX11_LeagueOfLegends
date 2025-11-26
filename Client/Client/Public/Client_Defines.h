@@ -41,6 +41,8 @@ namespace Client
 		MINION_SIEGE,   // ´ëÆ÷
 		MINION_SUPER,
 	};
+
+	enum ENEMY_TYPE { VAYNE, ENEMY_END };
 }
 
 #include <process.h>

@@ -21,6 +21,8 @@ public:
 
 private:
 	IDLETYPE m_eIdleType = IDLE_END;
+private:
+	vector<_uint> m_vecIdleAnim;
 	
 };
 NS_END

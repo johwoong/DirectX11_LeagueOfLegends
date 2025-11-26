@@ -496,9 +496,6 @@ bool CTransform::Move_ByPath(_float fDeltaTime, CNavigation* pNavi)
     else
         vNextPos = vPos + vDir * step;
 
-    // ★★★ 핵심: 여기서 더 이상 isMove()로 막지 않는다 ★★★
-    // 경로 생성 시 이미 NavMesh 위로만 계산했으므로,
-    // 여기서는 셀 인덱스만 갱신해서 높이만 맞춰준다.
 
     // 현재 위치 기준으로 가장 가까운 셀 인덱스 갱신
     pNavi->Compute_CurrentIndex_byXZ(vNextPos);
@@ -511,7 +508,7 @@ bool CTransform::Move_ByPath(_float fDeltaTime, CNavigation* pNavi)
     Set_State(STATE_TRANSLATION, vNextPos);
 
     // 회전도 살짝
-    SmoothLookAt(-vDir, fDeltaTime, 8.f);
+    SmoothLookAt(-vDir, fDeltaTime, 16.f);
 
     return true;
 }

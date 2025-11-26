@@ -32,6 +32,8 @@ public:
 public:
 	virtual _bool Is_AnimationLoop(_uint eAnimId) override;
 public:
+	virtual void ReUse_Setting(void* pArg) override;  // ¡Ú Ãß°¡
+public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
 	virtual int Update(_float fTimeDelta);

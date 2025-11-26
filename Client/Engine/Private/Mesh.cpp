@@ -254,61 +254,70 @@ _bool CMesh::Picking(CTransform* pTransform, _float3* pOut)
 	CPicking* pPicking = CPicking::GetInstance();
 	pPicking->AddRef();
 
-	_matrix		WorldMatrixInv = pTransform->Get_WorldMatrixInverse();
-	_float3			vTempRayDir, vTempRayPos;
-	XMVECTOR		vRayDir, vRayPos;
+	_float3 vTempRayDir, vTempRayPos;
 	pPicking->Compute_LocalRayInfo(&vTempRayDir, &vTempRayPos, pTransform);
 
-	vRayPos = XMLoadFloat3(&vTempRayPos);
+	XMVECTOR vRayPos = XMLoadFloat3(&vTempRayPos);
 	vRayPos = XMVectorSetW(vRayPos, 1.f);
-	vRayDir = XMLoadFloat3(&vTempRayDir);
+
+	XMVECTOR vRayDir = XMLoadFloat3(&vTempRayDir);
 	vRayDir = XMVector3Normalize(vRayDir);
 
-	_matrix	WorldMatrix = pTransform->Get_WorldMatrix();
-	FACEINDICES32* pIndices = new FACEINDICES32[m_iNumPrimitive];
+	XMMATRIX world = pTransform->Get_WorldMatrix();
 
 	for (_uint i = 0; i < m_iNumPrimitive; ++i)
 	{
-		pIndices[i]._0 = m_pPickingIndices[i]._0;
-		pIndices[i]._1 = m_pPickingIndices[i]._1;
-		pIndices[i]._2 = m_pPickingIndices[i]._2;
-	}
+		const FACEINDICES32& idx = m_pPickingIndices[i];
 
-	for (_uint i = 0; i < m_iNumPrimitive; ++i)
-	{
+		XMVECTOR p0 = XMVector3TransformCoord(XMLoadFloat3(&m_pPickingVertices[idx._0]), world);
+		XMVECTOR p1 = XMVector3TransformCoord(XMLoadFloat3(&m_pPickingVertices[idx._1]), world);
+		XMVECTOR p2 = XMVector3TransformCoord(XMLoadFloat3(&m_pPickingVertices[idx._2]), world);
 
-		_float3 vPosition0 = _float3(0.f, 0.f, 0.f);
-		_float3 vPosition1 = _float3(0.f, 0.f, 0.f);
-		_float3 vPosition2 = _float3(0.f, 0.f, 0.f);
-
-		memcpy(&vPosition0, &m_pPickingVertices[pIndices[i]._0], sizeof(_float3));
-		_vector vTemp_1 = XMLoadFloat3(&vPosition0);
-		vTemp_1 = XMVectorSetW(vTemp_1, 1.f);
-		memcpy(&vPosition1, &m_pPickingVertices[pIndices[i]._1], sizeof(_float3));
-		_vector vTemp_2 = XMLoadFloat3(&vPosition1);
-		vTemp_2 = XMVectorSetW(vTemp_2, 1.f);
-		memcpy(&vPosition2, &m_pPickingVertices[pIndices[i]._2], sizeof(_float3));
-		_vector vTemp_3 = XMLoadFloat3(&vPosition2);
-		vTemp_3 = XMVectorSetW(vTemp_3, 1.f);
-
-		_float fDist = 0;
-
-		if (true == TriangleTests::Intersects((FXMVECTOR)vRayPos, (FXMVECTOR)vRayDir, (FXMVECTOR)vTemp_1, (GXMVECTOR)vTemp_2, (HXMVECTOR)vTemp_3, fDist))
+		float dist = 0.f;
+		if (TriangleTests::Intersects(vRayPos, vRayDir, p0, p1, p2, dist))
 		{
-			_vector	vPickPos = vRayPos + vRayDir * fDist;
+			XMVECTOR pick = vRayPos + vRayDir * dist;
+			XMStoreFloat3(pOut, pick);
 
-			XMStoreFloat3(pOut, XMVector3TransformCoord(vPickPos, WorldMatrix));
-
-			Safe_Delete_Array(pIndices);
-			
+			pPicking->Release();
 			return true;
 		}
-
 	}
 
-	Safe_Delete_Array(pIndices);
 	pPicking->Release();
 	return false;
+}
+
+void CMesh::Update_PickingVertices(_float4x4* pBoneMatrices, _fmatrix PivotMatrix)
+{
+	if (m_iNumBones == 0 || m_pAnimVertices == nullptr)
+		return;
+
+	for (_uint i = 0; i < m_iNumVertices; ++i)
+	{
+		const VTXANIMMODEL& v = m_pAnimVertices[i];
+
+		XMVECTOR p = XMLoadFloat3(&v.vPosition);
+		p = XMVectorSetW(p, 1.f);
+
+		// blend index / weight 배열로 변환
+		UINT   idx[4] = { v.vBlendIndex.x, v.vBlendIndex.y, v.vBlendIndex.z, v.vBlendIndex.w };
+		float  w[4] = { v.vBlendWeight.x, v.vBlendWeight.y, v.vBlendWeight.z, v.vBlendWeight.w };
+
+		XMVECTOR skinned = XMVectorZero();
+
+		for (int k = 0; k < 4; ++k)
+		{
+			if (w[k] <= 0.f) continue;
+
+			XMMATRIX bone = XMLoadFloat4x4(&pBoneMatrices[idx[k]]);
+			skinned += XMVector3TransformCoord(p, bone) * w[k];
+		}
+
+		skinned = XMVector3TransformCoord(skinned, PivotMatrix);
+
+		XMStoreFloat3(&m_pPickingVertices[i], skinned);
+	}
 }
 
 HRESULT CMesh::Create_VertexBuffer_NonAnimModel(const aiMesh* pAIMesh, _fmatrix PivotMatrix)
@@ -490,9 +499,12 @@ HRESULT CMesh::Create_VertexBuffer_AnimModel(HANDLE hFile, _ulong* pdwByte, CMod
 
 	VTXANIMMODEL* pVertices = new VTXANIMMODEL[m_iNumVertices];
 	ZeroMemory(pVertices, sizeof(VTXANIMMODEL) * m_iNumVertices);
-
+	m_pPickingVertices = new _float3[m_iNumVertices];
 	for (_uint i = 0; i < m_iNumVertices; ++i)
+	{
 		ReadFile(hFile, &pVertices[i], sizeof(VTXANIMMODEL), pdwByte, nullptr);
+		m_pPickingVertices[i] = pVertices[i].vPosition;
+	}
 
 	/* 이 메시에 영향을 주는 뼈의 갯수. */
 	ReadFile(hFile, &m_iNumBones, sizeof(_uint), pdwByte, nullptr);

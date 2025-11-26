@@ -2,9 +2,12 @@
 
 #include "GameInstance.h"
 #include "Client_Defines.h"
+#include "PickingManager.h"
+#include "Player.h"
 #include "Ezreal.h"
 #include "Renekton.h"
 #include "Vi.h"
+#include "Enemy.h"
 
 NS_BEGIN(Engine)
 class CModel;
@@ -19,9 +22,17 @@ public:
 	{
 		STATE_IDLE,
 		STATE_RUN,
-		STATE_ATTACK,
-		STATE_HIT,
-		STATE_SKILL,
+		STATE_ATTACK1,
+		STATE_ATTACK2,
+		STATE_ATTACK3,
+		STATE_ATTACK4,
+		STATE_SKILL_ATTACK_Q,
+		STATE_SKILL_ATTACK_W,
+		STATE_SKILL_ATTACK_E,
+		STATE_SKILL_ATTACK_R,
+		STATE_EMOTION,
+		STATE_DEAD,
+		STATE_CHASE,
 		STATE_END
 	};
 
@@ -48,6 +59,20 @@ public:
 		pCurrentState->Enter();
 
 		return pCurrentState;
+	}
+
+	float GetDistanceXZ(_vector a, _vector b)
+	{
+		float ax = XMVectorGetX(a);
+		float az = XMVectorGetZ(a);
+
+		float bx = XMVectorGetX(b);
+		float bz = XMVectorGetZ(b);
+
+		float dx = ax - bx;
+		float dz = az - bz;
+
+		return sqrtf(dx * dx + dz * dz);
 	}
 
 	STATE_ID Get_StateID() const { return m_eState; }

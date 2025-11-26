@@ -1,5 +1,8 @@
 #include "Minion.h"
 #include "MinionManager.h"
+#include "PoolManager.h"
+#include "PickingManager.h"
+
 CMinion::CMinion(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CActor(pDevice, pContext)
 {
@@ -27,11 +30,10 @@ CMinion::CMinion(const CMinion& rhs)
     Safe_AddRef(m_pNavigationCom);
 }
 
-// ======================= 기본 Initialize =======================
+// ======================= Initialize =======================
 
 HRESULT CMinion::Initialize_Prototype()
 {
-    // 공통으로 쓸 게 있으면 여기서
     return __super::Initialize_Prototype();
 }
 
@@ -40,45 +42,39 @@ HRESULT CMinion::Initialize(void* pArg)
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
 
-    // ★ 먼저 pArg에서 팀/라인/타입 세팅
     if (pArg)
     {
-        MINION_SPAWNDESC* pDesc = reinterpret_cast<MINION_SPAWNDESC*>(pArg);
-
+        MINION_SPAWNDESC* pDesc = (MINION_SPAWNDESC*)pArg;
         m_eTeam = pDesc->eTeam;
         m_eLane = pDesc->eLane;
         m_eMinionType = pDesc->eMinionType;
         m_iLaneIndex = pDesc->iLaneIndex;
         m_iWaveIndex = pDesc->iWaveIndex;
-        m_vTargetPos = pDesc->vTargetPos;   // ★ 추가
+        m_vTargetPos = pDesc->vTargetPos;
     }
 
-    // ★ 슬롯 인덱스 기반으로 퍼질 오프셋 계산
     Compute_LaneOffset();
 
-    // 팀/라인 세팅 끝난 후
-    if (CMinionManager* pMgr = CMinionManager::GetInstance())
+    if (CMinionManager* mgr = CMinionManager::GetInstance())
     {
-        const auto& path = pMgr->GetLanePath(m_eLane);
-        m_iLaneNodeIndex = pMgr->GetLaneStartIndex(m_eTeam, path);  
+        const auto& path = mgr->GetLanePath(m_eLane);
+        m_iLaneNodeIndex = mgr->GetLaneStartIndex(m_eTeam, path);
     }
 
-    // ★ 그 다음에 Ready_Components 호출 (이제 m_eTeam 값이 올바르게 들어가 있음)
     if (FAILED(Ready_Components(pArg)))
         return E_FAIL;
 
-    CNavigation::NAVDESC NaviDesc;
-    ZeroMemory(&NaviDesc, sizeof NaviDesc);
-    if (FAILED(__super::Add_Components(TEXT("Com_Navigation"), LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"), (CComponent**)&m_pNavigationCom, &NaviDesc)))
+    CNavigation::NAVDESC NaviDesc{};
+    if (FAILED(__super::Add_Components(
+        TEXT("Com_Navigation"), LEVEL_STATIC,
+        TEXT("Prototype_Component_ChampionNavigation"),
+        (CComponent**)&m_pNavigationCom, &NaviDesc)))
         return E_FAIL;
 
-    // 기본 스탯 초기화
     m_tStats.m_fCurrentHp = m_tStats.m_fMaxHp;
 
-    if (m_tStats.m_fAttackSpeed > 0.f)
-        m_fAttackCoolTime = 1.f / m_tStats.m_fAttackSpeed;
-    else
-        m_fAttackCoolTime = 1.f;
+    m_fAttackCoolTime = (m_tStats.m_fAttackSpeed > 0.f)
+        ? 1.f / m_tStats.m_fAttackSpeed : 1.f;
 
     m_fAttackTimer = 0.f;
     m_eState = STATE_MOVE;
@@ -87,7 +83,7 @@ HRESULT CMinion::Initialize(void* pArg)
     return S_OK;
 }
 
-// ======================= Update / Late_Update =======================
+// ======================= Update =======================
 
 int CMinion::Update(_float fTimeDelta)
 {
@@ -103,6 +99,7 @@ int CMinion::Update(_float fTimeDelta)
     if (m_tStats.m_fCurrentHp <= 0.f && m_eState != STATE_DIE)
     {
         m_tStats.m_fCurrentHp = 0.f;
+        m_bDying = true;
         m_eState = STATE_DIE;
         On_Death();
     }
@@ -113,21 +110,19 @@ int CMinion::Update(_float fTimeDelta)
 void CMinion::Late_Update(_float fTimeDelta)
 {
     __super::Late_Update(fTimeDelta);
-    if (Is_Frustum(Check_CullingRadius()) == false)
-    {
+
+    if (!Is_Frustum(Check_CullingRadius()))
         return;
-    }
-    if (m_pRendererCom != nullptr)
-    {
+
+    if (m_pRendererCom)
         m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
-    }
 }
 
-// ======================= Render 계열 =======================
+// ======================= Render =======================
 
 HRESULT CMinion::Render()
 {
-    if (nullptr == m_pShaderCom || m_pModelCom == nullptr)
+    if (!m_pShaderCom || !m_pModelCom)
         return E_FAIL;
 
     if (FAILED(SetUp_ShaderResources()))
@@ -148,23 +143,23 @@ HRESULT CMinion::Render()
         if (FAILED(m_pModelCom->Render(m_pShaderCom, i, m_eShaderID)))
             return E_FAIL;
     }
+    return S_OK;
 }
 
 HRESULT CMinion::Render_ShadowDepth()
 {
-    // 그림자용 쉐이더 세팅이 따로 있다면 여기서
     return __super::Render_ShadowDepth();
 }
 
 HRESULT CMinion::Render_EdgeDetection()
 {
-    // 외곽선 / 실루엣 렌더용
     return __super::Render_EdgeDetection();
 }
 
+// ======================= Navigation =======================
+
 void CMinion::Compute_CurrentIndex(LEVEL eLevel)
 {
-    // 필요하면 레벨별로 다른 NaviDesc 관리
     UNREFERENCED_PARAMETER(eLevel);
     Compute_CurrentIndex();
 }
@@ -178,186 +173,99 @@ void CMinion::Compute_CurrentIndex()
     m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
 }
 
+// ======================= Target / AI =======================
 
 _float CMinion::Target_Distance(CActor* pTarget) const
 {
     if (!pTarget || !m_pTransformCom)
         return FLT_MAX;
 
-    _vector vMyPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-    _vector vTargetPos = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+    _vector a = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    _vector b = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-    _vector vA = XMVectorSetY(vMyPos, 0.f);
-    _vector vB = XMVectorSetY(vTargetPos, 0.f);
+    a = XMVectorSetY(a, 0.f);
+    b = XMVectorSetY(b, 0.f);
 
-    return XMVectorGetX(XMVector3Length(vB - vA));
-}
-
-
-void CMinion::Follow_Target(_float fTimeDelta)
-{
-    if (!m_pTarget || !m_pTransformCom || !m_bMove)
-        return;
-
-    _vector vMyPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-    _vector vTargetPos = m_pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
-
-    // 타겟 기준 "타겟 → 나" 방향 (XZ 평면)
-    _vector vDirFromTarget = XMVectorSetY(vMyPos - vTargetPos, 0.f);
-    if (XMVectorGetX(XMVector3LengthSq(vDirFromTarget)) < 1e-6f)
-    {
-        // 완전히 겹쳐 있으면 임의 방향
-        vDirFromTarget = XMVectorSet(0.f, 0.f, 1.f, 0.f);
-    }
-    else
-    {
-        vDirFromTarget = XMVector3Normalize(vDirFromTarget);
-    }
-
-    // 1) 타겟에서 공격 사거리만큼 떨어진 원 위의 기본 위치
-    _vector vDesiredPos = vTargetPos + vDirFromTarget * m_tStats.m_fAttackRange;
-
-    // 2) 타겟 기준 오른쪽 벡터
-    _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-    _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vDirFromTarget));
-
-    // 3) 내 슬롯 오프셋만큼 좌우로 퍼지게
-    vDesiredPos += vRight * m_fLaneOffset;
-
-    // 4) 현재 위치에서 그 자리까지 이동
-    _vector vMoveDir = XMVectorSetY(vDesiredPos - vMyPos, 0.f);
-    float lenSq = XMVectorGetX(XMVector3LengthSq(vMoveDir));
-    if (lenSq < 1e-6f)
-        return;
-
-    float fDist = sqrtf(lenSq);
-    float fMaxMove = m_tStats.m_fWalkSpeed * fTimeDelta;
-
-    // 너무 가까우면 더 이상 안 움직이게
-    if (fDist < 0.05f)   // 0.05f → 0.03f 정도로 줄이거나, 그대로 둬도 상관없음
-        return;
-
-    if (fMaxMove > fDist)
-        fMaxMove = fDist;
-
-    vMoveDir = XMVector3Normalize(vMoveDir);
-    vMyPos += vMoveDir * fMaxMove;
-
-    m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vMyPos);
-
-    // 네비게이션 높이 보정
-    Check_Navigation();
-}
-
-_float CMinion::Check_CullingRadius()
-{
-    return 100.f;
-}
-
-_bool CMinion::Is_TargetInAttackRange() const
-{
-    if (!m_pTarget)
-        return false;
-
-    _float dist = Target_Distance(m_pTarget);
-
-    // LaneOffset 만큼 옆으로 빠져 있으니까 마진을 조금 줌
-    _float fEffectiveRange = m_tStats.m_fAttackRange + fabsf(m_fLaneOffset) * 0.6f;
-
-    return dist <= fEffectiveRange;
-}
-
-_bool CMinion::Is_TargetInAggroRange() const
-{
-    if (!m_pTarget)
-        return false;
-
-    return Target_Distance(m_pTarget) <= m_tStats.m_fAggroRadius;
+    return XMVectorGetX(XMVector3Length(b - a));
 }
 
 void CMinion::Find_Target()
 {
-    // 이미 타겟 있으면 그대로 둠 (롤처럼 한 번 잡으면 유지)
     if (m_pTarget)
         return;
 
-    CGameInstance* pGI = CGameInstance::GetInstance();
-    Safe_AddRef(pGI);
+    CGameInstance* GI = CGameInstance::GetInstance();
+    GI->AddRef();
 
-    list<CGameObject*>* pEnemyMeleeList = nullptr;
-    list<CGameObject*>* pEnemyRangeList = nullptr;
+    list<CGameObject*>* pMelee = nullptr;
+    list<CGameObject*>* pRange = nullptr;
 
     if (m_eTeam == TEAM_BLUE)
     {
-        pEnemyMeleeList = pGI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Melee"));
-        pEnemyRangeList = pGI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Range"));
+        pMelee = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Melee"));
+        pRange = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Range"));
     }
     else
     {
-        pEnemyMeleeList = pGI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee"));
-        pEnemyRangeList = pGI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Range"));
+        pMelee = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee"));
+        pRange = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Range"));
     }
 
-    CActor* pBest = nullptr;
-    _float  fBestDist = m_tStats.m_fAggroRadius;   // 시야 안에서만
-
+    CActor* best = nullptr;
+    _float  bestDist = m_tStats.m_fAggroRadius;
     const _int mySlot = m_iLaneIndex;
 
-    auto ScanList = [&](list<CGameObject*>* pList)
+    auto Scan = [&](list<CGameObject*>* list)
         {
-            if (!pList) return;
+            if (!list) return;
 
-            for (CGameObject* pObj : *pList)
+            for (auto* obj : *list)
             {
-                CMinion* pEnemy = dynamic_cast<CMinion*>(pObj);
-                if (!pEnemy || pEnemy->Get_Dead())
+                CMinion* m = dynamic_cast<CMinion*>(obj);
+                if (!m || m->IsDeadOrDying())
                     continue;
 
-                // 1) 같은 슬롯 우선
-                if (pEnemy->Get_LaneIndex() != mySlot)
+                if (m->Get_LaneIndex() != mySlot)
                     continue;
 
-                _float dist = Target_Distance(pEnemy);
-                if (dist < fBestDist)
+                float d = Target_Distance(m);
+                if (d < bestDist)
                 {
-                    fBestDist = dist;
-                    pBest = pEnemy;
+                    bestDist = d;
+                    best = m;
                 }
             }
         };
 
-    // 1) 같은 슬롯의 적부터 탐색
-    ScanList(pEnemyMeleeList);
-    ScanList(pEnemyRangeList);
+    Scan(pMelee);
+    Scan(pRange);
 
-    // 2) 같은 슬롯에서 못 찾았으면 그냥 가장 가까운 놈으로 fallback
-    if (!pBest)
+    if (!best)
     {
-        auto ScanAny = [&](list<CGameObject*>* pList)
+        auto ScanAny = [&](list<CGameObject*>* list)
             {
-                if (!pList) return;
-                for (CGameObject* pObj : *pList)
+                if (!list) return;
+
+                for (auto* obj : *list)
                 {
-                    CMinion* pEnemy = dynamic_cast<CMinion*>(pObj);
-                    if (!pEnemy || pEnemy->Get_Dead())
+                    CMinion* m = dynamic_cast<CMinion*>(obj);
+                    if (!m || m->IsDeadOrDying())
                         continue;
 
-                    _float dist = Target_Distance(pEnemy);
-                    if (dist < fBestDist)
+                    float d = Target_Distance(m);
+                    if (d < bestDist)
                     {
-                        fBestDist = dist;
-                        pBest = pEnemy;
+                        bestDist = d;
+                        best = m;
                     }
                 }
             };
-
-        ScanAny(pEnemyMeleeList);
-        ScanAny(pEnemyRangeList);
+        ScanAny(pMelee);
+        ScanAny(pRange);
     }
 
-    m_pTarget = pBest;
-
-    Safe_Release(pGI);
+    m_pTarget = best;
+    Safe_Release(GI);
 }
 
 CActor* CMinion::Find_MinDistance_Target()
@@ -370,11 +278,9 @@ CActor* CMinion::Check_FiledTarget()
     if (!m_pTarget)
         return nullptr;
 
-    // ★ 타겟이 미니언이면 HP/상태로 먼저 체크
-    if (CMinion* pMinTarget = dynamic_cast<CMinion*>(m_pTarget))
+    if (CMinion* pMin = dynamic_cast<CMinion*>(m_pTarget))
     {
-        if (pMinTarget->m_tStats.m_fCurrentHp <= 0.f ||
-            pMinTarget->m_eState == STATE_DIE)
+        if (pMin->IsDeadOrDying())
         {
             m_pTarget = nullptr;
             return nullptr;
@@ -382,7 +288,6 @@ CActor* CMinion::Check_FiledTarget()
     }
     else
     {
-        // 다른 타입(나중에 챔프/타워 등) 은 기존대로
         if (m_pTarget->Get_Dead())
         {
             m_pTarget = nullptr;
@@ -390,10 +295,7 @@ CActor* CMinion::Check_FiledTarget()
         }
     }
 
-    _float dist = Target_Distance(m_pTarget);
-
-    // 너무 멀어지면 타겟 해제(한 번 잡았던 것도 풀림)
-    if (dist > m_tStats.m_fAggroRadius * 1.5f)
+    if (Target_Distance(m_pTarget) > m_tStats.m_fAggroRadius * 1.5f)
     {
         m_pTarget = nullptr;
         return nullptr;
@@ -401,126 +303,208 @@ CActor* CMinion::Check_FiledTarget()
 
     return m_pTarget;
 }
-void CMinion::Compute_LaneOffset()
+
+_bool CMinion::Is_TargetInAttackRange() const
 {
-    const _float fSlotWidth = 1.2f; // 좌우로 퍼질 거리(원하면 나중에 조절)
+    if (!m_pTarget)
+        return false;
 
-    switch (m_iLaneIndex)
-    {
-    case 0: // 가운데
-        m_fLaneOffset = 0.f;
-        break;
-    case 1: // 왼쪽
-        m_fLaneOffset = -fSlotWidth;
-        break;
-    case 2: // 오른쪽
-        m_fLaneOffset = +fSlotWidth;
-        break;
-    default:
-        m_fLaneOffset = 0.f;
-        break;
-    }
-
-    // 필요하면 팀에 따라 좌우 반전 (맵 방향에 따라 조절)
-    if (m_eTeam == TEAM_RED)
-        m_fLaneOffset = -m_fLaneOffset;
+    float base = m_tStats.m_fAttackRange;
+    float extra = fabsf(m_fLaneOffset) * 0.35f;
+    return Target_Distance(m_pTarget) <= base + extra + 0.1f;
 }
 
+_bool CMinion::Is_TargetInAggroRange() const
+{
+    if (!m_pTarget)
+        return false;
 
+    return Target_Distance(m_pTarget) <= m_tStats.m_fAggroRadius;
+}
 
-_int CMinion::Take_Damage(int iDamage, CActor* DamageCauser)
+void CMinion::Follow_Target(_float fTimeDelta)
+{
+    if (!m_pTarget || !m_pTransformCom || !m_bMove)
+        return;
+
+    _vector pos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    _vector tpos = m_pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+
+    _vector dir = XMVectorSetY(pos - tpos, 0.f);
+    if (XMVectorGetX(XMVector3LengthSq(dir)) < 1e-6f)
+        dir = XMVectorSet(0, 0, 1, 0);
+    else
+        dir = XMVector3Normalize(dir);
+
+    float base = m_tStats.m_fAttackRange;
+    float extra = fabsf(m_fLaneOffset) * 0.35f;
+    float range = base + extra;
+
+    _vector fromTarget = dir * range;
+
+    if (fabsf(m_fLaneOffset) > 0.01f)
+    {
+        _vector right = XMVector3Normalize(XMVector3Cross(
+            XMVectorSet(0, 1, 0, 0), dir));
+
+        fromTarget += right * m_fLaneOffset;
+
+        _vector flat = XMVectorSetY(fromTarget, 0.f);
+        float lenSq = XMVectorGetX(XMVector3LengthSq(flat));
+
+        if (lenSq > 1e-6f)
+        {
+            flat = XMVector3Normalize(flat) * range;
+            fromTarget = XMVectorSetY(flat, 0.f);
+        }
+    }
+
+    _vector desired = tpos + fromTarget;
+    _vector moveDir = XMVectorSetY(desired - pos, 0.f);
+
+    float distSq = XMVectorGetX(XMVector3LengthSq(moveDir));
+    if (distSq < 1e-6f)
+        return;
+
+    float dist = sqrtf(distSq);
+    float maxMove = m_tStats.m_fWalkSpeed * fTimeDelta;
+
+    if (dist < 0.05f)
+        return;
+
+    if (maxMove > dist)
+        maxMove = dist;
+
+    moveDir = XMVector3Normalize(moveDir);
+    pos += moveDir * maxMove;
+
+    m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, pos);
+
+    Check_Navigation();
+}
+
+// ======================= Combat / Damage =======================
+
+_int CMinion::Take_Damage(int dmg, CActor* causer)
 {
     if (m_eState == STATE_DIE)
         return 0;
 
-    m_pOrginDamageCauser = DamageCauser;
+    m_pOrginDamageCauser = causer;
+    m_tStats.m_fCurrentHp -= dmg;
 
-    m_tStats.m_fCurrentHp -= (_float)iDamage;
     if (m_tStats.m_fCurrentHp <= 0.f)
     {
         m_tStats.m_fCurrentHp = 0.f;
-        m_eState = STATE_DIE;
+        m_bDying = true;
 
-        // 공격한 놈에게 어그로 (이미 죽을 거면 의미 없지만)
-        m_pTarget = DamageCauser;
-
-        On_Death();
+        if (causer)
+            m_pTarget = causer;
 
         return 1;
     }
 
-    // 맞으면 그 놈에게 어그로
-    if (DamageCauser)
-        m_pTarget = DamageCauser;
+    if (causer)
+        m_pTarget = causer;
 
     return 0;
 }
 
 void CMinion::ReUse_Setting(void* pArg)
 {
-    if (pArg == nullptr)
+    if (!pArg)
         return;
 
-    MINION_SPAWNDESC* pDesc = reinterpret_cast<MINION_SPAWNDESC*>(pArg);
+    MINION_SPAWNDESC* d = (MINION_SPAWNDESC*)pArg;
 
-    // 1) 라인/팀/타입 정보 세팅
-    m_eTeam = pDesc->eTeam;
-    m_eLane = pDesc->eLane;
-    m_eMinionType = pDesc->eMinionType;
-    m_iLaneIndex = pDesc->iLaneIndex;
-    m_iWaveIndex = pDesc->iWaveIndex;
-    m_vTargetPos = pDesc->vTargetPos;   // ★ 추가
-    // ★ 슬롯 인덱스 기반으로 퍼질 오프셋 계산
+    m_eTeam = d->eTeam;
+    m_eLane = d->eLane;
+    m_eMinionType = d->eMinionType;
+    m_iLaneIndex = d->iLaneIndex;
+    m_iWaveIndex = d->iWaveIndex;
+    m_vTargetPos = d->vTargetPos;
+
     Compute_LaneOffset();
-    // 2) 체력 / 상태 초기화
+
     m_tStats.m_fCurrentHp = m_tStats.m_fMaxHp;
-    m_eState = STATE_MOVE;     // 스폰되면 바로 이동 상태
+    m_eState = STATE_MOVE;
     m_bDead = false;
     m_pTarget = nullptr;
     m_pOrginDamageCauser = nullptr;
-
+    m_bDying = false;
     m_fAttackTimer = 0.f;
 
-    // 3) 위치 세팅
     if (m_pTransformCom)
     {
-        _vector vPos = XMLoadFloat3(&pDesc->vSpawnPos);
-        vPos = XMVectorSetW(vPos, 1.f);
-        m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
+        _vector p = XMLoadFloat3(&d->vSpawnPos);
+        p = XMVectorSetW(p, 1.f);
+        m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, p);
     }
 
-    // ★ 여기서 웨이포인트 시작 인덱스 세팅
-    CMinionManager* pMgr = CMinionManager::GetInstance();
-    if (pMgr)
+    if (CMinionManager* mgr = CMinionManager::GetInstance())
     {
-        const auto& path = pMgr->GetLanePath(m_eLane);
-        m_iLaneNodeIndex = pMgr->GetLaneStartIndex(m_eTeam, path); // BLUE:0, RED: path.size()-1
+        const auto& path = mgr->GetLanePath(m_eLane);
+        m_iLaneNodeIndex = mgr->GetLaneStartIndex(m_eTeam, path);
     }
 
-    // 4) 내비 인덱스 다시 계산
     Compute_CurrentIndex();
 }
 
+void CMinion::Mark_Dead()
+{
+    if (m_bDead)
+        return;
 
+    CPoolManager* pool = CPoolManager::GetInstance();
+    if (pool)
+    {
+        const _tchar* tag = nullptr;
+
+        if (m_eTeam == TEAM_BLUE)
+            tag = (m_eMinionType == MINION_MELEE) ? TEXT("Layer_Minion_Blue_Melee") : TEXT("Layer_Minion_Blue_Range");
+        else
+            tag = (m_eMinionType == MINION_MELEE) ? TEXT("Layer_Minion_Red_Melee") : TEXT("Layer_Minion_Red_Range");
+
+        if (tag)
+            pool->Add_Pooling_Object(LEVEL_GAMEPLAY, tag, this);
+    }
+
+    m_bDead = true;
+    m_bDying = false;
+}
+
+// ======================= Lane Offset =======================
+
+void CMinion::Compute_LaneOffset()
+{
+    const float width = 1.2f;
+
+    switch (m_iLaneIndex)
+    {
+    case 0: m_fLaneOffset = 0.f; break;
+    case 1: m_fLaneOffset = -width; break;
+    case 2: m_fLaneOffset = +width; break;
+    default: m_fLaneOffset = 0.f; break;
+    }
+
+    if (m_eTeam == TEAM_RED)
+        m_fLaneOffset = -m_fLaneOffset;
+}
+
+// ======================= Shader =======================
 
 HRESULT CMinion::SetUp_ShaderResources()
 {
     if (!m_pShaderCom || !m_pTransformCom)
         return E_FAIL;
 
-    _float4x4 WorldMatrix = m_pTransformCom->Get_World_TP();
-    _float4x4 ViewMatrix = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
-    _float4x4 ProjMatrix = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
+    _float4x4 w = m_pTransformCom->Get_World_TP();
+    _float4x4 v = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
+    _float4x4 p = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
 
-
-    if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &WorldMatrix, sizeof(_float4x4))))
-        return E_FAIL;
-
-    if (FAILED(m_pShaderCom->Set_RawValue("g_ViewMatrix", &ViewMatrix, sizeof(_float4x4))))
-        return E_FAIL;
-
-    if (FAILED(m_pShaderCom->Set_RawValue("g_ProjMatrix", &ProjMatrix, sizeof(_float4x4))))
-        return E_FAIL;
+    if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &w, sizeof(_float4x4)))) return E_FAIL;
+    if (FAILED(m_pShaderCom->Set_RawValue("g_ViewMatrix", &v, sizeof(_float4x4)))) return E_FAIL;
+    if (FAILED(m_pShaderCom->Set_RawValue("g_ProjMatrix", &p, sizeof(_float4x4)))) return E_FAIL;
 
     return S_OK;
 }
@@ -529,6 +513,12 @@ HRESULT CMinion::SetUp_ShaderID()
 {
     return S_OK;
 }
+
+_float CMinion::Check_CullingRadius()
+{
+    return 0.1f;
+}
+
 
 void CMinion::Free()
 {

@@ -162,6 +162,10 @@
     <ClInclude Include="..\Public\Building.h" />
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
     <ClInclude Include="..\Public\Champion.h" />
+    <ClInclude Include="..\Public\Enemy.h" />
+    <ClInclude Include="..\Public\UI_AttackRange.h" />
+    <ClInclude Include="..\Public\EzrealAttackState.h" />
+    <ClInclude Include="..\Public\EzrealSkillState.h" />
     <ClInclude Include="..\Public\MinionManager.h" />
     <ClInclude Include="..\Public\Minion_AttackState.h" />
     <ClInclude Include="..\Public\Minion_ChaseState.h" />
@@ -172,6 +176,9 @@
     <ClInclude Include="..\Public\Minion_State.h" />
     <ClInclude Include="..\Public\Minion.h" />
     <ClInclude Include="..\Public\Minion_Melee.h" />
+    <ClInclude Include="..\Public\PlayerChaseState.h" />
+    <ClInclude Include="..\Public\PlayerEmotionState.h" />
+    <ClInclude Include="..\Public\PlayerRecallState.h" />
     <ClInclude Include="..\Public\PoolManager.h" />
     <ClInclude Include="..\Public\StoreNpc.h" />
     <ClInclude Include="..\Public\UI_GameInfo.h" />
@@ -211,6 +218,9 @@
     <ClInclude Include="..\Public\UI_Text.h" />
     <ClInclude Include="..\Public\UI_LoadingBar.h" />
     <ClInclude Include="..\Public\UI_Manager.h" />
+    <ClInclude Include="..\Public\Vayne.h" />
+    <ClInclude Include="..\Public\VayneIdleState.h" />
+    <ClInclude Include="..\Public\VayneState.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Vi.h" />
     <ClInclude Include="framework.h" />
@@ -223,6 +233,10 @@
     <ClCompile Include="..\Private\Building.cpp" />
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
     <ClCompile Include="..\Private\Champion.cpp" />
+    <ClCompile Include="..\Private\Enemy.cpp" />
+    <ClCompile Include="..\Private\UI_AttackRange.cpp" />
+    <ClCompile Include="..\Private\EzrealAttackState.cpp" />
+    <ClCompile Include="..\Private\EzrealSkillState.cpp" />
     <ClCompile Include="..\Private\MinionManager.cpp" />
     <ClCompile Include="..\Private\Minion_AttackState.cpp" />
     <ClCompile Include="..\Private\Minion_ChaseState.cpp" />
@@ -232,6 +246,9 @@
     <ClCompile Include="..\Private\Minion.cpp" />
     <ClCompile Include="..\Private\Minion_Melee.cpp" />
     <ClCompile Include="..\Private\Minion_Range.cpp" />
+    <ClCompile Include="..\Private\PlayerChaseState.cpp" />
+    <ClCompile Include="..\Private\PlayerEmotionState.cpp" />
+    <ClCompile Include="..\Private\PlayerRecallState.cpp" />
     <ClCompile Include="..\Private\PoolManager.cpp" />
     <ClCompile Include="..\Private\StoreNpc.cpp" />
     <ClCompile Include="..\Private\UI_GameInfo.cpp" />
@@ -270,6 +287,8 @@
     <ClCompile Include="..\Private\UI_Text.cpp" />
     <ClCompile Include="..\Private\UI_LoadingBar.cpp" />
     <ClCompile Include="..\Private\UI_Manager.cpp" />
+    <ClCompile Include="..\Private\Vayne.cpp" />
+    <ClCompile Include="..\Private\VayneIdleState.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Vi.cpp" />
     <ClCompile Include="stdafx.cpp" />

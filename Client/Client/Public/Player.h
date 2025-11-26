@@ -27,6 +27,8 @@ public:
 	virtual int Update(_float fTimeDelta);
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render() = 0;
+	virtual HRESULT Render_ShadowDepth() override;
+	virtual HRESULT Render_EdgeDetection() override;
 
 public: // GET, SET
 	CModel* Get_Model() { return m_pModelCom; }
@@ -38,7 +40,8 @@ public: // GET, SET
 	PLAYERID Get_PlayerID() const { return m_ePlayerID; }
 	void Set_PlayerID(PLAYERID eID) { m_ePlayerID = eID; }
 	void Reset_State();
-
+	void Set_AttackTarget(CActor* pTarget) { m_pAttackTarget = pTarget; }
+	CActor* Get_AttackTarget() const { return m_pAttackTarget; }
 public: // State
 	virtual _bool Is_AnimationLoop(_uint eAnimId) = 0;
 	void HandleInput();
@@ -48,6 +51,7 @@ public: // State
 public: // Navigation
 	void Check_Navigation();
 	void Compute_CurrentIndex();
+
 	
 protected:
 	// Component
@@ -61,6 +65,9 @@ protected: // 챔피언 교체
 protected: // 플레이어 이동
 	_bool m_bMoving = false;
 	_float3 m_vTargetPos = { 0.f, 0.f, 0.f };
+
+protected:
+	CActor* m_pAttackTarget = nullptr;     // 현재 평타 타겟 (추후 공격 상태에서 사용)
 
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;

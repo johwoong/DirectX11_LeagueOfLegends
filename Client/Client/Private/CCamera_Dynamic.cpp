@@ -141,11 +141,6 @@ void CCamera_Dynamic::Debug_Camera(_float fTimeDelta)
 		XMStoreFloat3(&vUp3, XMVector3Normalize(vUp));
 		XMStoreFloat3(&vRight3, XMVector3Normalize(vRight));
 
-		// 콘솔에 출력 (디버그 창에서 확인)
-		printf("Cam Pos : X=%.3f, Y=%.3f, Z=%.3f\n", vPos3.x, vPos3.y, vPos3.z);
-		printf("Look    : X=%.3f, Y=%.3f, Z=%.3f\n", vLook3.x, vLook3.y, vLook3.z);
-		printf("Up      : X=%.3f, Y=%.3f, Z=%.3f\n", vUp3.x, vUp3.y, vUp3.z);
-		printf("Right   : X=%.3f, Y=%.3f, Z=%.3f\n", vRight3.x, vRight3.y, vRight3.z);
 	}
 }
 

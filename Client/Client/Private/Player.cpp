@@ -69,9 +69,16 @@ void CPlayer::Late_Update(_float fTimeDelta)
 	__super::Late_Update(fTimeDelta);
 #endif
 	Late_Update_State(fTimeDelta);
+}
 
+HRESULT CPlayer::Render_ShadowDepth()
+{
+	return S_OK;
+}
 
-	
+HRESULT CPlayer::Render_EdgeDetection()
+{
+	return S_OK;
 }
 
 void CPlayer::Reset_State()
@@ -82,6 +89,16 @@ void CPlayer::Reset_State()
 
 void CPlayer::HandleInput()
 {
+	CGameInstance* pGI = CGameInstance::GetInstance();
+
+	// ★ A 키 토글 : 활성 챔피언만 처리
+	if (pGI->Key_Down(DIK_A))
+	{
+		CChampion* pChamp = dynamic_cast<CChampion*>(this);
+		if (pChamp)
+			pChamp->Toggle_AttackRange();
+	}
+
 	if (!m_pPlayerState)
 		return;
 
@@ -123,6 +140,8 @@ void CPlayer::Compute_CurrentIndex()
 {
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION));
 }
+
+
 
 
 void CPlayer::Free()

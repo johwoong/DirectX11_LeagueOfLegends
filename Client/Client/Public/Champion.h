@@ -1,9 +1,9 @@
 #pragma once
 #include "Player.h"
-
-
+#include "UI_AttackRange.h"
 // 챔피언의 스탯을 관리한다.
 NS_BEGIN(Client)
+
 class CChampion abstract : public CPlayer
 {
 	struct ChampionStat
@@ -64,6 +64,26 @@ public:
 	virtual HRESULT Render();
 
 public:
+	float Get_AttackRange() const { return m_tStat.AttackRange; }
+
+	void Set_AttackRangeObj(CAttackRange* pRange) { m_pAttackRange = pRange; }
+	CAttackRange* Get_AttackRangeObj() const { return m_pAttackRange; }
+	float Get_WorldAttackRange() const
+	{
+		return m_tStat.AttackRange * 0.02f;   // ★ 단위 변환 필수
+	}
+
+	void Toggle_AttackRange()
+	{
+		if (!m_pAttackRange) return;
+		m_pAttackRange->Set_Visible(!m_pAttackRange->Is_Visible());
+	}
+	void Hide_AttackRange()
+	{
+		if (!m_pAttackRange) return;
+		m_pAttackRange->Set_Visible(false);
+	}
+public:
 	virtual _bool Picking(_float3* PickingPoint)override;
 	virtual void PickingTrue() override;
 public: // State
@@ -79,6 +99,8 @@ public:
 protected:
 	SkillInfo m_Skills[5];
 	wstring m_ChampionIconTag;
+	ChampionStat m_tStat{};
+	CAttackRange* m_pAttackRange = nullptr;
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderResources();

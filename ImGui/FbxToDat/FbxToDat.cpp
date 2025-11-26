@@ -82,9 +82,9 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
     // Y축 180도 회전 매트릭스 (직접 작성)
     float rotY[16] =
     {
-        -1, 0,  0, 0,
+        1, 0,  0, 0,
          0, 1,  0, 0,
-         0, 0, -1, 0,
+         0, 0, 1, 0,
          0, 0,  0, 1
     };
 

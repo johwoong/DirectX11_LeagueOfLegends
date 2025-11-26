@@ -36,7 +36,7 @@ HRESULT CVi::Initialize(void* pArg)
 
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
-	Set_Scale(_float3(0.002f, 0.002f, 0.002f));
+	Set_Scale(_float3(0.01f, 0.01f, 0.01f));
 	SetSkillInfo();
 	return S_OK;
 }

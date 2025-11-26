@@ -1,9 +1,9 @@
 #include "PlayerIdleState.h"
-#include "GameInstance.h"
-#include "PickingManager.h"
 
 // State
 #include "PlayerRunState.h"
+#include "PlayerEmotionState.h"
+#include "EzrealAttackState.h"
 
 using namespace Player;
 
@@ -16,27 +16,81 @@ CIdleState::CIdleState(CPlayer* pPlayer, IDLETYPE eIdleType)
 
 CPlayerState* CIdleState::HandleInput()
 {
-    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+    CGameInstance* GI = CGameInstance::GetInstance();
+    CPickingManager* PM = CPickingManager::GetInstance();
 
-    if (pGameInstance->Mouse_Down(DIMK_RBUTTON))
+    // ==========================
+    // 1) Emotion 입력 체크
+    // ==========================
+    if (GI->Key_Pressing(DIK_LCONTROL))
     {
-        _float3 vClickPos = {};
+        if (GI->Key_Down(DIK_1))
+            return new CPlayerEmotionState(m_pOwner, CPlayerEmotionState::EMOTE_JOKE);
 
-        if (CPickingManager::GetInstance()->Picking())
-        {
-            vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
-            m_pOwner->Set_TargetPosition(vClickPos);
+        if (GI->Key_Down(DIK_2))
+            return new CPlayerEmotionState(m_pOwner, CPlayerEmotionState::EMOTE_LAUGH);
 
-            return new CRunState(m_pOwner, DIR_STRAIGHT);
-        }
+        if (GI->Key_Down(DIK_3))
+            return new CPlayerEmotionState(m_pOwner, CPlayerEmotionState::EMOTE_TAUNT);
     }
 
-    return nullptr; // 입력 없음
+
+    // ==========================
+    // 2) 우클릭 입력
+    // ==========================
+    if (GI->Mouse_Down(DIMK_RBUTTON))
+    {
+        // Picking 실패하면 무시
+        if (!PM->Picking())
+            return nullptr;
+
+        CGameObject* pickedObj = PM->Get_PickedObj();
+        _float3 clickPos = PM->Get_PickingPos();
+
+        // ------------------------------
+        // 2-1) Enemy 클릭
+        if (CEnemy* enemy = dynamic_cast<CEnemy*>(pickedObj))
+        {
+            m_pOwner->Set_AttackTarget(enemy);
+
+            // 적 실제 좌표만 사용
+            _float3 enemyPos;
+            XMStoreFloat3(&enemyPos,
+                enemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+
+            float dist = GetDistanceXZ(
+                m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION),
+                enemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+
+            float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();
+
+            // 사거리 안 → 바로 공격
+            if (dist <= range)
+                return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+
+            // 사거리 밖 → 추격
+            m_pOwner->Set_TargetPosition(enemyPos);
+
+            return new CRunState(m_pOwner);
+        }
+
+
+        // ------------------------------
+        // 2-2) 지면 클릭
+        // ------------------------------
+        m_pOwner->Set_AttackTarget(nullptr);
+        m_pOwner->Set_TargetPosition(clickPos);
+
+        return new CRunState(m_pOwner);
+    }
+
+    return nullptr;
 }
 
 CPlayerState* CIdleState::Update(_float fTimeDelta)
 {
     m_bIsAnimationFinished = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex()), nullptr, 0.1f);
+
 	return nullptr;
 }
 
@@ -44,62 +98,49 @@ CPlayerState* CIdleState::Late_Update(_float fTimeDelta)
 {
     if (m_bIsAnimationFinished)
     {
-        switch (m_eIdleType)
-        {
-        case Client::Player::CIdleState::IDLE_MAIN:
-        {
-            switch (m_ePlayerID)
-            {
-            case CPlayer::EZREAL:
-                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::IDLE);
-                break;
-            case CPlayer::RENEKTON:
-                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE1);
-                break;
-            case CPlayer::VI:
-                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVi::ANIM::IDLE1);
-                break;
-            }
-        }
-            break;
-        }
+        int idx = rand() % m_vecIdleAnim.size();
+        _uint eAnim = m_vecIdleAnim[idx];
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(eAnim);
     }
-	return nullptr;
+    return nullptr;
 }
 
 
 void CIdleState::Enter()
 {
-	__super::Enter();
-	m_eState = STATE_ID::STATE_IDLE;
+    __super::Enter();
+    m_eState = STATE_ID::STATE_IDLE;
 
+    m_vecIdleAnim.clear();
+
+    // 캐릭터 별 Idle 랜덤 셋업
     switch (m_pOwner->Get_PlayerID())
     {
     case CPlayer::EZREAL:
-        switch (m_eIdleType)
-        {
-        case Client::Player::CIdleState::IDLE_MAIN:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::IDLE);
-            break;
-        }
+        m_vecIdleAnim = {
+            CEzreal::ANIM::IDLE01,
+            CEzreal::ANIM::IDLE2
+        };
         break;
+
     case CPlayer::RENEKTON:
-        switch (m_eIdleType)
-        {
-        case Client::Player::CIdleState::IDLE_MAIN:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE);
-            break;
-        }
+        m_vecIdleAnim = {
+            CRenekton::ANIM::IDLE1,
+            CRenekton::ANIM::IDLE2
+        };
         break;
+
     case CPlayer::VI:
-        switch (m_eIdleType)
-        {
-        case Client::Player::CIdleState::IDLE_MAIN:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::IDLE1);
-            break;
-        }
+        m_vecIdleAnim = {
+            CVi::ANIM::IDLE1,
+            CVi::ANIM::IDLE2
+        };
         break;
     }
+
+    // 랜덤 Idle 선택
+    int idx = rand() % m_vecIdleAnim.size();
+    m_pOwner->Get_Model()->Set_CurrentAnimIndex(m_vecIdleAnim[idx]);
     
 }
 

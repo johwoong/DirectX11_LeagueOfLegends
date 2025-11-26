@@ -399,6 +399,15 @@ void CModel::Update(_float fRadius)
         for (auto& pInstanceMesh : m_InstanceMeshes)
             pInstanceMesh->Update(fRadius);
     }
+    if (TYPE_ANIM == m_eModelType)
+    {
+        _float4x4 BoneMatrix[400];
+        for (auto& mesh : m_Meshes)
+        {
+            mesh->Get_BoneMatrices(BoneMatrix, XMLoadFloat4x4(&m_PivotMatrix));
+            mesh->Update_PickingVertices(BoneMatrix, XMLoadFloat4x4(&m_PivotMatrix));
+        }
+    }
 }
 
 HRESULT CModel::Create_MeshContainer(HANDLE hFile, _ulong* pdwByte)
