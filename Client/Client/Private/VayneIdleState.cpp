@@ -33,7 +33,7 @@ void CIdleState::Enter()
 {
 	m_eStateId = STATE_ID::STATE_IDLE;
 
-	m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVayne::ANIM::IDLE);
+	m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVayne::ANIM::IDLE3);
 }
 
 void CIdleState::Exit()

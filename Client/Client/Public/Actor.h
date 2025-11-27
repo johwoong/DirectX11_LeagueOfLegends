@@ -37,7 +37,7 @@ public:
 	_vector Get_TransformState(CTransform::STATE eState);
 	void Set_State(CTransform::STATE eState, _fvector vState);
 	void Set_Scale(_float3 vScale);
-	void Set_Picked(_bool type) { m_bPicked = type; }
+	virtual void Set_Picked(_bool type) { m_bPicked = type; }
 
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;

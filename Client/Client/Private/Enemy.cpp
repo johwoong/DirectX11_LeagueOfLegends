@@ -1,6 +1,9 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "PickingManager.h"
+#include "PlayerManager.h"
+#include "Champion.h"
+
 
 CEnemy::CEnemy(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CActor(pDevice, pContext)
@@ -115,11 +118,8 @@ _bool CEnemy::Picking(_float3* PickingPoint)
 {
 	if (m_pModelCom->Picking(m_pTransformCom, PickingPoint) == true)
 	{
-		m_vMousePickedPos = *PickingPoint;
-
-		// ¡Ú Ãß°¡ !!!
-		CPickingManager::GetInstance()->Set_PickedObj(this);
-
+		CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
+		pPlayer->Set_AttackTarget(this);
 		return true;
 	}
 	else
@@ -131,7 +131,11 @@ _bool CEnemy::Picking(_float3* PickingPoint)
 
 void CEnemy::PickingTrue()
 {
-	m_bPicked = true;
+}
+
+void CEnemy::Set_Picked()
+{
+
 }
 
 void CEnemy::Find_Target()

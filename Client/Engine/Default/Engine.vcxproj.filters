@@ -136,6 +136,12 @@
     <Filter Include="01.Utility\03. Components\02. VIBuffer\05. Quad">
       <UniqueIdentifier>{5f3c563a-68d9-423e-bbad-36e941dbf83b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03. Components\07. Colider">
+      <UniqueIdentifier>{1e62cecb-4cbb-451a-a30e-d8ee62842889}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03. Components\07. Colider\DebugDraw">
+      <UniqueIdentifier>{bad9988e-ba88-43d0-b3a5-3480def1d06d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -276,6 +282,12 @@
     <ClInclude Include="..\Public\VIBuffer_Quad.h">
       <Filter>01.Utility\03. Components\02. VIBuffer\05. Quad</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\CColider.h">
+      <Filter>01.Utility\03. Components\07. Colider</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\DebugDraw.h">
+      <Filter>01.Utility\03. Components\07. Colider\DebugDraw</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -400,6 +412,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Quad.cpp">
       <Filter>01.Utility\03. Components\02. VIBuffer\05. Quad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CColider.cpp">
+      <Filter>01.Utility\03. Components\07. Colider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\DebugDraw.cpp">
+      <Filter>01.Utility\03. Components\07. Colider\DebugDraw</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

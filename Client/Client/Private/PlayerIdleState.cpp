@@ -19,9 +19,6 @@ CPlayerState* CIdleState::HandleInput()
     CGameInstance* GI = CGameInstance::GetInstance();
     CPickingManager* PM = CPickingManager::GetInstance();
 
-    // ==========================
-    // 1) Emotion 입력 체크
-    // ==========================
     if (GI->Key_Pressing(DIK_LCONTROL))
     {
         if (GI->Key_Down(DIK_1))
@@ -35,9 +32,6 @@ CPlayerState* CIdleState::HandleInput()
     }
 
 
-    // ==========================
-    // 2) 우클릭 입력
-    // ==========================
     if (GI->Mouse_Down(DIMK_RBUTTON))
     {
         // Picking 실패하면 무시
@@ -47,37 +41,32 @@ CPlayerState* CIdleState::HandleInput()
         CGameObject* pickedObj = PM->Get_PickedObj();
         _float3 clickPos = PM->Get_PickingPos();
 
-        // ------------------------------
-        // 2-1) Enemy 클릭
-        if (CEnemy* enemy = dynamic_cast<CEnemy*>(pickedObj))
+        
+        if (m_pOwner->Get_AttackTarget() != nullptr)
         {
-            m_pOwner->Set_AttackTarget(enemy);
-
+            CActor* pEnemy = m_pOwner->Get_AttackTarget();
             // 적 실제 좌표만 사용
             _float3 enemyPos;
             XMStoreFloat3(&enemyPos,
-                enemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+               pEnemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
 
             float dist = GetDistanceXZ(
                 m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION),
-                enemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+                pEnemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
 
             float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();
 
-            // 사거리 안 → 바로 공격
+            // 사거리 안 바로 공격
             if (dist <= range)
                 return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
 
-            // 사거리 밖 → 추격
+            // 사거리  추격
             m_pOwner->Set_TargetPosition(enemyPos);
 
             return new CRunState(m_pOwner);
         }
 
 
-        // ------------------------------
-        // 2-2) 지면 클릭
-        // ------------------------------
         m_pOwner->Set_AttackTarget(nullptr);
         m_pOwner->Set_TargetPosition(clickPos);
 

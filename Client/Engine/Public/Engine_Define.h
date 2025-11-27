@@ -21,6 +21,10 @@
 
 #include <DirectXTK/DDSTextureLoader.h>
 #include <DirectXTK/WICTextureLoader.h>
+
+#include <DirectXTK/VertexTypes.h>
+#include <DirectXTK/PrimitiveBatch.h>
+#include <DirectXTK/Effects.h>
 #include <directXTK/SpriteFont.h>
 #include <directXTK/SpriteBatch.h>
 

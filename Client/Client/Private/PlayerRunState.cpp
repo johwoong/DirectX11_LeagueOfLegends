@@ -29,35 +29,30 @@ CPlayerState* CRunState::HandleInput()
         // ------------------------------
         // 1) Enemy 클릭
         // ------------------------------
-        if (CEnemy* enemy = dynamic_cast<CEnemy*>(pickedObj))
+        if (m_pOwner->Get_AttackTarget() != nullptr)
         {
-            m_pOwner->Set_AttackTarget(enemy);
-
+            CActor* pEnemy = m_pOwner->Get_AttackTarget();
+            // 적 실제 좌표만 사용
             _float3 enemyPos;
             XMStoreFloat3(&enemyPos,
-                enemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+                pEnemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
 
             float dist = GetDistanceXZ(
                 m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION),
-                enemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+                pEnemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
 
             float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();
 
-            // 사거리 안 → 공격 시작
+            // 사거리 안 바로 공격
             if (dist <= range)
                 return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
 
-            // 사거리 밖 → 적 위치로 다시 경로 설정
+            // 사거리  추격
             m_pOwner->Set_TargetPosition(enemyPos);
-            m_pOwner->Get_Transform()->Set_Destination(XMLoadFloat3(&enemyPos),
-                m_pOwner->Get_Navigation());
 
-            return nullptr; // RunState 유지
+            return new CRunState(m_pOwner);
         }
 
-        // ------------------------------
-        // 2) 지형 클릭
-        // ------------------------------
         m_pOwner->Set_AttackTarget(nullptr);
         m_pOwner->Set_TargetPosition(clickPos);
 
@@ -78,7 +73,7 @@ CPlayerState* CRunState::Update(_float fTimeDelta)
     m_pOwner->Check_Navigation();
 
     CActor* target = m_pOwner->Get_AttackTarget();
-    if (target && !target->Get_Dead())
+     if (target && !target->Get_Dead())
     {
         float dist = GetDistanceXZ(
             m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION),

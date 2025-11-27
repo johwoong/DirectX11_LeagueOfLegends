@@ -70,7 +70,7 @@ public:
 public:
 	virtual _bool Picking(_float3* PickingPoint);
 	virtual void PickingTrue();
-
+	virtual void Set_Picked();
 
 public:
 	ENEMY_TYPE Get_EnemyType(void) { return m_eEnemyType; }

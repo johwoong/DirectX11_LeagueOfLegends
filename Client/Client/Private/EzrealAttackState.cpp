@@ -44,7 +44,6 @@ CPlayerState* CEzrealAttackState::HandleInput()
             m_pOwner->Set_AttackTarget(nullptr);
         }
 
-        // ★ 우클릭하면 무조건 이동. AttackState 강제 종료됨.
         m_pOwner->Set_TargetPosition(clickPos);
         return new CRunState(m_pOwner);
     }
@@ -66,7 +65,6 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
     float dist = GetDistanceXZ(myPos, tarPos);
     float range = dynamic_cast<CChampion*>(m_pOwner)->Get_AttackRange();
 
-    // ?? 사거리 밖 → 추격
     if (dist > range)
     {
         _float3 go;
@@ -75,7 +73,6 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
         return new CRunState(m_pOwner);
     }
 
-    // ?? 공격 방향 정상화 (반전 버그 수정)
     _vector lookDir = tarPos - myPos;  // 올바른 방향
     lookDir = XMVectorSetY(lookDir, 0.f);
     lookDir = XMVector3Normalize(lookDir);
@@ -115,6 +112,6 @@ void CEzrealAttackState::Enter()
 
 void CEzrealAttackState::Exit()
 {
+    m_pOwner->Set_AttackTarget(nullptr);
     __super::Exit();
-    // AttackState에서 나갈 때 별도 처리 필요하면 여기
 }
