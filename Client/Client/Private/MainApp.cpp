@@ -5,11 +5,13 @@
 #include "PickingManager.h"
 #include "PlayerManager.h"
 #include "PoolManager.h"
+#include "CursorManager.h"
 
 #include "UI_BackGround.h"
 #include "UI_ChampionImage.h"
 #include "UI_LoadingBar.h"
 #include "UI_Text.h"
+#include "Cursor_UI.h"
 
 USING(Client)
 
@@ -53,7 +55,9 @@ HRESULT CMainApp::Initialize()
 	if (FAILED(m_pGameInstance->Add_Fonts(m_pDevice, m_pContext, TEXT("Font_Nexon"), TEXT("../../../Bin/Resources/Fonts/dejavusans.spritefont"))))
 		return E_FAIL;
 
-
+	CCursorManager::GetInstance()->Initialize(g_hWnd);
+	m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_UI_Cursor"),
+		LEVEL_STATIC, TEXT("Layer_UI"));
 	return S_OK;
 }
 
@@ -66,7 +70,7 @@ void CMainApp::Update(_float fTimeDelta)
 
 	/* 내 게임의 반복적인 갱신  */
 	m_pGameInstance->Update_Engine(fTimeDelta);
-
+	CCursorManager::GetInstance()->Update();
 	//#ifdef _DEBUG
 	m_fTimeAcc += fTimeDelta;
 	//#endif // _DEBUG
@@ -150,6 +154,10 @@ HRESULT CMainApp::Ready_Prototype_Component()
 		CUI_Text::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_UI_Cursor"),
+		CCursor_UI::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Logo"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Logo/BackGround%d.dds"), 2))))
 		return E_FAIL;
@@ -159,8 +167,14 @@ HRESULT CMainApp::Ready_Prototype_Component()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Frame"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/Frame/LoadingFrame.dds")))))
 		return E_FAIL;
-	 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Loading_Bar"),
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Loading_Bar"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Loading/LoadingBar/LoadingBar.dds")))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Cursor_Normal"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Cursor/hover_precise.png")))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Texture_Cursor_Attack"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Cursor/hover_enemy_precise.png")))))
 		return E_FAIL;
 
 	Safe_AddRef(m_pRenderer);
@@ -192,6 +206,7 @@ void CMainApp::Free()
 	CPoolManager::GetInstance()->DestroyInstance();
 	CPlayerManager::GetInstance()->DestroyInstance();
 	CPickingManager::GetInstance()->DestroyInstance();
+	CCursorManager::GetInstance()->DestroyInstance();
 	CUI_Manager::GetInstance()->DestroyInstance();
 
 	/* 내 멤버를 정리한다. */

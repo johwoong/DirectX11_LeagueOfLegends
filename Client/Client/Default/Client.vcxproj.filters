@@ -199,6 +199,15 @@
     <ClInclude Include="..\Public\VayneIdleState.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\CursorManager.h">
+      <Filter>06. CursorManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Collision_Manager.h">
+      <Filter>07. CollisionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Cursor_UI.h">
+      <Filter>02. GameObjects\02. UI\11. UI_Cursor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -380,6 +389,12 @@
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Vayne\State">
       <UniqueIdentifier>{1087a76d-acef-4bf0-b917-e42c397c9c46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="07. CollisionManager">
+      <UniqueIdentifier>{498fcb4e-c460-4893-874f-b202919b675c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\11. UI_Cursor">
+      <UniqueIdentifier>{5f5ca43a-0e20-43f3-a131-eba19458c796}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -558,6 +573,15 @@
     </ClCompile>
     <ClCompile Include="..\Private\VayneIdleState.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CursorManager.cpp">
+      <Filter>06. CursorManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Collision_Manager.cpp">
+      <Filter>07. CollisionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Cursor_UI.cpp">
+      <Filter>02. GameObjects\02. UI\11. UI_Cursor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -17,6 +17,14 @@ CEzrealAttackState::CEzrealAttackState(CPlayer* pPlayer, STATE_ID eStateType, _f
     m_pOwner = pPlayer;
     m_eState = eStateType;
     m_ePlayerID = m_pOwner->Get_PlayerID();
+
+    // 프로그램 어디선가 한 번만 해도 됨 (WinMain 같은 곳)
+    static bool s_bSeeded = false;
+    if (!s_bSeeded)
+    {
+        srand((unsigned int)time(nullptr));
+        s_bSeeded = true;
+    }
 }
 
 // 입력은 최소만 처리 (우클릭으로 이동 명령 등)
@@ -85,7 +93,6 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
         m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex())
     );
 
-    // ?? 공격 애니 끝 → Idle
     if (m_bIsAnimationFinished)
         return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
 
@@ -102,10 +109,22 @@ void CEzrealAttackState::Enter()
     __super::Enter();
     m_eState = STATE_ID::STATE_ATTACK1;
 
-    // Ezreal 평타 애니메이션으로 변경 (프로젝트에 맞게 수정)
     if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
     {
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::ATTACK1);
+        // 사용할 공격 애니메이션 목록
+        const int AttackAnims[] =
+        {
+            CEzreal::ANIM::ATTACK1,
+            CEzreal::ANIM::ATTACK2,
+            CEzreal::ANIM::ATTACK3,
+            CEzreal::ANIM::ATTACK4,
+            CEzreal::ANIM::CRIT,
+        };
+
+        const int count = sizeof(AttackAnims) / sizeof(int);
+        int idx = rand() % count;   // 0 ~ count-1
+
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(AttackAnims[idx]);
     }
 
 }

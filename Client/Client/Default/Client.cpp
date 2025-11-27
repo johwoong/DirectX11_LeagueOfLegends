@@ -63,7 +63,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Safe_AddRef(pGameInstance);
     if (nullptr == pGameInstance)
         return FALSE;
-
+    ShowCursor(FALSE);  
     /* 타이머를 추가한다. */
     if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_Default"))))
         return FALSE;

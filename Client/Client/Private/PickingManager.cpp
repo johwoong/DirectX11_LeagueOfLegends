@@ -3,6 +3,7 @@
 #include "Transform.h"
 #include "GameObject.h"
 #include "Actor.h"
+#include "CursorManager.h"
 
 IMPLEMENT_SINGLETON(CPickingManager)
 
@@ -59,6 +60,8 @@ _bool CPickingManager::Picking()
 {
 	if (m_bMouseInUI)
 		return false;
+
+	CCursorManager::GetInstance()->SetState(CURSOR_DEFAULT);
 
 	list<CGameObject*> vecPicked;
 	vector<_float3>		vecPos;

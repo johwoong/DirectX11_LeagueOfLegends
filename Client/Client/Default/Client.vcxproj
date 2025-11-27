@@ -161,7 +161,10 @@
   <ItemGroup>
     <ClInclude Include="..\Public\Building.h" />
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
+    <ClInclude Include="..\Public\Cursor_UI.h" />
     <ClInclude Include="..\Public\Champion.h" />
+    <ClInclude Include="..\Public\Collision_Manager.h" />
+    <ClInclude Include="..\Public\CursorManager.h" />
     <ClInclude Include="..\Public\Enemy.h" />
     <ClInclude Include="..\Public\UI_AttackRange.h" />
     <ClInclude Include="..\Public\EzrealAttackState.h" />
@@ -232,7 +235,10 @@
   <ItemGroup>
     <ClCompile Include="..\Private\Building.cpp" />
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
+    <ClCompile Include="..\Private\Cursor_UI.cpp" />
     <ClCompile Include="..\Private\Champion.cpp" />
+    <ClCompile Include="..\Private\Collision_Manager.cpp" />
+    <ClCompile Include="..\Private\CursorManager.cpp" />
     <ClCompile Include="..\Private\Enemy.cpp" />
     <ClCompile Include="..\Private\UI_AttackRange.cpp" />
     <ClCompile Include="..\Private\EzrealAttackState.cpp" />

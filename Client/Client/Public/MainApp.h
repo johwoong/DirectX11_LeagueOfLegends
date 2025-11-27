@@ -33,7 +33,6 @@ private:
 	CUI_Manager* m_pUIManager	=			{ nullptr };
 
 
-
 private:
 	_uint					m_iNumRender = 0;
 	_tchar					m_szFPS[MAX_PATH] = TEXT("");

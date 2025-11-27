@@ -63,69 +63,353 @@ HRESULT CColider::Initialize(void* pArg)
 
     memcpy(&m_ColiderDesc, pArg, sizeof(COLLIDERDESC));
 
+    _matrix ScaleMatrix, RotationMatrix, TranslationMatrix;
 
+    ScaleMatrix = XMMatrixScaling(m_ColiderDesc.vScale.x, m_ColiderDesc.vScale.y, m_ColiderDesc.vScale.z);
+    _matrix RotationXMatrix = XMMatrixRotationX(m_ColiderDesc.vRotation.x);
+    _matrix RotationYMatrix = XMMatrixRotationY(m_ColiderDesc.vRotation.y);
+    _matrix RotationZMatrix = XMMatrixRotationZ(m_ColiderDesc.vRotation.z);
+    RotationMatrix = RotationXMatrix * RotationYMatrix * RotationZMatrix;
 
+    TranslationMatrix = XMMatrixTranslation(m_ColiderDesc.vPosition.x, m_ColiderDesc.vPosition.y, m_ColiderDesc.vPosition.z);
+
+    for (_uint i = 0; i < BOUNDING_END; ++i)
+    {
+        switch (m_eType)
+        {
+        case TYPE_AABB:
+            m_pAABB[i] = new BoundingBox(_float3(0.f, 0.f, 0.f), _float3(0.5f, 0.5f, 0.5f));
+            m_pOriAABB[i] = new BoundingBox(_float3(0.f, 0.f, 0.f), _float3(0.5f, 0.5f, 0.5f));
+            m_pOriAABB[i]->Transform(*m_pAABB[i], ScaleMatrix * TranslationMatrix);
+            break;
+        case TYPE_OBB:
+            m_pOBB[i] = new BoundingOrientedBox(m_ColiderDesc.vPosition, _float3(m_ColiderDesc.vScale.x * 0.5f, m_ColiderDesc.vScale.y * 0.5f, m_ColiderDesc.vScale.z * 0.5f), _float4(0.f, 0.f, 0.f, 1.f));
+            m_pOriOBB[i] = new BoundingOrientedBox(m_ColiderDesc.vPosition, _float3(m_ColiderDesc.vScale.x * 0.5f, m_ColiderDesc.vScale.y * 0.5f, m_ColiderDesc.vScale.z * 0.5f), _float4(0.f, 0.f, 0.f, 1.f));
+            m_pOriOBB[i]->Transform(*m_pOBB[i], RotationMatrix);
+            break;
+        case TYPE_SPHERE:
+            m_pSphere[i] = new BoundingSphere(_float3(0.f, 0.f, 0.f), 0.5f);
+            m_pOriSphere[i] = new BoundingSphere(_float3(0.f, 0.f, 0.f), 0.5f);
+            m_pOriSphere[i]->Transform(*m_pSphere[i], ScaleMatrix * RotationMatrix * TranslationMatrix);
+            break;
+        }
+    }
+    
+    return S_OK;
 }
 
 void CColider::Update(_fmatrix WorldMatrix)
 {
+    switch (m_eType)
+    {
+    case TYPE_AABB:
+        m_pAABB[BOUNDING_ORIGINAL]->Transform(*m_pAABB[BOUNDING_WORLD], Remove_Rotation(WorldMatrix));
+        break;
+    case TYPE_OBB:
+        m_pOBB[BOUNDING_ORIGINAL]->Transform(*m_pOBB[BOUNDING_WORLD], WorldMatrix);
+        break;
+    case TYPE_SPHERE:
+        m_pSphere[BOUNDING_ORIGINAL]->Transform(*m_pSphere[BOUNDING_WORLD], WorldMatrix);
+        break;
+    }
 }
 
-HRESULT CColider::Render()
-{
-    return S_OK;
-}
 
 HRESULT CColider::Set_Colider_Desc(void* pArg)
 {
-    return E_NOTIMPL;
+    if (nullptr == pArg)
+        return E_FAIL;
+
+    memcpy(&m_ColiderDesc, pArg, sizeof(COLLIDERDESC));
+
+    _matrix     ScaleMatrix, RotationMatrix, TranslationMatrix;
+
+    ScaleMatrix = XMMatrixScaling(m_ColiderDesc.vScale.x, m_ColiderDesc.vScale.y, m_ColiderDesc.vScale.z);
+    _matrix RotationXMatrix = XMMatrixRotationX(m_ColiderDesc.vRotation.x);
+    _matrix RotationYMatrix = XMMatrixRotationY(m_ColiderDesc.vRotation.y);
+    _matrix RotationZMatrix = XMMatrixRotationZ(m_ColiderDesc.vRotation.z);
+    RotationMatrix = RotationXMatrix * RotationYMatrix * RotationZMatrix;
+
+    TranslationMatrix = XMMatrixTranslation(m_ColiderDesc.vPosition.x, m_ColiderDesc.vPosition.y, m_ColiderDesc.vPosition.z);
+
+    for (_uint i = 0; i < BOUNDING_END; ++i)
+    {
+        switch (m_eType)
+        {
+        case TYPE_AABB:
+            m_pOriAABB[i]->Transform(*m_pAABB[i], ScaleMatrix * TranslationMatrix);
+            break;
+        case TYPE_OBB:
+            m_pOriOBB[i]->Transform(*m_pOBB[i], RotationMatrix);
+            break;
+        case TYPE_SPHERE:
+            m_pOriSphere[i]->Transform(*m_pSphere[i], ScaleMatrix * RotationMatrix * TranslationMatrix);
+            break;
+        }
+    }
+
+    return S_OK;
+
 }
+
+#ifdef _DEBUG
+HRESULT CColider::Render()
+{
+    m_pContext->OMSetDepthStencilState(m_pDepthStencilState, 0);
+
+    m_pContext->GSSetShader(nullptr, nullptr, 0);
+
+    m_pBatch->Begin();
+
+    m_pContext->IASetInputLayout(m_pInputLayout);
+
+    m_pEffect->SetWorld(XMMatrixIdentity());
+
+    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+    pGameInstance->AddRef();
+
+    m_pEffect->SetView(pGameInstance->Get_TransformMatrix(CPipeLine::D3DTS_VIEW));
+    m_pEffect->SetProjection(pGameInstance->Get_TransformMatrix(CPipeLine::D3DTS_PROJ));
+
+    pGameInstance->Release();
+
+    m_pEffect->Apply(m_pContext);
+
+    _vector		vColor = m_isCollision == true ? XMVectorSet(1.f, 0.f, 0.f, 1.f) : XMVectorSet(0.f, 1.f, 0.f, 1.f);
+
+    switch (m_eType)
+    {
+    case CColider::TYPE_AABB:
+        DX::Draw(m_pBatch, *m_pAABB[BOUNDING_WORLD], vColor);
+        break;
+    case CColider::TYPE_OBB:
+        DX::Draw(m_pBatch, *m_pOBB[BOUNDING_WORLD], vColor);
+        break;
+    case CColider::TYPE_SPHERE:
+        DX::Draw(m_pBatch, *m_pSphere[BOUNDING_WORLD], vColor);
+        break;
+    }
+
+    m_pBatch->End();
+
+    return S_OK;
+}
+#endif
 
 _bool CColider::Collision(CColider* pTargetColider)
 {
-    return _bool();
+    m_isCollision = false;
+
+    if (TYPE_AABB == m_eType)
+    {
+        if (TYPE_AABB == pTargetColider->m_eType)
+            m_isCollision = m_pAABB[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pAABB[BOUNDING_WORLD]);
+        if (TYPE_OBB == pTargetColider->m_eType)
+            m_isCollision = m_pAABB[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pOBB[BOUNDING_WORLD]);
+        if (TYPE_SPHERE == pTargetColider->m_eType)
+            m_isCollision = m_pAABB[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pSphere[BOUNDING_WORLD]);
+    }
+
+    if (TYPE_OBB == m_eType)
+    {
+        if (isnan(m_pOBB[BOUNDING_WORLD]->Center.x))
+            return false;
+
+        if (TYPE_AABB == pTargetColider->m_eType)
+            m_isCollision = m_pOBB[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pAABB[BOUNDING_WORLD]);
+        if (TYPE_OBB == pTargetColider->m_eType)
+            m_isCollision = m_pOBB[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pOBB[BOUNDING_WORLD]);
+        if (TYPE_SPHERE == pTargetColider->m_eType)
+            m_isCollision = m_pOBB[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pSphere[BOUNDING_WORLD]);
+    }
+
+    if (TYPE_SPHERE == m_eType)
+    {
+        if (TYPE_AABB == pTargetColider->m_eType)
+            m_isCollision = m_pSphere[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pAABB[BOUNDING_WORLD]);
+        if (TYPE_OBB == pTargetColider->m_eType)
+        {
+
+            if (isnan(pTargetColider->m_pOBB[BOUNDING_WORLD]->Center.x))
+                return false;
+
+            m_isCollision = m_pSphere[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pOBB[BOUNDING_WORLD]);
+        }
+
+        if (TYPE_SPHERE == pTargetColider->m_eType)
+            m_isCollision = m_pSphere[BOUNDING_WORLD]->Intersects(*pTargetColider->m_pSphere[BOUNDING_WORLD]);
+    }
+
+
+    return m_isCollision;
 }
+
 
 _bool CColider::Collision_AABB(CColider* pTargetColider)
 {
-    return _bool();
+    _float3     vSourMin, vSourMax;
+    _float3     vDestMin, vDestMax;
+
+    vSourMin = Compute_Min();
+    vSourMax = Compute_Max();
+
+    vDestMin = pTargetColider->Compute_Min();
+    vDestMax = pTargetColider->Compute_Max();
+
+    m_isCollision = true;
+
+    // 너비 비교
+    if (max(vSourMin.x, vSourMax.x) > min(vSourMax.x, vDestMax.x))
+        m_isCollision = false;
+
+    if (max(vSourMin.y, vDestMin.y) > min(vSourMax.y, vDestMax.y))
+        m_isCollision = false;
+
+    if (max(vSourMin.z, vDestMin.z) > min(vSourMax.z, vDestMax.z))
+        m_isCollision = false;
+
+    return m_isCollision;
 }
 
-_bool CColider::Collision_OBB(CColideR* pTargetColider)
+_bool CColider::Collision_OBB(CColider* pTargetColider)
 {
-    return _bool();
+    OBBDESC     OBBDesc[2];
+
+    OBBDesc[0] = Compute_OBBDesc();
+    OBBDesc[1] = pTargetColider->Compute_OBBDesc();
+
+    m_isCollision = true;
+
+    _float fDistance[3];
+
+    for (_uint i = 0; i < 2; ++i)
+    {
+        for (_uint j = 0; j < 3; ++j)
+        {
+            fDistance[0] = fabs(XMVectorGetX(XMVector3Dot(XMLoadFloat3(&OBBDesc[1].vCenter) - XMLoadFloat3(&OBBDesc[0].vCenter),
+                XMLoadFloat3(&OBBDesc[i].vAliginAxis[j]))));
+
+            fDistance[1] = fabs(XMVectorGetX(XMVector3Dot(XMLoadFloat3(&OBBDesc[0].vCenterAxis[0]), XMLoadFloat3(&OBBDesc[i].vAliginAxis[j])))) +
+                fabs(XMVectorGetX(XMVector3Dot(XMLoadFloat3(&OBBDesc[0].vCenterAxis[1]), XMLoadFloat3(&OBBDesc[i].vAliginAxis[j])))) +
+                fabs(XMVectorGetX(XMVector3Dot(XMLoadFloat3(&OBBDesc[0].vCenterAxis[2]), XMLoadFloat3(&OBBDesc[i].vAliginAxis[j]))));
+
+            fDistance[2] = fabs(XMVectorGetX(XMVector3Dot(XMLoadFloat3(&OBBDesc[1].vCenterAxis[0]), XMLoadFloat3(&OBBDesc[i].vAliginAxis[j])))) +
+                fabs(XMVectorGetX(XMVector3Dot(XMLoadFloat3(&OBBDesc[1].vCenterAxis[1]), XMLoadFloat3(&OBBDesc[i].vAliginAxis[j])))) +
+                fabs(XMVectorGetX(XMVector3Dot(XMLoadFloat3(&OBBDesc[1].vCenterAxis[2]), XMLoadFloat3(&OBBDesc[i].vAliginAxis[j]))));
+
+            if (fDistance[0] > fDistance[1] + fDistance[2])
+                m_isCollision = false;
+        }
+    }
+
+    return m_isCollision;
 }
 
 _matrix CColider::Remove_Rotation(_fmatrix Matrix)
 {
-    return _matrix();
+    _matrix		TransformMatrix = Matrix;
+
+    TransformMatrix.r[0] = XMVectorSet(1.f, 0.f, 0.f, 0.f) * XMVectorGetX(XMVector3Length(Matrix.r[0]));
+    TransformMatrix.r[1] = XMVectorSet(0.f, 1.f, 0.f, 0.f) * XMVectorGetX(XMVector3Length(Matrix.r[1]));
+    TransformMatrix.r[2] = XMVectorSet(0.f, 0.f, 1.f, 0.f) * XMVectorGetX(XMVector3Length(Matrix.r[2]));
+
+    return TransformMatrix;
 }
 
 _float3 CColider::Compute_Min()
 {
-    return _float3();
+    if (nullptr == m_pAABB[BOUNDING_WORLD])
+        return _float3(0.f, 0.f, 0.f);
+
+    return _float3(m_pAABB[BOUNDING_WORLD]->Center.x - m_pAABB[BOUNDING_WORLD]->Extents.x,
+        m_pAABB[BOUNDING_WORLD]->Center.y - m_pAABB[BOUNDING_WORLD]->Extents.y,
+        m_pAABB[BOUNDING_WORLD]->Center.z - m_pAABB[BOUNDING_WORLD]->Extents.z);
 }
 
 _float3 CColider::Compute_Max()
 {
-    return _float3();
+    if (nullptr == m_pAABB[BOUNDING_WORLD])
+        return _float3(0.f, 0.f, 0.f);
+
+    return _float3(m_pAABB[BOUNDING_WORLD]->Center.x + m_pAABB[BOUNDING_WORLD]->Extents.x,
+        m_pAABB[BOUNDING_WORLD]->Center.y + m_pAABB[BOUNDING_WORLD]->Extents.y,
+        m_pAABB[BOUNDING_WORLD]->Center.z + m_pAABB[BOUNDING_WORLD]->Extents.z);
 }
 
 CColider::OBBDESC CColider::Compute_OBBDesc()
 {
-    return OBBDESC();
+    OBBDESC		OBBDesc;
+    ZeroMemory(&OBBDesc, sizeof(OBBDESC));
+
+    _float3		vPoints[8];
+
+    m_pOBB[BOUNDING_WORLD]->GetCorners(vPoints);
+
+    XMStoreFloat3(&OBBDesc.vCenter, (XMLoadFloat3(&vPoints[2]) + XMLoadFloat3(&vPoints[4])) * 0.5f);
+
+    XMStoreFloat3(&OBBDesc.vAliginAxis[0], XMVector3Normalize(XMLoadFloat3(&vPoints[2]) - XMLoadFloat3(&vPoints[3])));
+    XMStoreFloat3(&OBBDesc.vAliginAxis[1], XMVector3Normalize(XMLoadFloat3(&vPoints[2]) - XMLoadFloat3(&vPoints[1])));
+    XMStoreFloat3(&OBBDesc.vAliginAxis[2], XMVector3Normalize(XMLoadFloat3(&vPoints[2]) - XMLoadFloat3(&vPoints[6])));
+
+    XMStoreFloat3(&OBBDesc.vCenterAxis[0], XMLoadFloat3(&OBBDesc.vAliginAxis[0]) * m_pOBB[BOUNDING_WORLD]->Extents.x);
+    XMStoreFloat3(&OBBDesc.vCenterAxis[1], XMLoadFloat3(&OBBDesc.vAliginAxis[1]) * m_pOBB[BOUNDING_WORLD]->Extents.y);
+    XMStoreFloat3(&OBBDesc.vCenterAxis[2], XMLoadFloat3(&OBBDesc.vAliginAxis[2]) * m_pOBB[BOUNDING_WORLD]->Extents.z);
+
+    return OBBDesc;
 }
 
 CColider* CColider::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, TYPE eType)
 {
-    return nullptr;
+    CColider* pInstance = new CColider(pDevice, pContext);
+
+    if (FAILED(pInstance->Initialize_Prototype(eType)))
+    {
+        MSG_BOX("Failed to Created : CCollider");
+        Safe_Release(pInstance);
+    }
+
+    return pInstance;
 }
 
 CComponent* CColider::Clone(void* pArg)
 {
-    return nullptr;
+    CColider* pInstance = new CColider(*this);
+
+    if (FAILED(pInstance->Initialize(pArg)))
+    {
+        MSG_BOX("Failed to Cloned : CCollider");
+        Safe_Release(pInstance);
+    }
+
+    return pInstance;
 }
 
 void CColider::Free()
 {
+    __super::Free();
+
+#ifdef _DEBUG
+    if (false == m_isCloned)
+    {
+        Safe_Delete(m_pBatch);
+        Safe_Delete(m_pEffect);
+    }
+
+    Safe_Release(m_pDepthStencilState);
+    Safe_Release(m_pInputLayout);
+#endif // _DEBUG
+
+    for (_uint i = 0; i < BOUNDING_END; ++i)
+    {
+        Safe_Delete(m_pAABB[i]);
+        Safe_Delete(m_pOBB[i]);
+        Safe_Delete(m_pSphere[i]);
+    }
+
+    for (_uint i = 0; i < BOUNDING_END; ++i)
+    {
+        Safe_Delete(m_pOriAABB[i]);
+        Safe_Delete(m_pOriOBB[i]);
+        Safe_Delete(m_pOriSphere[i]);
+    }
 }

@@ -9,6 +9,7 @@
 #include "Building.h"
 #include "PoolManager.h"
 #include "MinionManager.h"
+#include "CursorManager.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 

@@ -3,6 +3,7 @@
 #include "PickingManager.h"
 #include "PlayerManager.h"
 #include "Champion.h"
+#include "CursorManager.h"
 
 
 CEnemy::CEnemy(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -118,6 +119,8 @@ _bool CEnemy::Picking(_float3* PickingPoint)
 {
 	if (m_pModelCom->Picking(m_pTransformCom, PickingPoint) == true)
 	{
+		// 마우스가 적 위에 있음 → 공격 커서
+		CCursorManager::GetInstance()->SetState(CURSOR_ATTACK);
 		CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
 		pPlayer->Set_AttackTarget(this);
 		return true;

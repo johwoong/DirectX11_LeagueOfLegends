@@ -43,6 +43,8 @@ namespace Client
 	};
 
 	enum ENEMY_TYPE { VAYNE, ENEMY_END };
+	enum CURSOR_TYPE{ CURSOR_DEFAULT, CURSOR_ATTACK};
+
 }
 
 #include <process.h>
