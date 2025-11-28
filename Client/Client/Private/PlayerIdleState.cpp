@@ -34,10 +34,6 @@ CPlayerState* CIdleState::HandleInput()
 
     if (GI->Mouse_Down(DIMK_RBUTTON))
     {
-        // Picking 실패하면 무시
-        if (!PM->Picking())
-            return nullptr;
-
         CGameObject* pickedObj = PM->Get_PickedObj();
         _float3 clickPos = PM->Get_PickingPos();
 

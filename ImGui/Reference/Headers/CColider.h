@@ -47,7 +47,7 @@ public:
 	_bool Collision(class CColider* pTargetColider);
 
 	_bool Collision_AABB(class CColider* pTargetColider);
-	_bool Collision_OBB(class CColideR* pTargetColider);
+	_bool Collision_OBB(class CColider* pTargetColider);
 
 private:
 	TYPE	m_eType = TYPE_END;

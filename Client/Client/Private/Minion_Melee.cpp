@@ -291,7 +291,6 @@ CGameObject* CMinion_Melee::Clone(void* pArg)
 
 void CMinion_Melee::Free()
 {
-
-    Safe_Delete(m_pState);
     __super::Free();
+    Safe_Delete(m_pState);
 }

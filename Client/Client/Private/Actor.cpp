@@ -67,6 +67,16 @@ void CActor::SetUp_BillBoard()
 	m_pTransformCom->Set_State(CTransform::STATE_RIGHT, XMVector3Normalize(vLook) * Get_Scale().z);
 }
 
+void CActor::Update_Collider()
+{
+	if (m_pAABBCom != nullptr)
+		m_pAABBCom->Update(m_pTransformCom->Get_WorldMatrix());
+	if (m_pOBBCom != nullptr)
+		m_pOBBCom->Update(m_pTransformCom->Get_WorldMatrix());
+	if (m_pSphereCom != nullptr)
+		m_pSphereCom->Update(m_pTransformCom->Get_WorldMatrix());
+}
+
 _vector CActor::Get_TransformState(CTransform::STATE eState)
 {
 	if (m_pTransformCom == nullptr)
@@ -95,7 +105,26 @@ void CActor::Set_Scale(_float3 vScale)
 	m_pTransformCom->Set_Scale(CTransform::STATE_LOOK, m_vScale.z);
 }
 
+CColider* CActor::Get_Collider()
+{
+	if (m_pAABBCom != nullptr)
+		return m_pAABBCom;
+	if (m_pOBBCom != nullptr)
+		return m_pOBBCom;
+	if (m_pSphereCom != nullptr)
+		return m_pSphereCom;
+	else
+		return nullptr;
+}
+
 void CActor::Free()
 {
 	__super::Free();
+
+	Safe_Release(m_pAABBCom);
+	Safe_Release(m_pOBBCom);
+	Safe_Release(m_pSphereCom);
+
+
+	Safe_Release(m_pRendererCom);
 }

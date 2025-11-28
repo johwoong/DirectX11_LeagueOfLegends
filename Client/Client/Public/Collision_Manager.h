@@ -30,7 +30,10 @@ public:
     _bool	CollisionwithGroupCollider(COLLISION_GROUP CollisionGroup, CColider* pCollider, CActor** pOut = nullptr, COLLIDER_TYPE eType = COLLIDER_END);
     _bool	CollisionwithGroup(COLLISION_GROUP SourGroup, COLLISION_GROUP DestGroup, CActor** outSour, CActor** outDest);
     void	Update_Collider();
-    void	Update_ColliderGroup(COLLISION_GROUP SourGroup);
+
+public:
+    CColider* Reuse_Collider(CColider::TYPE eType, _uint iLevelIdx, const _tchar* pPrototypeTag, void* pArg);
+    void Collect_Collider(CColider::TYPE eType, CColider* pCollider);
 
 private:
     explicit CCollision_Manager();

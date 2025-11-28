@@ -36,9 +36,6 @@ CPlayerState* CEzrealAttackState::HandleInput()
     // 공격 중 우클릭 → 즉시 이동
     if (GI->Mouse_Down(DIMK_RBUTTON))
     {
-        if (!PM->Picking())
-            return nullptr;
-
         _float3 clickPos = PM->Get_PickingPos();
         CGameObject* pickedObj = PM->Get_PickedObj();
 

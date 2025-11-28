@@ -37,13 +37,12 @@ CPlayerState* CPlayerEmotionState::HandleInput(void)
     {
         _float3 vClickPos = {};
 
-        if (CPickingManager::GetInstance()->Picking())
-        {
-            vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
-            m_pOwner->Set_TargetPosition(vClickPos);
 
-            return new CRunState(m_pOwner);
-        }
+        vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
+        m_pOwner->Set_TargetPosition(vClickPos);
+
+        return new CRunState(m_pOwner);
+        
     }
 
     return nullptr;

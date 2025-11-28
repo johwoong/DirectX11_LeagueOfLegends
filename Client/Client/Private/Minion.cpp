@@ -2,6 +2,9 @@
 #include "MinionManager.h"
 #include "PoolManager.h"
 #include "PickingManager.h"
+#include "CursorManager.h"
+#include "Champion.h"
+#include "PlayerManager.h"
 
 CMinion::CMinion(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CActor(pDevice, pContext)
@@ -103,7 +106,7 @@ int CMinion::Update(_float fTimeDelta)
         m_eState = STATE_DIE;
         On_Death();
     }
-
+    //CPickingManager::GetInstance()->Out_PickingGroup(this);
     return 0;
 }
 
@@ -114,8 +117,10 @@ void CMinion::Late_Update(_float fTimeDelta)
     if (!Is_Frustum(Check_CullingRadius()))
         return;
 
-    if (m_pRendererCom)
+    if (m_pRendererCom && Is_Frustum(Check_CullingRadius()))
         m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
+
+    //CPickingManager::GetInstance()->Add_PickingGroup(this);
 }
 
 // ======================= Render =======================
@@ -379,7 +384,6 @@ void CMinion::Follow_Target(_float fTimeDelta)
     pos += moveDir * maxMove;
 
     m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, pos);
-
     Check_Navigation();
 }
 
@@ -450,6 +454,32 @@ void CMinion::ReUse_Setting(void* pArg)
     Compute_CurrentIndex();
 }
 
+_bool CMinion::Picking(_float3* PickingPoint)
+{
+    if (m_pModelCom->Picking(m_pTransformCom, PickingPoint) == true )
+    {
+        // 마우스가 적 위에 있음 → 공격 커서
+        CCursorManager::GetInstance()->SetState(CURSOR_ATTACK);
+        CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
+        pPlayer->Set_AttackTarget(this);
+        return true;
+    }
+    else
+    {
+        ZeroMemory(&m_vMousePickedPos, sizeof(_float3));
+    }
+    return false;
+}
+
+void CMinion::PickingTrue()
+{
+}
+
+void CMinion::Set_Picked()
+{
+
+}
+
 void CMinion::Mark_Dead()
 {
     if (m_bDead)
@@ -516,7 +546,7 @@ HRESULT CMinion::SetUp_ShaderID()
 
 _float CMinion::Check_CullingRadius()
 {
-    return 0.1f;
+    return 0.01f;
 }
 
 

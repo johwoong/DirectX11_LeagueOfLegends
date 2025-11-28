@@ -66,12 +66,12 @@ void CMinionManager::Update(_float fTimeDelta)
     // ------ Wait for next wave ------
     else
     {
-        m_fWaveTimer += fTimeDelta;
-        if (m_fWaveTimer >= m_fWaveInterval)
-        {
-            m_fWaveTimer = 0.f;
-            SpawnWave();
-        }
+        //m_fWaveTimer += fTimeDelta;
+        //if (m_fWaveTimer >= m_fWaveInterval)
+        //{
+        //    m_fWaveTimer = 0.f;
+        //    SpawnWave();
+        //}
     }
 }
 

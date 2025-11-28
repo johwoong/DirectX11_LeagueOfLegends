@@ -11,6 +11,7 @@
 #include "Navigation.h"
 #include "Texture.h"
 #include "Model.h"
+#include "CColider.h"
 
 
 // 컴포넌트 원형 생성 보관

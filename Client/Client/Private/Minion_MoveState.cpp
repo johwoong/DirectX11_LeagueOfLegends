@@ -51,43 +51,43 @@ CMinionState* CMoveState::Update(_float fTimeDelta)
             0.1f);
 
     // 2) 네비 경로 따라 이동 (공용)
-    CTransform* pTr = m_pOwner->Get_Transform();
-    CNavigation* pNavi = m_pOwner->Get_Navigation();
-    if (!pTr || !pNavi)
-        return nullptr;
+    //CTransform* pTr = m_pOwner->Get_Transform();
+    //CNavigation* pNavi = m_pOwner->Get_Navigation();
+    //if (!pTr || !pNavi)
+    //    return nullptr;
 
-    // Move_ByPath : true = 아직 경로 남음, false = 목적 웨이포인트 도착
-    if (!pTr->Move_ByPath(fTimeDelta, pNavi))
-    {
-        // ===== 웨이포인트 도착했을 때 처리 =====
-        CMinionManager* pMgr = CMinionManager::GetInstance();
-        if (!pMgr)
-            return nullptr;
+    //// Move_ByPath : true = 아직 경로 남음, false = 목적 웨이포인트 도착
+    //if (!pTr->Move_ByPath(fTimeDelta, pNavi))
+    //{
+    //    // ===== 웨이포인트 도착했을 때 처리 =====
+    //    CMinionManager* pMgr = CMinionManager::GetInstance();
+    //    if (!pMgr)
+    //        return nullptr;
 
-        const auto& path = pMgr->GetLanePath(m_pOwner->Get_Lane());
-        if (path.empty())
-            return nullptr;
+    //    const auto& path = pMgr->GetLanePath(m_pOwner->Get_Lane());
+    //    if (path.empty())
+    //        return nullptr;
 
-        _int idx = m_pOwner->Get_LaneNodeIndex();
-        _int step = pMgr->GetLaneStep(m_pOwner->Get_Team()); // BLUE:+1, RED:-1
-        _int nextIdx = idx + step;
+    //    _int idx = m_pOwner->Get_LaneNodeIndex();
+    //    _int step = pMgr->GetLaneStep(m_pOwner->Get_Team()); // BLUE:+1, RED:-1
+    //    _int nextIdx = idx + step;
 
-        // 라인 끝 도착 → 나중에 타워/넥서스 공격 상태로 전환 자리
-        if (nextIdx < 0 || nextIdx >= (_int)path.size())
-        {
-            // TODO: 타워/넥서스 타겟팅 상태로 변환
-            return nullptr;
-        }
+    //    // 라인 끝 도착 → 나중에 타워/넥서스 공격 상태로 전환 자리
+    //    if (nextIdx < 0 || nextIdx >= (_int)path.size())
+    //    {
+    //        // TODO: 타워/넥서스 타겟팅 상태로 변환
+    //        return nullptr;
+    //    }
 
-        // 다음 웨이포인트 인덱스 갱신
-        m_pOwner->Set_LaneNodeIndex(nextIdx);
+    //    // 다음 웨이포인트 인덱스 갱신
+    //    m_pOwner->Set_LaneNodeIndex(nextIdx);
 
-        _float3 vTarget = path[nextIdx];
-        _vector vTargetV = XMLoadFloat3(&vTarget);
+    //    _float3 vTarget = path[nextIdx];
+    //    _vector vTargetV = XMLoadFloat3(&vTarget);
 
-        // ★ 다음 웨이포인트로 A* 목적지 재설정
-        pTr->Set_Destination(vTargetV, pNavi);
-    }
+    //    // ★ 다음 웨이포인트로 A* 목적지 재설정
+    //    pTr->Set_Destination(vTargetV, pNavi);
+    //}
 
     // 네비 Y 높이 보정
     m_pOwner->Check_Navigation();

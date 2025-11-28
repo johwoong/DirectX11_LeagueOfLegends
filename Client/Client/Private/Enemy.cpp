@@ -54,7 +54,6 @@ HRESULT CEnemy::Initialize(void* pArg)
 	Check_Navigation();
 
 
-	CPickingManager::GetInstance()->Add_PickingGroup(this);
 	return S_OK;
 }
 
@@ -65,6 +64,8 @@ int CEnemy::Update(_float fTimeDelta)
 
 	__super::Update(fTimeDelta);
 
+	
+	CPickingManager::GetInstance()->Out_PickingGroup(this);
 	return OBJ_NOEVENT;
 }
 
@@ -76,6 +77,8 @@ void CEnemy::Late_Update(_float fTimeDelta)
 	{
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 	}
+
+	CPickingManager::GetInstance()->Add_PickingGroup(this);
 
 }
 

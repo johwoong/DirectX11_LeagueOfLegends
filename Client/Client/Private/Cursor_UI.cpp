@@ -28,6 +28,7 @@ HRESULT CCursor_UI::Initialize(void* pArg)
 	m_fPosition.x = 0.f;
 	m_fPosition.y = 0.f;
 
+
 	return S_OK;
 }
 
@@ -44,13 +45,10 @@ int CCursor_UI::Update(_float fTimeDelta)
 	m_fPosition.y = (float)pt.y;
 
 	// 크기
-	m_fSize.x = 32.f;
-	m_fSize.y = 32.f;
-
-	// 스크린 공간 -> 월드(오쏘) 좌표로 변환
-	_float fX = m_fPosition.x - g_WinSizeX * 0.5f;
-	_float fY = -m_fPosition.y + g_WinSizeY * 0.5f;
-
+	m_fSize.x = 50.f;
+	m_fSize.y = 50.f;
+	
+	m_pTransformCom->Set_Rotation(_float3(0.f, 0.f, 0.f));
 	return OBJ_NOEVENT;
 }
 
@@ -79,7 +77,7 @@ HRESULT CCursor_UI::Render()
 	if (FAILED(m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", pTex->Get_SRV(0))))
 		return E_FAIL;
 
-	m_pShaderCom->Begin(m_eShaderID);
+	m_pShaderCom->Begin(1);
 	m_pVIBufferCom->Render();
 
 	return S_OK;

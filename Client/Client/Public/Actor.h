@@ -7,6 +7,7 @@ NS_BEGIN(Engine)
 class CRenderer;
 class CTransform;
 class CShader;
+class CColider;
 NS_END
 
 NS_BEGIN(Client)
@@ -31,6 +32,7 @@ public:
 	virtual void PickingTrue() {};
 	_bool Is_Frustum(_float fOffset = 0);
 	void SetUp_BillBoard();
+	void Update_Collider();
 public:
 	_float3 Get_Scale() { return m_vScale; }
 	CTransform* Get_Transform() { return m_pTransformCom; }
@@ -38,6 +40,10 @@ public:
 	void Set_State(CTransform::STATE eState, _fvector vState);
 	void Set_Scale(_float3 vScale);
 	virtual void Set_Picked(_bool type) { m_bPicked = type; }
+	CColider* Get_Collider();
+	CColider* Get_AABBCollider() { return m_pAABBCom; }
+	CColider* Get_OBBCollider() { return m_pOBBCom; }
+	CColider* Get_SphereCollider() { return m_pSphereCom; }
 
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
@@ -46,9 +52,14 @@ protected:
 
 protected:
 	// Component
-	CShader* m_pShaderCom = { nullptr };
-	CRenderer* m_pRendererCom = { nullptr };
-	CTransform* m_pTransformCom = { nullptr };
+	CShader*				m_pShaderCom = { nullptr };
+	CRenderer*				m_pRendererCom = { nullptr };
+	CTransform*				m_pTransformCom = { nullptr };
+
+	CColider*				m_pAABBCom = { nullptr };
+	CColider*				m_pOBBCom = { nullptr };
+	CColider*				m_pSphereCom = { nullptr };
+
 
 protected:
 	_uint	m_eShaderID = SHADER_NOANIM_DEFAULT;

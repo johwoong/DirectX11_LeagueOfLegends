@@ -16,16 +16,8 @@ CPoolManager::CPoolManager()
 
 void CPoolManager::Add_Pooling_Object(LEVEL iLevelIdx, const _tchar* pLayerTag, CGameObject* pGameObject)
 {
-	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	pGameInstance->AddRef();
-
-	// 1) 먼저 GameInstance의 레이어에서 이 객체를 빼준다.
-	//    Out_GameObject는 단순히 레이어 리스트에서만 제거하고, Safe_Release는 안 하므로
-	//    풀에서 재사용하기에 딱 좋음.
-	pGameInstance->Out_GameObject(iLevelIdx, pLayerTag, pGameObject);
-
-	// 2) 그 다음 풀 리스트에 넣는다.
-	list<class CGameObject*>* pLayer = Find_PoolingObjects(iLevelIdx, pLayerTag);
+	//무조건 반환값을 OBJ_POOL로 할 것
+	list< class CGameObject*>* pLayer = Find_PoolingObjects(iLevelIdx, pLayerTag);
 	if (pLayer == nullptr)
 	{
 		pLayer = new LAYERS;
@@ -34,10 +26,8 @@ void CPoolManager::Add_Pooling_Object(LEVEL iLevelIdx, const _tchar* pLayerTag, 
 	}
 	else
 	{
-		pLayer->push_back(pGameObject);
+		m_pObjects[iLevelIdx].find(pLayerTag)->second->push_back(pGameObject);
 	}
-
-	Safe_Release(pGameInstance);
 }
 
 void CPoolManager::Add_Pooling_Layer(LEVEL iLevelIdx, const _tchar* pLayerTag)

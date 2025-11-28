@@ -6,6 +6,7 @@
 #include "PlayerManager.h"
 #include "PoolManager.h"
 #include "CursorManager.h"
+#include "Collision_Manager.h"
 
 #include "UI_BackGround.h"
 #include "UI_ChampionImage.h"
@@ -70,6 +71,7 @@ void CMainApp::Update(_float fTimeDelta)
 
 	/* 내 게임의 반복적인 갱신  */
 	m_pGameInstance->Update_Engine(fTimeDelta);
+	CPickingManager::GetInstance()->Picking();
 	CCursorManager::GetInstance()->Update();
 	//#ifdef _DEBUG
 	m_fTimeAcc += fTimeDelta;
@@ -208,6 +210,7 @@ void CMainApp::Free()
 	CPickingManager::GetInstance()->DestroyInstance();
 	CCursorManager::GetInstance()->DestroyInstance();
 	CUI_Manager::GetInstance()->DestroyInstance();
+	CCollision_Manager::GetInstance()->DestroyInstance();
 
 	/* 내 멤버를 정리한다. */
 	Safe_Release(m_pGameInstance);

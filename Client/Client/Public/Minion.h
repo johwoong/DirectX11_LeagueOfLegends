@@ -122,6 +122,11 @@ public: // Damage
     virtual _int Take_Damage(int iDamage, CActor* DamageCauser);
     void Mark_Dead();
 
+public:
+    virtual _bool Picking(_float3* PickingPoint);
+    virtual void PickingTrue();
+    virtual void Set_Picked();
+
 protected:
     virtual HRESULT SetUp_ShaderResources();
     virtual HRESULT SetUp_ShaderID();
