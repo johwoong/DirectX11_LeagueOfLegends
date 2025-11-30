@@ -142,6 +142,12 @@
     <Filter Include="01.Utility\03. Components\07. Colider\DebugDraw">
       <UniqueIdentifier>{bad9988e-ba88-43d0-b3a5-3480def1d06d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\09. Lights">
+      <UniqueIdentifier>{c796de08-addd-4044-a497-5b0024902a47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\09. Lights\Manager">
+      <UniqueIdentifier>{c1f0f170-f29b-40d9-aa49-7408487d957c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -288,6 +294,12 @@
     <ClInclude Include="..\Public\DebugDraw.h">
       <Filter>01.Utility\03. Components\07. Colider\DebugDraw</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Light.h">
+      <Filter>01.Utility\09. Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\LightManager.h">
+      <Filter>01.Utility\09. Lights\Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -418,6 +430,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\DebugDraw.cpp">
       <Filter>01.Utility\03. Components\07. Colider\DebugDraw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Light.cpp">
+      <Filter>01.Utility\09. Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\LightManager.cpp">
+      <Filter>01.Utility\09. Lights\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

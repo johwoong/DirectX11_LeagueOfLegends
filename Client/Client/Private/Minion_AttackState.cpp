@@ -26,23 +26,19 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
 
     m_fAttackElapsed += fTimeDelta;
 
-    // 1) 타겟 유효성
     CActor* pTarget = m_pOwner->Check_FiledTarget();
     if (!pTarget)
     {
-        // 새 타겟 재탐색
         m_pOwner->Find_Target();
         pTarget = m_pOwner->Get_Target();
 
         if (!pTarget)
-            return new CMoveState(m_pOwner); // 아무도 없으면 다시 라인 이동
+            return new CMoveState(m_pOwner);
     }
 
-    // 2) 너무 멀어지면 다시 추격
     if (!m_pOwner->Is_TargetInAttackRange())
         return new CChaseState(m_pOwner);
 
-    // 3) 공격 애니 재생
     m_bIsAnimationFinished =
         m_pOwner->Get_Model()->Play_Animation(
             fTimeDelta,
@@ -56,7 +52,6 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
         m_pOwner->Attack_Target(fTimeDelta);
         m_pOwner->Reset_AttackTimer();
 
-        // ★ 콤보 인덱스 증가
         _int iIdx = m_pOwner->Get_AttackIndex();
         m_pOwner->Set_AttackIndex(iIdx + 1);
 

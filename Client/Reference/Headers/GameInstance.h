@@ -16,6 +16,7 @@
 #include "Target_Manager.h"
 #include "Object_Manager.h"
 #include "Frustum.h"
+#include "LightManager.h"
 #include "Picking.h"
 #include "Font_Manager.h"
 
@@ -100,6 +101,16 @@ public: /* For.Component_Manager */
 	HRESULT Find_Prototype(_int iLevelIndex, const _tchar* pPrototypeTag); // Ãß°¡
 #pragma endregion 
 
+public: /* For.Light_Manager */
+	const LIGHTDESC* Get_LightDesc(_uint iIndex);
+	HRESULT Add_Light(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const LIGHTDESC& LightDesc);
+	void Set_LightDesc(_uint iIndex, LIGHTDESC* pLightDesc);
+	void Clear_AllLight();
+	void Clear_Light(_uint iIndex);
+	_uint Get_LightSize();
+	HRESULT	Set_ShadowLightView(_float4 vEye, _float4 vAt);
+	_float4x4	Get_ShadowLightView();
+
 #pragma region PipeLine
 public: /* For.PipeLine */
 	void Set_Transform(CPipeLine::TRANSFORMSTATE eState, _fmatrix TransformMatrix);
@@ -146,6 +157,7 @@ private:
 	class CInput_Device*			m_pInput_Device =		{ nullptr };
 	class CComponentManager*		m_pComponent_Manager =	{ nullptr };
 	class CPipeLine*				m_pPipeLine		=		{ nullptr };
+	class CLightManager*			m_pLight_Manager =		{ nullptr };
 	class CFont_Manager*			m_pFont_Manager =		{ nullptr };
 	class CPicking*					m_pPicking =			{ nullptr };
 	class CFrustum*					m_pFrustum		=		{ nullptr };

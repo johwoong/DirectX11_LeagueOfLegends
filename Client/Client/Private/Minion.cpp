@@ -5,6 +5,8 @@
 #include "CursorManager.h"
 #include "Champion.h"
 #include "PlayerManager.h"
+#include "Collision_Manager.h"
+
 
 CMinion::CMinion(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CActor(pDevice, pContext)
@@ -33,7 +35,6 @@ CMinion::CMinion(const CMinion& rhs)
     Safe_AddRef(m_pNavigationCom);
 }
 
-// ======================= Initialize =======================
 
 HRESULT CMinion::Initialize_Prototype()
 {
@@ -81,12 +82,12 @@ HRESULT CMinion::Initialize(void* pArg)
 
     m_fAttackTimer = 0.f;
     m_eState = STATE_MOVE;
-
+    CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
     Compute_CurrentIndex();
     return S_OK;
 }
 
-// ======================= Update =======================
+
 
 int CMinion::Update(_float fTimeDelta)
 {
@@ -95,9 +96,7 @@ int CMinion::Update(_float fTimeDelta)
 
     if (FAILED(__super::Update(fTimeDelta)))
         return -1;
-
     m_fAttackTimer += fTimeDelta;
-    Compute_CurrentIndex();
 
     if (m_tStats.m_fCurrentHp <= 0.f && m_eState != STATE_DIE)
     {
@@ -106,7 +105,8 @@ int CMinion::Update(_float fTimeDelta)
         m_eState = STATE_DIE;
         On_Death();
     }
-    //CPickingManager::GetInstance()->Out_PickingGroup(this);
+    Update_Collider();
+    CPickingManager::GetInstance()->Out_PickingGroup(this);
     return 0;
 }
 
@@ -120,10 +120,9 @@ void CMinion::Late_Update(_float fTimeDelta)
     if (m_pRendererCom && Is_Frustum(Check_CullingRadius()))
         m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 
-    //CPickingManager::GetInstance()->Add_PickingGroup(this);
+    CPickingManager::GetInstance()->Add_PickingGroup(this);
 }
 
-// ======================= Render =======================
 
 HRESULT CMinion::Render()
 {
@@ -161,7 +160,6 @@ HRESULT CMinion::Render_EdgeDetection()
     return __super::Render_EdgeDetection();
 }
 
-// ======================= Navigation =======================
 
 void CMinion::Compute_CurrentIndex(LEVEL eLevel)
 {
@@ -178,7 +176,6 @@ void CMinion::Compute_CurrentIndex()
     m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
 }
 
-// ======================= Target / AI =======================
 
 _float CMinion::Target_Distance(CActor* pTarget) const
 {
@@ -414,6 +411,11 @@ _int CMinion::Take_Damage(int dmg, CActor* causer)
     return 0;
 }
 
+void CMinion::Check_Collision(_float fTimeDelta)
+{
+
+}
+
 void CMinion::ReUse_Setting(void* pArg)
 {
     if (!pArg)
@@ -456,18 +458,30 @@ void CMinion::ReUse_Setting(void* pArg)
 
 _bool CMinion::Picking(_float3* PickingPoint)
 {
-    if (m_pModelCom->Picking(m_pTransformCom, PickingPoint) == true )
+    CColider* pCollider = Get_Collider();   
+
+    if (pCollider == nullptr)
+        return false;
+
+    float fDist = 0.f;
+    _float3 vHitPos{};
+
+    // Collider Ray Picking
+    if (pCollider->RayPick(m_pTransformCom, &vHitPos, &fDist))
     {
-        // 마우스가 적 위에 있음 → 공격 커서
         CCursorManager::GetInstance()->SetState(CURSOR_ATTACK);
+
+        // 플레이어 타겟 설정
         CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
         pPlayer->Set_AttackTarget(this);
+
+        if (PickingPoint)
+            *PickingPoint = vHitPos;
+
         return true;
     }
-    else
-    {
-        ZeroMemory(&m_vMousePickedPos, sizeof(_float3));
-    }
+
+    ZeroMemory(&m_vMousePickedPos, sizeof(_float3));
     return false;
 }
 
@@ -552,5 +566,6 @@ _float CMinion::Check_CullingRadius()
 
 void CMinion::Free()
 {
+    CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
     __super::Free();
 }

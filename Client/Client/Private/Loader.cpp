@@ -26,6 +26,9 @@
 // Enemy
 #include "Vayne.h"
 
+// Projectile
+#include "Projectile.h"
+
 // Building
 #include "Nexus.h"
 #include "Turret.h"
@@ -172,6 +175,13 @@ HRESULT CLoader::Loading_For_Prtotype()
 	/*For.Prototype_GameObject_Champion*/
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Vayne"),
 		CVayne::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+#pragma endregion
+
+#pragma region Projectile
+	/*For.Prototype_GameObject_Projectile*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Projectile"),
+		CProjectile::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 #pragma endregion
 
@@ -336,7 +346,20 @@ HRESULT CLoader::Loading_For_GamePlay()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"),
 		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Data/NavDat/Champion_Nav.dat")))))
 		return E_FAIL;
-#pragma rendregion
+#pragma 
+	
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Colider_AABB"),
+		CColider::Create(m_pDevice, m_pContext, CColider::TYPE_AABB))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Colider_OBB"),
+		CColider::Create(m_pDevice, m_pContext, CColider::TYPE_OBB))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"),
+		CColider::Create(m_pDevice, m_pContext, CColider::TYPE_SPHERE))))
+		return E_FAIL;
+
 
 #pragma region 텍스쳐 로딩
 	m_fProgress = 90.f;

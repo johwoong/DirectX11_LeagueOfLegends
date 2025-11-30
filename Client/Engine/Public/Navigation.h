@@ -68,6 +68,7 @@ public:
     bool IsSegmentOnNavMesh(_vector a, _vector b);
     void SmoothPathPoints(std::vector<_vector>& points);
 
+
 private:
     // ≥ª∫Œ «Ô∆€
     int   FindCellIndexFromPos(_vector pos);

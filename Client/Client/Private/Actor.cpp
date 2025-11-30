@@ -38,6 +38,15 @@ int CActor::Update(_float fTimeDelta)
 void CActor::Late_Update(_float fTimeDelta)
 {
 	__super::Late_Update(fTimeDelta);
+
+#ifdef _DEBUG
+	if (m_pAABBCom != nullptr)
+		m_pRendererCom->Add_Debug(m_pAABBCom);
+	if (m_pOBBCom != nullptr)
+		m_pRendererCom->Add_Debug(m_pOBBCom);
+	if (m_pSphereCom != nullptr)
+		m_pRendererCom->Add_Debug(m_pSphereCom);
+#endif
 }
 
 HRESULT CActor::Render()
@@ -123,8 +132,6 @@ void CActor::Free()
 
 	Safe_Release(m_pAABBCom);
 	Safe_Release(m_pOBBCom);
-	Safe_Release(m_pSphereCom);
-
 
 	Safe_Release(m_pRendererCom);
 }

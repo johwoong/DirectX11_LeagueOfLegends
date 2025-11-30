@@ -84,9 +84,10 @@ public:
 public:
 	void RoamingTurn(_matrix WorldMatrix, _float fRadian);
 
-public:
+public: // A*
 	void Set_Destination(_vector vDest, CNavigation* pNavi);
 	bool Move_ByPath(_float fDeltaTime, CNavigation* pNavi);
+	void StopMovement();
 
 private:
 	_float4x4 m_WorldMatrix;

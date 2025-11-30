@@ -1,6 +1,7 @@
 #include "Ezreal.h"
 
 #include "GameInstance.h"
+#include "Channel.h"
 
 _bool CEzreal::Is_AnimationLoop(_uint eAnimId)
 {
@@ -11,6 +12,23 @@ _bool CEzreal::Is_AnimationLoop(_uint eAnimId)
 		return true;
 	}
 	return false;
+}
+
+void CEzreal::Ready_Animation_Event()
+{
+	CAnimation* pAnim = m_pModelCom->Get_Animations()[ATTACK1];
+	if (!pAnim) return;
+
+	ANIMEVENT evt{};
+	evt.fStartTime = 11.f;
+	evt.fEndTime = 13.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+
+	pAnim->Add_Event(evt);;
+	
+	pAnim = m_pModelCom->Get_Animations()[Q];
+	if (!pAnim) return;
+	
 }
 
 

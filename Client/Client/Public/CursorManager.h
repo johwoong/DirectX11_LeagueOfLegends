@@ -25,15 +25,22 @@ public:
         ::ScreenToClient(m_hWnd, &m_tMousePos);
     }
 
+public:
     void   SetState(CURSOR_TYPE eState) { m_eState = eState; }
     CURSOR_TYPE GetState() const { return m_eState; }
 
     POINT GetCursorPosClient() const { return m_tMousePos; }
 
+public:
+    _vector Get_RayPos() const { return m_vRayPos; }
+    _vector Get_RayDir() const { return m_vRayDir; }
+
 private:
     HWND        m_hWnd = nullptr;
     CURSOR_TYPE m_eState = CURSOR_DEFAULT;
     POINT       m_tMousePos{};
+    _vector     m_vRayPos = XMVectorZero();
+    _vector     m_vRayDir = XMVectorZero();
 public:
     virtual void Free() override {}
 };

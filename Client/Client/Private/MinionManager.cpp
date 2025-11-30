@@ -39,7 +39,6 @@ void CMinionManager::Update(_float fTimeDelta)
 
     GI->Release();
 
-    // ------ Existing wave pending ------
     if (m_bWaveInProgress)
     {
         m_fWaveElapsed += fTimeDelta;
@@ -63,7 +62,6 @@ void CMinionManager::Update(_float fTimeDelta)
             m_fWaveElapsed = 0.f;
         }
     }
-    // ------ Wait for next wave ------
     else
     {
         //m_fWaveTimer += fTimeDelta;

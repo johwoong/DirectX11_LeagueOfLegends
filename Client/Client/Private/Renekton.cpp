@@ -15,6 +15,10 @@ _bool CRenekton::Is_AnimationLoop(_uint eAnimId)
 	return false;
 }
 
+void CRenekton::Ready_Animation_Event()
+{
+}
+
 
 CRenekton::CRenekton(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CChampion(pDevice, pContext)

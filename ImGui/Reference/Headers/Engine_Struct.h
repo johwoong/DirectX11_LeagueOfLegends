@@ -3,6 +3,20 @@
 
 namespace Engine
 {
+	typedef struct tagLightDesc
+	{
+		enum TYPE { TYPE_DIRECTIONAL, TYPE_POINT, TYPE_END };
+
+		TYPE eTYPE = TYPE_END;
+		XMFLOAT4	vPosition;
+		float		fRange;
+		XMFLOAT4	vDirection;
+
+		XMFLOAT4	vDiffuse;
+		XMFLOAT4	vAmbient;
+		XMFLOAT4	vSpecular;
+	}LIGHTDESC;
+
 	typedef struct tagKeyframe
 	{
 		float				fTime;
@@ -227,7 +241,7 @@ namespace Engine
 
 	typedef struct tagAnimationEvent
 	{
-		enum EVENTTYPE { EVENT_SOUND, EVENT_EFFECT, EVENT_COLLIDER, EVENT_STATE, EVENT_INPUT, EVENT_END };
+		enum EVENTTYPE { EVENT_SOUND, EVENT_EFFECT, EVENT_COLLIDER, EVENT_STATE, EVENT_INPUT, EVENT_PROJECTILE, EVENT_END };
 
 		bool isPlay = false;
 		float fStartTime;

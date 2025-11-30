@@ -16,7 +16,7 @@ public:
 	vector<_float> Get_TickPerSeconds(void) const { return m_TickPerSeconds; }
 	vector<_float> Get_ChangeTickTimes(void) const { return m_ChangeTickTimes; }
 	_float Get_CurrentTime(void) const { return m_fCurrentTime; }
-	vector<ANIMEVENT> Get_Events(void) const { return m_vecAnimEvent; }
+	vector<ANIMEVENT>& Get_Events(void) { return m_vecAnimEvent; }
 	_float Get_OriginalTickPerSecond(void) const { return m_fOriTickPerSecond; }
 
 	void Add_EventCall(ANIMEVENT eEvent) { m_vecAnimEvent.push_back(eEvent); }

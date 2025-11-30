@@ -4,6 +4,8 @@
 #include "PlayerRunState.h"
 #include "PlayerEmotionState.h"
 #include "EzrealAttackState.h"
+#include "EzrealSkillStateQ.h"
+#include "EzrealSkillStateE.h"
 
 using namespace Player;
 
@@ -18,6 +20,17 @@ CPlayerState* CIdleState::HandleInput()
 {
     CGameInstance* GI = CGameInstance::GetInstance();
     CPickingManager* PM = CPickingManager::GetInstance();
+
+    if (GI->Key_Down(DIK_Q))
+    {
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+            return new CEzrealSkillStateQ(m_pOwner);
+    }
+    if (GI->Key_Down(DIK_E))
+    {
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+            return new CEzrealSkillStateE(m_pOwner);
+    }
 
     if (GI->Key_Pressing(DIK_LCONTROL))
     {
@@ -74,19 +87,45 @@ CPlayerState* CIdleState::HandleInput()
 
 CPlayerState* CIdleState::Update(_float fTimeDelta)
 {
-    m_bIsAnimationFinished = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex()), nullptr, 0.1f);
+    _uint curAnim = m_pOwner->Get_Model()->Get_CurrentAnimIndex();
 
-	return nullptr;
+    // ? Ezreal IdleQ일 때만 애니메이션 속도 빠르게
+    if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL &&
+        curAnim == CEzreal::ANIM::IDLEQ)
+    {
+        fTimeDelta *= 2.f; 
+    }
+
+    m_bIsAnimationFinished =
+        m_pOwner->Get_Model()->Play_Animation(
+            fTimeDelta,
+            m_pOwner->Is_AnimationLoop(curAnim),
+            nullptr,
+            0.1f
+        );
+
+    return nullptr;
 }
 
 CPlayerState* CIdleState::Late_Update(_float fTimeDelta)
 {
     if (m_bIsAnimationFinished)
     {
+        // Ezreal IdleQ → Idle1/Idle2 전환
+        if (m_pOwner->Get_Model()->Get_CurrentAnimIndex() == CEzreal::ANIM::IDLEQ)
+        {
+            int idx = rand() % m_vecIdleAnim.size();
+            _uint eAnim = m_vecIdleAnim[idx];
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(eAnim);
+            return nullptr;
+        }
+
+        // 다른 Idle도 기존처럼 랜덤 변경
         int idx = rand() % m_vecIdleAnim.size();
         _uint eAnim = m_vecIdleAnim[idx];
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(eAnim);
     }
+
     return nullptr;
 }
 
@@ -98,7 +137,23 @@ void CIdleState::Enter()
 
     m_vecIdleAnim.clear();
 
-    // 캐릭터 별 Idle 랜덤 셋업
+    // Ezreal 후딜 IdleQ
+    if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL &&
+        m_pOwner->Get_PlayIdleQ())
+    {
+        m_pOwner->Set_PlayIdleQ(false);
+
+        // Idle 이후 랜덤 돌아갈 Idle 목록 미리 넣기
+        m_vecIdleAnim = {
+            CEzreal::ANIM::IDLE01,
+            CEzreal::ANIM::IDLE2
+        };
+
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::IDLEQ);
+        return;
+    }
+
+    // ===== 기존 Idle 랜덤 로직 =====
     switch (m_pOwner->Get_PlayerID())
     {
     case CPlayer::EZREAL:
@@ -123,7 +178,6 @@ void CIdleState::Enter()
         break;
     }
 
-    // 랜덤 Idle 선택
     int idx = rand() % m_vecIdleAnim.size();
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(m_vecIdleAnim[idx]);
     

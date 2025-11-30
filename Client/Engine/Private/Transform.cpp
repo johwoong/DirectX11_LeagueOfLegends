@@ -346,6 +346,8 @@ void CTransform::Set_Destination(_vector vDest, CNavigation* pNavi)
 
     _vector vStart = Get_State(CTransform::STATE_TRANSLATION);
 
+    pNavi->Compute_CurrentIndex_byXZ(vStart);
+
     // 1) A* 로 셀 경로 찾기
     if (!pNavi->FindPath(vStart, vDest, cellPath))
     {
@@ -471,7 +473,7 @@ bool CTransform::Move_ByPath(_float fDeltaTime, CNavigation* pNavi)
         if (m_iPathIndex >= (int)m_PathPoints.size())
         {
             m_bHasDestination = false;
-            return true;
+            return true;        // 목적지 도착
         }
 
         vTarget = m_PathPoints[m_iPathIndex];
@@ -496,21 +498,23 @@ bool CTransform::Move_ByPath(_float fDeltaTime, CNavigation* pNavi)
     else
         vNextPos = vPos + vDir * step;
 
-
-    // 현재 위치 기준으로 가장 가까운 셀 인덱스 갱신
+    // ?? 여기서 더 이상 isMove 쓰지 말고, 그냥 가장 가까운 셀 찾기
     pNavi->Compute_CurrentIndex_byXZ(vNextPos);
 
-    // 그 셀 기준 높이 보정
     float newY = pNavi->Compute_Height(vNextPos, 0.f);
     vNextPos = XMVectorSetY(vNextPos, newY);
 
-    // 실제 위치 반영
     Set_State(STATE_TRANSLATION, vNextPos);
-
-    // 회전도 살짝
     SmoothLookAt(-vDir, fDeltaTime, 16.f);
 
     return true;
+}
+
+void CTransform::StopMovement()
+{
+    m_bHasDestination = false;
+    m_PathPoints.clear();
+    m_iPathIndex = 0;
 }
 
 CTransform* CTransform::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

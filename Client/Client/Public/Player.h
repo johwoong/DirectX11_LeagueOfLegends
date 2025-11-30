@@ -42,6 +42,11 @@ public: // GET, SET
 	void Reset_State();
 	void Set_AttackTarget(CActor* pTarget) { m_pAttackTarget = pTarget; }
 	CActor* Get_AttackTarget() const { return m_pAttackTarget; }
+	bool Get_PlayIdleQ() const { return m_bPlayIdleQ; }
+	void Set_PlayIdleQ(bool v) { m_bPlayIdleQ = v; }
+	bool IsUsingSkill() const { return m_bUsingSkill; }
+	void SetUsingSkill(bool b) { m_bUsingSkill = b; }
+	bool IsMoving() const { return m_bMoving; }
 public: // State
 	virtual _bool Is_AnimationLoop(_uint eAnimId) = 0;
 	void HandleInput();
@@ -52,6 +57,9 @@ public: // Navigation
 	void Check_Navigation();
 	void Compute_CurrentIndex();
 
+public: // Animation Event
+	virtual void Ready_Animation_Event() PURE;
+	 
 	
 protected:
 	// Component
@@ -65,6 +73,11 @@ protected: // 챔피언 교체
 protected: // 플레이어 이동
 	_bool m_bMoving = false;
 	_float3 m_vTargetPos = { 0.f, 0.f, 0.f };
+
+protected: // 애니메이션 교체 관련
+ 	bool m_bPlayIdleQ = false;
+protected: // 스킬
+	bool m_bUsingSkill = false;
 
 protected:
 	CActor* m_pAttackTarget = nullptr;     // 현재 평타 타겟 (추후 공격 상태에서 사용)

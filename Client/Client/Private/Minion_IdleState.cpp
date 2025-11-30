@@ -32,7 +32,6 @@ CMinionState* CIdleState::Update(_float fTimeDelta)
 
     m_fIdleTime += fTimeDelta;
 
-    // 0.3초 정도 기다렸다가 MoveState로 전환
     if (m_fIdleTime >= 0.3f)
     {
         return new CMoveState(m_pOwner);
@@ -53,7 +52,6 @@ void CIdleState::Enter()
 
     if (m_pOwner && m_pOwner->Get_Model())
     {
-        // ★ 공용 인덱스 사용
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(m_pOwner->GetIdleAnimIndex());
     }
 }

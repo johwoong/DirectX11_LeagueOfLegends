@@ -1,7 +1,8 @@
 #include "PlayerRunState.h"
 #include "PlayerIdleState.h"
-#include "EzrealAttackState.h"
 #include "Terrian.h"
+#include "EzrealAttackState.h"
+#include "EzrealSkillStateQ.h"
 
 using namespace Player;
 
@@ -14,14 +15,23 @@ CRunState::CRunState(CPlayer* pPlayer)
 
 CPlayerState* CRunState::HandleInput()
 {
+
+
     CGameInstance* GI = CGameInstance::GetInstance();
     CPickingManager* PM = CPickingManager::GetInstance();
 
+    if (GI->Key_Down(DIK_Q))
+    {
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+        {
+            // 달리면서 Q 시전
+            return new CEzrealSkillStateQ(m_pOwner); // ← runningQ 모드
+        }
+    }
+
+
     if (GI->Mouse_Down(DIMK_RBUTTON))
     {
-        // Picking 실패 → 무시
-        if (!PM->Picking())
-            return nullptr;
 
         CGameObject* pickedObj = PM->Get_PickedObj();
         _float3 clickPos = PM->Get_PickingPos();
@@ -67,27 +77,20 @@ CPlayerState* CRunState::Update(_float fTimeDelta)
 {
     // 입력 처리 후 상태 변경 허용
     if (CPlayerState* next = HandleInput())
-        return next;
+        return next;   // ★ 여기서 즉시 반환! 아래 코드 절대 실행하면 안 됨
 
     Move(fTimeDelta);
     m_pOwner->Check_Navigation();
 
-    CActor* target = m_pOwner->Get_AttackTarget();
-     if (target && !target->Get_Dead())
-    {
-        float dist = GetDistanceXZ(
-            m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION),
-            target->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+    // (나머지 로직 동일)
 
-        float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();
-
-        if (dist <= range)
-            return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
-    }
+    if (m_pOwner->IsUsingSkill())
+        return nullptr;
 
     if (STATETYPE_END == m_eStateType)
         return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
 
+    // ★ SkillState로 넘어가지 않을 때만 애니메이션 재생
     m_pOwner->Get_Model()->Play_Animation(
         fTimeDelta,
         m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex())
@@ -121,6 +124,10 @@ void CRunState::Enter()
     switch (m_ePlayerID)
     {
     case CPlayer::EZREAL:
+        if (m_pOwner->IsUsingSkill())
+            return;
+
+        // 평소엔 Run 애니 재생
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RUN);
         break;
     }
@@ -136,10 +143,11 @@ void CRunState::Move(_float fTimeDelta)
        CTransform* pTr = m_pOwner->Get_Transform();
     CNavigation* pNavi = m_pOwner->Get_Navigation();
 
-    // Transform이 스스로 경로 따라 감
     if (!pTr->Move_ByPath(fTimeDelta, pNavi))
     {
-        m_eStateType = STATETYPE_END;
+        // 스킬 시전 중엔 절대 Run 종료시키지 말 것
+        if (!m_pOwner->IsUsingSkill())
+            m_eStateType = STATETYPE_END;
         return;
     }
 }

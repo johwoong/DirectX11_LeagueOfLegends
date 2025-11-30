@@ -15,6 +15,9 @@ public:
 
 	virtual void Enter() override;
 	virtual void Exit() override;
+
+private:
+	bool m_bProjectileSpawned = false;
 };
 NS_END
 NS_END

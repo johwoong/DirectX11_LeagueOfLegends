@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "Bone.h"
+#include "Animation.h"
 
 NS_BEGIN(Engine)
 class CTransform;
@@ -20,11 +21,12 @@ public:
 	class CBone* Get_BonePtr(const char* pBoneName) const;
 
 	vector<class CBone*> Get_Bones(void) { return m_Bones; }
-	vector<class CAnimation*> Get_Animations(void) { return m_Animations; }
+
+	vector<CAnimation*>& Get_Animations(void) { return m_Animations; }
 
 	_uint Get_CurrentAnimIndex() { return m_iCurrentAnimIndex; }
 
-	vector<ANIMEVENT> Get_Events(void);
+	vector<ANIMEVENT>& Get_Events(void);
 
 	// 루트 본 이동, 회전 변화량 Get 함수
 	void Get_MoveTransformationMatrix(const char* pBoneName, _vector* pTranslation, _float* pRotation);

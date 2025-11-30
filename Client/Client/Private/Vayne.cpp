@@ -146,6 +146,14 @@ HRESULT CVayne::Ready_Components(void* pArg)
 	if (FAILED(__super::Add_Components(TEXT("Com_Navigation"), LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"), (CComponent**)&m_pNavigationCom, &NaviDesc)))
 		return E_FAIL;
 
+
+	CColider::COLLIDERDESC ColliderDesc;
+	ZeroMemory(&ColliderDesc, sizeof(CColider::COLLIDERDESC));
+	ColliderDesc.vScale = _float3(1.f, 1.f, 1.f);
+	ColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
+	ColliderDesc.vPosition = _float3(0.f, 30.f, 0.f);
+	if (FAILED(__super::Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), (CComponent**)&m_pSphereCom, &ColliderDesc)))
+		return E_FAIL;
 	return S_OK;
 }
 

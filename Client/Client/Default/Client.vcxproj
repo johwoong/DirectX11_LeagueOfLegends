@@ -166,9 +166,12 @@
     <ClInclude Include="..\Public\Collision_Manager.h" />
     <ClInclude Include="..\Public\CursorManager.h" />
     <ClInclude Include="..\Public\Enemy.h" />
+    <ClInclude Include="..\Public\EzrealSkillStateE.h" />
+    <ClInclude Include="..\Public\EzrealSkillStateW.h" />
+    <ClInclude Include="..\Public\Projectile.h" />
     <ClInclude Include="..\Public\UI_AttackRange.h" />
     <ClInclude Include="..\Public\EzrealAttackState.h" />
-    <ClInclude Include="..\Public\EzrealSkillState.h" />
+    <ClInclude Include="..\Public\EzrealSkillStateQ.h" />
     <ClInclude Include="..\Public\MinionManager.h" />
     <ClInclude Include="..\Public\Minion_AttackState.h" />
     <ClInclude Include="..\Public\Minion_ChaseState.h" />
@@ -240,9 +243,12 @@
     <ClCompile Include="..\Private\Collision_Manager.cpp" />
     <ClCompile Include="..\Private\CursorManager.cpp" />
     <ClCompile Include="..\Private\Enemy.cpp" />
+    <ClCompile Include="..\Private\EzrealSkillStateE.cpp" />
+    <ClCompile Include="..\Private\EzrealSkillStateW.cpp" />
+    <ClCompile Include="..\Private\Projectile.cpp" />
     <ClCompile Include="..\Private\UI_AttackRange.cpp" />
     <ClCompile Include="..\Private\EzrealAttackState.cpp" />
-    <ClCompile Include="..\Private\EzrealSkillState.cpp" />
+    <ClCompile Include="..\Private\EzrealSkillStateQ.cpp" />
     <ClCompile Include="..\Private\MinionManager.cpp" />
     <ClCompile Include="..\Private\Minion_AttackState.cpp" />
     <ClCompile Include="..\Private\Minion_ChaseState.cpp" />

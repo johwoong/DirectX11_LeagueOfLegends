@@ -244,7 +244,7 @@ void CCollision_Manager::Free()
 		m_ColliderGameObjects[i].clear();
 		m_Colliders[i].clear();
 	}
-	for (_uint i = 0; i < COLLISION_END; ++i)
+	for (_uint i = 0; i < COLLIDER_END; ++i)
 	{
 		for (auto& iter : m_ColliderPool[i])
 			Safe_Release(iter);

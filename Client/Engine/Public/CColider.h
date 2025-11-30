@@ -2,6 +2,7 @@
 #include "Component.h"
 
 NS_BEGIN(Engine)
+class CTransform;
 class ENGINE_DLL CColider final : public CComponent
 {
 public:
@@ -37,7 +38,8 @@ public:
 	void Update(_fmatrix WorldMatrix);
 	_float Get_SphereRadius(void) { return 1.f; }
 	HRESULT Set_Colider_Desc(void* pArg);
-
+	void Set_Sphere_Radius(float radius);
+	void Set_Scale(_float3 vScale);
 #ifdef _DEBUG
 public:
 	HRESULT Render();
@@ -45,10 +47,9 @@ public:
 
 public:
 	_bool Collision(class CColider* pTargetColider);
-
 	_bool Collision_AABB(class CColider* pTargetColider);
 	_bool Collision_OBB(class CColider* pTargetColider);
-
+	bool RayPick(CTransform* pTransform,_float3* pOutHitPos = nullptr, float* pOutDist = nullptr);
 private:
 	TYPE	m_eType = TYPE_END;
 	COLLIDERDESC m_ColiderDesc;

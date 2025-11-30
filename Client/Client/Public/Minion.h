@@ -6,6 +6,7 @@ NS_BEGIN(Engine)
 class CModel;
 class CTexture;
 class CNavigation;
+class CColider;
 NS_END
 
 NS_BEGIN(Client)
@@ -115,6 +116,9 @@ public: // Navigation logic
     virtual void Compute_CurrentIndex(LEVEL eLevel);
     void Compute_CurrentIndex();
 
+public:
+    // Colider
+    void Check_Collision(_float fTimeDelta);
 public: // Pool reuse
     virtual void ReUse_Setting(void* pArg) override;
 

@@ -58,7 +58,7 @@ CBone* CModel::Get_BonePtr(const char* pBoneName) const
     return *iter;
 }
 
-vector<ANIMEVENT> CModel::Get_Events(void)
+vector<ANIMEVENT>& CModel::Get_Events(void)
 {
     return m_Animations[m_iCurrentAnimIndex]->Get_Events();
 }

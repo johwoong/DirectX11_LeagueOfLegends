@@ -210,10 +210,10 @@ void CMainApp::Free()
 	CPickingManager::GetInstance()->DestroyInstance();
 	CCursorManager::GetInstance()->DestroyInstance();
 	CUI_Manager::GetInstance()->DestroyInstance();
-	CCollision_Manager::GetInstance()->DestroyInstance();
 
-	/* 내 멤버를 정리한다. */
 	Safe_Release(m_pGameInstance);
+	/* 내 멤버를 정리한다. */
 	CGameInstance::Release_Engine();
 	Safe_Release(m_pUIManager);
+	CCollision_Manager::GetInstance()->DestroyInstance();
 }

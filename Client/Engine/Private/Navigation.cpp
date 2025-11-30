@@ -538,6 +538,8 @@ void CNavigation::SmoothPathPoints(std::vector<_vector>& points)
     points.swap(result);
 }
 
+
+
 float CNavigation::TriangleArea2(_vector a, _vector b, _vector c)
 {
     _vector ab = b - a;

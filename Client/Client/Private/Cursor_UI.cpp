@@ -25,8 +25,6 @@ HRESULT CCursor_UI::Initialize(void* pArg)
 	// 커서 크기 (픽셀) ? 게임 해상도에 맞게 조절
 	m_fSize.x = 32.f;
 	m_fSize.y = 32.f;
-	m_fPosition.x = 0.f;
-	m_fPosition.y = 0.f;
 
 
 	return S_OK;
@@ -41,8 +39,8 @@ int CCursor_UI::Update(_float fTimeDelta)
 	CCursorManager* pMgr = CCursorManager::GetInstance();
 	POINT pt = pMgr->GetCursorPosClient();
 
-	m_fPosition.x = (float)pt.x;
-	m_fPosition.y = (float)pt.y;
+	m_fPosition.x = (float)pt.x + 10.f;
+	m_fPosition.y = (float)pt.y + 15.f;
 
 	// 크기
 	m_fSize.x = 50.f;

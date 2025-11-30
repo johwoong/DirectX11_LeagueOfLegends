@@ -21,7 +21,6 @@ private:
     HRESULT SetUp_ShaderResources();
 
 private:
-    // 커서 전용 텍스처 두 개
     class CTexture* m_pTexNormal = nullptr;
     class CTexture* m_pTexAttack = nullptr;
 

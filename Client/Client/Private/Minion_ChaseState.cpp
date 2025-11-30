@@ -17,21 +17,17 @@ CMinionState* CChaseState::AI_Behaviour(_float fTimeDelta)
 {
     if (!m_pOwner) return nullptr;
 
-    // 1) 현재 타겟 상태 확인
     CActor* pTarget = m_pOwner->Check_FiledTarget();
 
-    // 타겟 잃었으면 바로 다시 찾기 시도
     if (!pTarget)
     {
         m_pOwner->Find_Target();
         pTarget = m_pOwner->Get_Target();
 
-        // 그래도 없으면 라인 따라가는 MoveState 로
         if (!pTarget)
             return new CMoveState(m_pOwner);
     }
 
-    // 2) 공격 사거리면 AttackState
     if (m_pOwner->Is_TargetInAttackRange())
         return new CAttackState(m_pOwner);
 
@@ -51,7 +47,6 @@ CMinionState* CChaseState::Update(_float fTimeDelta)
             nullptr,
             0.1f);
 
-    // 1) 타겟 체크 + 재탐색
     CActor* pTarget = m_pOwner->Check_FiledTarget();
     if (!pTarget)
     {
@@ -62,11 +57,9 @@ CMinionState* CChaseState::Update(_float fTimeDelta)
             return new CMoveState(m_pOwner);
     }
 
-    // 2) 사거리 안이면 Attack
     if (m_pOwner->Is_TargetInAttackRange())
         return new CAttackState(m_pOwner);
 
-    // 3) 아직 멀면 따라가기
     m_pOwner->Follow_Target(fTimeDelta);
 
     return nullptr;
@@ -84,7 +77,6 @@ void CChaseState::Enter()
 
     if (m_pOwner && m_pOwner->Get_Model())
     {
-        // Chase 는 그냥 Run 애니 사용
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(m_pOwner->GetRunAnimIndex());
     }
 }

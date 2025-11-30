@@ -23,6 +23,9 @@ HRESULT CChampion::Initialize(void* pArg)
 {
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
+
+	Ready_Animation_Event();
+
 	return S_OK;
 }
 

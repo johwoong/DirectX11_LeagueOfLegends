@@ -4,6 +4,7 @@
 #include "PlayerManager.h"
 #include "Champion.h"
 #include "CursorManager.h"
+#include "Collision_Manager.h"
 
 
 CEnemy::CEnemy(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -50,6 +51,7 @@ HRESULT CEnemy::Initialize(void* pArg)
 	float h = m_pNavigationCom->Compute_Height(pos, 0);
 	pos = XMVectorSetY(pos, h);
 	Get_Transform()->Set_State(CTransform::STATE_TRANSLATION, pos);
+	CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(Get_TransformState(CTransform::STATE_TRANSLATION));
 	Check_Navigation();
 
@@ -63,7 +65,7 @@ int CEnemy::Update(_float fTimeDelta)
 		return OBJ_DEAD;
 
 	__super::Update(fTimeDelta);
-
+	Update_Collider();
 	
 	CPickingManager::GetInstance()->Out_PickingGroup(this);
 	return OBJ_NOEVENT;
@@ -122,7 +124,6 @@ _bool CEnemy::Picking(_float3* PickingPoint)
 {
 	if (m_pModelCom->Picking(m_pTransformCom, PickingPoint) == true)
 	{
-		// 마우스가 적 위에 있음 → 공격 커서
 		CCursorManager::GetInstance()->SetState(CURSOR_ATTACK);
 		CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
 		pPlayer->Set_AttackTarget(this);

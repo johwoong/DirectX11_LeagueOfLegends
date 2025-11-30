@@ -88,8 +88,8 @@ HRESULT CColider::Initialize(void* pArg)
             m_pOriOBB[i]->Transform(*m_pOBB[i], RotationMatrix);
             break;
         case TYPE_SPHERE:
-            m_pSphere[i] = new BoundingSphere(_float3(0.f, 0.f, 0.f), 0.5f);
-            m_pOriSphere[i] = new BoundingSphere(_float3(0.f, 0.f, 0.f), 0.5f);
+            m_pSphere[i] = new BoundingSphere(_float3(0.f, 0.f, 0.f), 50.f);
+            m_pOriSphere[i] = new BoundingSphere(_float3(0.f, 0.f, 0.f), 50.f);
             m_pOriSphere[i]->Transform(*m_pSphere[i], ScaleMatrix * RotationMatrix * TranslationMatrix);
             break;
         }
@@ -150,6 +150,85 @@ HRESULT CColider::Set_Colider_Desc(void* pArg)
 
     return S_OK;
 
+}
+
+void CColider::Set_Sphere_Radius(float radius)
+{
+    if (m_eType != TYPE_SPHERE) return;
+
+    for (int i = 0; i < BOUNDING_END; i++)
+    {
+        m_pSphere[i]->Radius = radius;
+        m_pOriSphere[i]->Radius = radius;
+    }
+}
+
+void CColider::Set_Scale(_float3 vScale)
+{
+    m_ColiderDesc.vScale = vScale;
+    Set_Colider_Desc(&m_ColiderDesc);
+}
+
+bool CColider::RayPick(CTransform* pTransform, _float3* pOutHitPos, float* pOutDist)
+{
+    if (!pTransform)
+        return false;
+
+    // 1) CPicking 에서 "로컬 레이" 정보 받아오기
+    CPicking* pPicking = CPicking::GetInstance();
+    pPicking->AddRef();
+
+    _float3 vLocalRayDir{}, vLocalRayPos{};
+    pPicking->Compute_LocalRayInfo(&vLocalRayDir, &vLocalRayPos, pTransform);
+
+    pPicking->Release();
+
+    // 2) 로컬 레이를 월드 레이로 변환
+    XMVECTOR vRayPosLocal = XMLoadFloat3(&vLocalRayPos);
+    XMVECTOR vRayDirLocal = XMVector3Normalize(XMLoadFloat3(&vLocalRayDir));
+
+    XMMATRIX world = pTransform->Get_WorldMatrix();
+
+    // 로컬 → 월드
+    XMVECTOR vRayPos = XMVector3TransformCoord(vRayPosLocal, world);
+    XMVECTOR vRayDir = XMVector3Normalize(
+        XMVector3TransformNormal(vRayDirLocal, world));
+
+    float dist = 0.f;
+    bool  hit = false;
+
+    // 3) 콜라이더 타입에 따라 레이와 교차 테스트
+    switch (m_eType)
+    {
+    case TYPE_SPHERE:
+        if (m_pSphere[BOUNDING_WORLD])
+            hit = m_pSphere[BOUNDING_WORLD]->Intersects(vRayPos, vRayDir, dist);
+        break;
+
+    case TYPE_OBB:
+        if (m_pOBB[BOUNDING_WORLD])
+            hit = m_pOBB[BOUNDING_WORLD]->Intersects(vRayPos, vRayDir, dist);
+        break;
+
+    case TYPE_AABB:
+        if (m_pAABB[BOUNDING_WORLD])
+            hit = m_pAABB[BOUNDING_WORLD]->Intersects(vRayPos, vRayDir, dist);
+        break;
+    }
+
+    if (!hit)
+        return false;
+
+    if (pOutDist)
+        *pOutDist = dist;
+
+    if (pOutHitPos)
+    {
+        XMVECTOR vHit = vRayPos + vRayDir * dist;
+        XMStoreFloat3(pOutHitPos, vHit);
+    }
+
+    return true;
 }
 
 #ifdef _DEBUG
@@ -243,6 +322,7 @@ _bool CColider::Collision(CColider* pTargetColider)
 
     return m_isCollision;
 }
+
 
 
 _bool CColider::Collision_AABB(CColider* pTargetColider)

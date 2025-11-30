@@ -35,7 +35,7 @@ public:
 public:
 	virtual _bool Is_AnimationLoop(_uint eAnimId) override;
 public:
-	virtual void ReUse_Setting(void* pArg) override;  // ★ 추가
+	virtual void ReUse_Setting(void* pArg) override;  
 public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
@@ -49,7 +49,7 @@ public: /*For.State*/
 
 public:	/*For Navigation*/
 	virtual void Check_Navigation() override;
-	virtual void On_Death() override;   // ★ 추가
+	virtual void On_Death() override;   
 private:
 	class CMinionState* m_pState = nullptr;
 public:

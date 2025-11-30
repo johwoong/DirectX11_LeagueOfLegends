@@ -1457,7 +1457,7 @@ void CImGui_Manager::Set_Animation()
 			ZeroMemory(&Pivot, sizeof(CAnim::MODELDESC));
 
 			Pivot.vPosition = _float3(0.f, 0.f, 0.f);
-			Pivot.vScale = _float3(1.f, 1.f, 1.f);
+			Pivot.vScale = _float3(100.f, 100.f, 100.f);
 			Pivot.vRotation = _float3(0.f, 0.f, 0.f);
 
 			Pivot.eModel = (MODEL_ID)m_iLoadModel;

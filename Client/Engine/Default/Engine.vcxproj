@@ -169,6 +169,8 @@
     <ClInclude Include="..\Public\ComponentManager.h" />
     <ClInclude Include="..\Public\Bone.h" />
     <ClInclude Include="..\Public\DebugDraw.h" />
+    <ClInclude Include="..\Public\Light.h" />
+    <ClInclude Include="..\Public\LightManager.h" />
     <ClInclude Include="..\Public\VIBuffer_Quad.h" />
     <ClInclude Include="..\Public\Font.h" />
     <ClInclude Include="..\Public\Font_Manager.h" />
@@ -219,6 +221,8 @@
     <ClCompile Include="..\Private\ComponentManager.cpp" />
     <ClCompile Include="..\Private\Bone.cpp" />
     <ClCompile Include="..\Private\DebugDraw.cpp" />
+    <ClCompile Include="..\Private\Light.cpp" />
+    <ClCompile Include="..\Private\LightManager.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Quad.cpp" />
     <ClCompile Include="..\Private\Font.cpp" />
     <ClCompile Include="..\Private\Font_Manager.cpp" />

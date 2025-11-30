@@ -11,6 +11,7 @@ CGameInstance::CGameInstance()
 	, m_pTimer_Manager(CTimer_Manager::GetInstance())
 	, m_pComponent_Manager(CComponentManager::GetInstance())
 	, m_pPipeLine(CPipeLine::GetInstance())
+	, m_pLight_Manager(CLightManager::GetInstance())
 	, m_pFont_Manager(CFont_Manager::GetInstance())
 	, m_pFrustum(CFrustum::GetInstance())
 	, m_pTarget_Manager(CTarget_Manager::GetInstance())
@@ -20,6 +21,7 @@ CGameInstance::CGameInstance()
 	Safe_AddRef(m_pTarget_Manager);
 	Safe_AddRef(m_pFrustum);
 	Safe_AddRef(m_pFont_Manager);
+	Safe_AddRef(m_pLight_Manager);
 	Safe_AddRef(m_pPipeLine);
 	Safe_AddRef(m_pComponent_Manager);
 	Safe_AddRef(m_pTimer_Manager);
@@ -479,6 +481,70 @@ _float4x4 CGameInstance::Get_CamWorldMatrix()
 
 #pragma endregion
 
+#pragma region LightManager
+const LIGHTDESC* CGameInstance::Get_LightDesc(_uint iIndex)
+{
+	if (nullptr == m_pLight_Manager)
+		return nullptr;
+
+	return m_pLight_Manager->Get_LightDesc(iIndex);
+}
+
+HRESULT CGameInstance::Add_Light(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const LIGHTDESC& LightDesc)
+{
+	if (nullptr == m_pLight_Manager)
+		return E_FAIL;
+
+	return m_pLight_Manager->Add_Light(pDevice, pContext, LightDesc);
+}
+
+void CGameInstance::Set_LightDesc(_uint iIndex, LIGHTDESC* pLightDesc)
+{
+	if (nullptr == m_pLight_Manager)
+		return;
+
+	return m_pLight_Manager->Set_LightDesc(iIndex, pLightDesc);
+}
+
+
+void CGameInstance::Clear_AllLight()
+{
+	if (nullptr == m_pLight_Manager)
+		return;
+
+	return m_pLight_Manager->Clear_AllLight();
+}
+
+void CGameInstance::Clear_Light(_uint iIndex)
+{
+	if (nullptr == m_pLight_Manager)
+		return;
+
+	return m_pLight_Manager->Clear_Light(iIndex);
+}
+
+_uint CGameInstance::Get_LightSize()
+{
+	return m_pLight_Manager->Get_LightSize();
+}
+
+HRESULT CGameInstance::Set_ShadowLightView(_float4 vEye, _float4 vAt)
+{
+	if (nullptr == m_pLight_Manager)
+		return E_FAIL;
+
+	return m_pLight_Manager->Set_ShadowLightView(vEye, vAt);
+}
+
+_float4x4 CGameInstance::Get_ShadowLightView()
+{
+	if (nullptr == m_pLight_Manager)
+		return _float4x4();
+
+	return m_pLight_Manager->Get_ShadowLightView();
+}
+#pragma endregion
+
 #pragma region Font
 
 HRESULT CGameInstance::Add_Fonts(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pFontTag, const _tchar* pFontFilePath)
@@ -558,6 +624,7 @@ void CGameInstance::Release_Engine()
 	CObject_Manager::GetInstance()->DestroyInstance();
 	CComponentManager::GetInstance()->DestroyInstance();
 	CPipeLine::GetInstance()->DestroyInstance();
+	CLightManager::GetInstance()->DestroyInstance();
 	CTimer_Manager::GetInstance()->DestroyInstance();
 	CInput_Device::GetInstance()->DestroyInstance();
 	CFont_Manager::GetInstance()->DestroyInstance();
@@ -573,6 +640,7 @@ void CGameInstance::Free()
 	Safe_Release(m_pTarget_Manager);
 	Safe_Release(m_pFrustum);
 	Safe_Release(m_pFont_Manager);
+	Safe_Release(m_pLight_Manager);
 	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pComponent_Manager);
 	Safe_Release(m_pTimer_Manager);

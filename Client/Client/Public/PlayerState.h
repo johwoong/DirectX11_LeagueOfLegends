@@ -8,6 +8,7 @@
 #include "Renekton.h"
 #include "Vi.h"
 #include "Enemy.h"
+#include "Projectile.h"
 
 NS_BEGIN(Engine)
 class CModel;
@@ -73,6 +74,24 @@ public:
 		float dz = az - bz;
 
 		return sqrtf(dx * dx + dz * dz);
+	}
+
+	_float3 GetMouseDirection()
+	{
+		CGameInstance* GI = CGameInstance::GetInstance();
+
+		// Picking에서 제공하는 월드 레이 방향
+		_vector vDir = GI->Get_RayDir();
+
+		// Y 평면 고정 (리그오브레전드 스타일)
+		vDir = XMVectorSetY(vDir, 0);
+
+		// 정규화
+		vDir = XMVector3Normalize(vDir);
+
+		_float3 out;
+		XMStoreFloat3(&out, vDir);
+		return out;
 	}
 
 	STATE_ID Get_StateID() const { return m_eState; }

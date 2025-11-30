@@ -24,18 +24,17 @@ CMinionState* CDeadState::Update(_float fTimeDelta)
     if (!m_pOwner)
         return nullptr;
 
-    // ★ 죽음 애니메이션은 무조건 1번만 재생
+
     m_bIsAnimationFinished =
         m_pOwner->Get_Model()->Play_Animation(
             fTimeDelta * 2.f,
-            false,      // ← loop 끄기
+            false,    
             nullptr,
             0.1f);
 
-    // ★ 애니 끝나면 실제로 삭제 플래그 세팅
     if (m_bIsAnimationFinished)
     {
-        m_pOwner->Mark_Dead();   // CMinion::Update 맨 위에서 OBJ_DEAD 리턴
+        m_pOwner->Mark_Dead();   
     }
 
     return nullptr;
@@ -58,13 +57,11 @@ void CDeadState::Enter()
 
     if (type == MINION_MELEE)
     {
-        // 근접 미니언 죽는 애니
-        iAnim = CMinion_Melee::ANIM::DEATH;  // 실제 enum에 맞게 골라
+        iAnim = CMinion_Melee::ANIM::DEATH;  
     }
     else
     {
-        // 원거리 미니언 죽는 애니
-        iAnim = CMinion_Range::ANIM::DEATH1;  // 원하면 DEATH2/3 써도 됨
+        iAnim = CMinion_Range::ANIM::DEATH1; 
     }
 
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(iAnim);

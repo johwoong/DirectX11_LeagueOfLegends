@@ -24,7 +24,7 @@ public:
 
 public:
 	virtual _bool Is_AnimationLoop(_uint eAnimId) override;
-
+	virtual void Ready_Animation_Event() override;
 private:
 	virtual void SetSkillInfo() override;
 

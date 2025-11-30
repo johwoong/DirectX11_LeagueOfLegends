@@ -88,7 +88,7 @@ public:
 	virtual void PickingTrue() override;
 public: // State
 	virtual _bool Is_AnimationLoop(_uint eAnimId) = 0;
-
+	virtual void Ready_Animation_Event() PURE;
 protected:
 	void UpdateLevelStats();
 	virtual void SetSkillInfo() = 0;
