@@ -217,6 +217,9 @@
     <ClInclude Include="..\Public\EzrealSkillStateE.h">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\UI_Minion_HpBar.h">
+      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Minion</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -409,6 +412,12 @@
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill">
       <UniqueIdentifier>{1c62ec2f-ca09-441c-8c0a-8049f6969949}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar">
+      <UniqueIdentifier>{909cc54a-0568-4d35-8364-ecaffe7f9848}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar\Minion">
+      <UniqueIdentifier>{67547860-c90f-4e57-a159-3880cf312011}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -606,6 +615,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\EzrealSkillStateE.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_Minion_HpBar.cpp">
+      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Minion</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

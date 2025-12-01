@@ -32,6 +32,8 @@ public:
 
     POINT GetCursorPosClient() const { return m_tMousePos; }
     void Update_Ray();
+public:
+    void WorldToScreen(_fvector vWorldPos, _float2* pOutScreen);
 
 public:
     _vector Get_RayPos() const { return m_vRayPos; }

@@ -10,6 +10,7 @@ using namespace Minion;
 CAttackState::CAttackState(class CMinion* pMinion)
 {
     m_pOwner = pMinion;
+    m_bDamageApplied = false;   // ★ 데미지 아직 안 줌
 }
 
 
@@ -26,10 +27,11 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
 
     m_fAttackElapsed += fTimeDelta;
 
+
     CActor* pTarget = m_pOwner->Check_FiledTarget();
     if (!pTarget)
     {
-        m_pOwner->Find_Target();
+        m_pOwner->Find_Target(fTimeDelta);
         pTarget = m_pOwner->Get_Target();
 
         if (!pTarget)
@@ -95,6 +97,25 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
             m_pAttackColider->Update(m_ColliderMatrix);
     }
 
+    if (m_pAttackColider && !m_bDamageApplied)
+    {
+        CActor* pCurTarget = m_pOwner->Get_Target();
+        if (pCurTarget && !pCurTarget->Get_Dead())
+        {
+            CColider* pTargetCol = pCurTarget->Get_Collider(); // 몸통 콜라이더
+            if (pTargetCol && m_pAttackColider->Collision(pTargetCol))
+            {
+                // 데미지 적용 (미니언 공격력 사용)
+                pCurTarget->Take_Damage(
+                    (int)m_pOwner->Get_Stats().m_fAttackPower,
+                    m_pOwner);
+
+                m_bDamageApplied = true;       // 한 번만 때리게
+                m_pOwner->Reset_AttackTimer(); // 쿨타임 리셋
+            }
+        }
+    }
+
     return nullptr;
 }
 
@@ -143,7 +164,16 @@ void CAttackState::Enter()
 
 void CAttackState::Exit()
 {
-    Safe_Release(m_pAttackColider);
+    if (m_pAttackColider)
+    {
+        CCollision_Manager::GetInstance()->Collect_Collider(
+            CColider::TYPE_SPHERE,
+            m_pAttackColider);
+
+        m_pAttackColider = nullptr;
+    }
+
+    m_bDamageApplied = false;   // 다음 공격을 위해 플래그 초기화
 }
 
 CColider* CAttackState::Get_Collider(CColider::TYPE eType, _float3 vScale, _float3 vRotation, _float3 vPosition)

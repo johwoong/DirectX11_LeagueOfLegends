@@ -9,7 +9,6 @@
 #include "Building.h"
 #include "PoolManager.h"
 #include "MinionManager.h"
-#include "CursorManager.h"
 #include "Collision_Manager.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -82,7 +81,6 @@ HRESULT CLevel_GamePlay::Initialize()
 
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
-	CCollision_Manager::GetInstance()->Clear_AllCollisionGroup();
 	__super::Update(fTimeDelta);
 	// ★ 미니언 웨이브/스폰 처리
 	CMinionManager::GetInstance()->Update(fTimeDelta);
@@ -387,5 +385,6 @@ CLevel_GamePlay* CLevel_GamePlay::Create(ID3D11Device* pDevice, ID3D11DeviceCont
 void CLevel_GamePlay::Free()
 {
     __super::Free();
+	CCollision_Manager::GetInstance()->Clear_AllCollisionGroup();
 	CMinionManager::GetInstance()->DestroyInstance();
 }

@@ -89,6 +89,10 @@ public:
     _float Get_AttackCoolTime() const { return m_fAttackCoolTime; }
     void   Reset_AttackTimer() { m_fAttackTimer = 0.f; }
 
+public:
+    void Set_HpBar(class CMinion_HpBar* pBar) { m_pHpBar = pBar; }
+    class CMinion_HpBar* Get_HpBar() const { return m_pHpBar; }
+
     _bool Is_Dying() const { return m_bDying; }
     _bool IsDeadOrDying() const
     {
@@ -101,7 +105,7 @@ public: // Target check
 
 public: // AI
     virtual void AI_Behaviour(_float fTimeDelta) {}
-    virtual void Find_Target();
+    virtual void Find_Target(_float fTimeDelta);
     virtual CActor* Find_MinDistance_Target();
     virtual CActor* Check_FiledTarget();
     virtual _float Target_Distance(CActor* pTarget) const;
@@ -110,7 +114,7 @@ public: // AI
     virtual void Follow_Target(_float fTimeDelta);
     virtual void Attack_Target(_float fTimeDelta) {}
     virtual void On_Death() {}
-
+    void Apply_Separation(_float fTimeDelta);
 public: // Navigation logic
     virtual void Check_Navigation() = 0;
     virtual void Compute_CurrentIndex(LEVEL eLevel);
@@ -123,14 +127,14 @@ public: // Pool reuse
     virtual void ReUse_Setting(void* pArg) override;
 
 public: // Damage
-    virtual _int Take_Damage(int iDamage, CActor* DamageCauser);
+    virtual _int Take_Damage(int iDamage, CActor* DamageCauser) override;
     void Mark_Dead();
 
 public:
     virtual _bool Picking(_float3* PickingPoint);
     virtual void PickingTrue();
     virtual void Set_Picked();
-
+    void Create_HpBar();
 protected:
     virtual HRESULT SetUp_ShaderResources();
     virtual HRESULT SetUp_ShaderID();
@@ -188,10 +192,17 @@ protected:
     _bool           m_bMove = true;
     _bool           m_bDying = false;
 
+    _vector m_vLastSeparation = {};
+    _vector m_vMoveDir = XMVectorZero();
+    _vector m_vAvoidDir = XMVectorZero();
+    _vector m_vLastAvoidDir = XMVectorZero();
+
 protected: // Components
     CModel* m_pModelCom = nullptr;
     CNavigation* m_pNavigationCom = nullptr;
 
+protected:
+    class CMinion_HpBar* m_pHpBar = nullptr;
     // Rewards
     _int            m_iGoldReward = 14;
     _int            m_iExpReward = 58;

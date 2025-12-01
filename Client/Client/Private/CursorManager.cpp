@@ -25,4 +25,22 @@ void CCursorManager::Update_Ray()
 	m_vRayPos = XMVector3TransformCoord(XMVectorZero(), invView); // 카메라 위치
 }
 
+void CCursorManager::WorldToScreen(_fvector vWorldPos, _float2* pOutScreen)
+{
+	CGameInstance* pGI = CGameInstance::GetInstance();
+
+	_float4x4 View = pGI->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
+	_float4x4 Proj = pGI->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
+
+	_vector clip = XMVector3TransformCoord(vWorldPos, XMLoadFloat4x4(&View));
+	clip = XMVector3TransformCoord(clip, XMLoadFloat4x4(&Proj));
+
+	// NDC → Screen
+	float x = XMVectorGetX(clip);
+	float y = XMVectorGetY(clip);
+
+	pOutScreen->x = (x * 0.5f + 0.5f) * g_WinSizeX;
+	pOutScreen->y = (-y * 0.5f + 0.5f) * g_WinSizeY;
+}
+
 

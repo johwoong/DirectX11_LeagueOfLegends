@@ -27,7 +27,7 @@ private:
 
 private:
     _float m_fAttackElapsed = 0.f;
-
+    _bool  m_bDamageApplied = false;
 
 };
 NS_END

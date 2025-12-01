@@ -46,10 +46,14 @@ public:
 	CColider* Get_OBBCollider() { return m_pOBBCom; }
 	CColider* Get_SphereCollider() { return m_pSphereCom; }
 
+public:
+	virtual _int Take_Damage(int iDamage, CActor* DamageCauser) { return 0; }
+
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderID() { return S_OK; }
 	virtual HRESULT SetUp_ShaderResources() = 0;
+
 
 protected:
 	// Component

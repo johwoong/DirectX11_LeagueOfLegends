@@ -18,7 +18,7 @@ CMinionState* CMoveState::AI_Behaviour(_float fTimeDelta)
 
     if (!pTarget)
     {
-        m_pOwner->Find_Target();
+        m_pOwner->Find_Target(fTimeDelta);
         pTarget = m_pOwner->Get_Target();
     }
 

@@ -17,6 +17,7 @@
 #include "UI_GameInfo.h"
 #include "UI_ItemInfo.h"
 #include "UI_AttackRange.h"
+#include "UI_Minion_HpBar.h"
 
 // Champion
 #include "Ezreal.h"
@@ -153,6 +154,9 @@ HRESULT CLoader::Loading_For_Prtotype()
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_AttackRange"),
 		CAttackRange::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_MinionHpBar"),
+		CMinion_HpBar::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 #pragma endregion 
 #pragma region Champion
@@ -461,6 +465,17 @@ HRESULT CLoader::Loading_For_GameUI()
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_R"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vir.dds"), 1))))
+		return E_FAIL;
+#pragma endregion
+
+#pragma region  HPBAR
+	// RED_Minion
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Minion_HpBar"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/Minion_HpBar.dds"), 1))))
+		return E_FAIL;
+	// Blue Minion
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Minion_Minion_HpBar_Blue"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/Minion_HpBar_Blue.dds"), 1))))
 		return E_FAIL;
 #pragma endregion
 	return S_OK;

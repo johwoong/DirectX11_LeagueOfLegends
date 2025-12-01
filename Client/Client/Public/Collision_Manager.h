@@ -32,6 +32,9 @@ public:
     void	Update_Collider();
 
 public:
+    const list<CActor*>& Get_CollisionGroup(COLLISION_GROUP group) const { return m_GameObjects[group]; }
+
+public:
     CColider* Reuse_Collider(CColider::TYPE eType, _uint iLevelIdx, const _tchar* pPrototypeTag, void* pArg);
     void Collect_Collider(CColider::TYPE eType, CColider* pCollider);
 

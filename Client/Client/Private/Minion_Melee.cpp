@@ -109,7 +109,7 @@ HRESULT CMinion_Melee::Initialize(void* pArg)
 
     m_tStats.m_fMaxHp = 400.f;
     m_tStats.m_fCurrentHp = m_tStats.m_fMaxHp;
-    m_tStats.m_fAttackPower = 12.f;
+    m_tStats.m_fAttackPower = 30.f;
     m_tStats.m_fWalkSpeed = 3.0f;
     m_tStats.m_fAttackRange = 1.1f;
     m_tStats.m_fAttackSpeed = 0.83f;     

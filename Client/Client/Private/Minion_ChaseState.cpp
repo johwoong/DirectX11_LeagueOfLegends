@@ -21,7 +21,7 @@ CMinionState* CChaseState::AI_Behaviour(_float fTimeDelta)
 
     if (!pTarget)
     {
-        m_pOwner->Find_Target();
+        m_pOwner->Find_Target(fTimeDelta);
         pTarget = m_pOwner->Get_Target();
 
         if (!pTarget)
@@ -50,7 +50,7 @@ CMinionState* CChaseState::Update(_float fTimeDelta)
     CActor* pTarget = m_pOwner->Check_FiledTarget();
     if (!pTarget)
     {
-        m_pOwner->Find_Target();
+        m_pOwner->Find_Target(fTimeDelta);
         pTarget = m_pOwner->Get_Target();
 
         if (!pTarget)

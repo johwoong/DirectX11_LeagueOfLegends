@@ -63,17 +63,17 @@ _bool CActor::Is_Frustum(_float fOffset)
 
 void CActor::SetUp_BillBoard()
 {
-	_float4x4 ViewMatrix;
-
-	ViewMatrix = CGameInstance::GetInstance()->Get_TransformFloat4x4(CPipeLine::D3DTS_VIEW);
+	_float4x4 ViewMatrix = CGameInstance::GetInstance()->Get_TransformFloat4x4(CPipeLine::D3DTS_VIEW);
 	_matrix matViewInv = XMMatrixInverse(nullptr, XMLoadFloat4x4(&ViewMatrix));
 
-	_vector vRight = (_vector)matViewInv.r[0];
-	_vector vUp = (_vector)matViewInv.r[1];
-	_vector vLook = (_vector)matViewInv.r[2];
-	m_pTransformCom->Set_State(CTransform::STATE_RIGHT, XMVector3Normalize(vRight) * Get_Scale().x);
-	m_pTransformCom->Set_State(CTransform::STATE_UP, XMVector3Normalize(vUp) * Get_Scale().y);
-	m_pTransformCom->Set_State(CTransform::STATE_RIGHT, XMVector3Normalize(vLook) * Get_Scale().z);
+	_vector vRight = XMVector3Normalize(matViewInv.r[0]);
+	_vector vUp = XMVector3Normalize(matViewInv.r[1]);
+	_vector vLook = XMVector3Normalize(matViewInv.r[2]);
+
+	// HP Bar는 항상 카메라를 향하고, 가로로 눕는다.
+	m_pTransformCom->Set_State(CTransform::STATE_RIGHT, vRight * Get_Scale().x);
+	m_pTransformCom->Set_State(CTransform::STATE_UP, vUp * Get_Scale().y);
+	m_pTransformCom->Set_State(CTransform::STATE_LOOK, vLook * Get_Scale().z);
 }
 
 void CActor::Update_Collider()
@@ -129,9 +129,6 @@ CColider* CActor::Get_Collider()
 void CActor::Free()
 {
 	__super::Free();
-
 	Safe_Release(m_pAABBCom);
 	Safe_Release(m_pOBBCom);
-
-	Safe_Release(m_pRendererCom);
 }

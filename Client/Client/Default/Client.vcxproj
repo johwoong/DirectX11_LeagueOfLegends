@@ -191,6 +191,7 @@
     <ClInclude Include="..\Public\UI_ChampionIcon.h" />
     <ClInclude Include="..\Public\UI_ExpBar.h" />
     <ClInclude Include="..\Public\UI_ItemInfo.h" />
+    <ClInclude Include="..\Public\UI_Minion_HpBar.h" />
     <ClInclude Include="..\Public\UI_SkillImage.h" />
     <ClInclude Include="..\Public\UI_SkillMenu.h" />
     <ClInclude Include="..\Public\Inhibitor.h" />
@@ -267,6 +268,7 @@
     <ClCompile Include="..\Private\UI_ChampionIcon.cpp" />
     <ClCompile Include="..\Private\UI_ExpBar.cpp" />
     <ClCompile Include="..\Private\UI_ItemInfo.cpp" />
+    <ClCompile Include="..\Private\UI_Minion_HpBar.cpp" />
     <ClCompile Include="..\Private\UI_SkillImage.cpp" />
     <ClCompile Include="..\Private\UI_SkillMenu.cpp" />
     <ClCompile Include="..\Private\Inhibitor.cpp" />

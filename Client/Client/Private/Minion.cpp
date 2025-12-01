@@ -6,6 +6,7 @@
 #include "Champion.h"
 #include "PlayerManager.h"
 #include "Collision_Manager.h"
+#include "UI_Minion_HpBar.h"
 
 
 CMinion::CMinion(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -68,6 +69,8 @@ HRESULT CMinion::Initialize(void* pArg)
     if (FAILED(Ready_Components(pArg)))
         return E_FAIL;
 
+
+
     CNavigation::NAVDESC NaviDesc{};
     if (FAILED(__super::Add_Components(
         TEXT("Com_Navigation"), LEVEL_STATIC,
@@ -82,9 +85,12 @@ HRESULT CMinion::Initialize(void* pArg)
 
     m_fAttackTimer = 0.f;
     m_eState = STATE_MOVE;
-    CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
+    CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_MINION,this);
+    
     Compute_CurrentIndex();
     Ready_Animation_Event();
+    Create_HpBar();
+
     return S_OK;
 }
 
@@ -123,16 +129,7 @@ void CMinion::Late_Update(_float fTimeDelta)
 
     CPickingManager::GetInstance()->Add_PickingGroup(this);
 
-    CActor* pCollisionTarget = nullptr;
-    if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_MINION, m_pSphereCom, &pCollisionTarget))
-    {
-        CMinion* pCollided = dynamic_cast<CMinion*>(pCollisionTarget);
-        if (pCollided && pCollided->Get_Team() == m_eTeam)
-        {
-            
-        }
-            
-    }
+    Apply_Separation(fTimeDelta);  // ? 마무리 단계
 }
 
 
@@ -203,43 +200,27 @@ _float CMinion::Target_Distance(CActor* pTarget) const
     return XMVectorGetX(XMVector3Length(b - a));
 }
 
-void CMinion::Find_Target()
+void CMinion::Find_Target(_float fTimeDelta)
 {
+    // 이미 타겟 있으면 유지 여부만 체크
     if (m_pTarget)
+    {
+        Check_FiledTarget();
         return;
-
-    CGameInstance* GI = CGameInstance::GetInstance();
-    GI->AddRef();
-
-    list<CGameObject*>* pMelee = nullptr;
-    list<CGameObject*>* pRange = nullptr;
-
-    if (m_eTeam == TEAM_BLUE)
-    {
-        pMelee = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Melee"));
-        pRange = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Range"));
-    }
-    else
-    {
-        pMelee = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee"));
-        pRange = GI->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Range"));
     }
 
     CActor* best = nullptr;
-    _float  bestDist = m_tStats.m_fAggroRadius;
-    const _int mySlot = m_iLaneIndex;
+    float bestDist = m_tStats.m_fAggroRadius;
 
-    auto Scan = [&](list<CGameObject*>* list)
+    // ========== 1) 적 미니언 탐색 (최우선) ==========
+    auto ScanList = [&](const list<CGameObject*>* L)
         {
-            if (!list) return;
+            if (!L) return;
 
-            for (auto* obj : *list)
+            for (auto& obj : *L)
             {
                 CMinion* m = dynamic_cast<CMinion*>(obj);
                 if (!m || m->IsDeadOrDying())
-                    continue;
-
-                if (m->Get_LaneIndex() != mySlot)
                     continue;
 
                 float d = Target_Distance(m);
@@ -251,35 +232,37 @@ void CMinion::Find_Target()
             }
         };
 
-    Scan(pMelee);
-    Scan(pRange);
-
-    if (!best)
+    // 팀별로 적 미니언 레이어 선택
+    if (m_eTeam == TEAM_BLUE)
     {
-        auto ScanAny = [&](list<CGameObject*>* list)
-            {
-                if (!list) return;
-
-                for (auto* obj : *list)
-                {
-                    CMinion* m = dynamic_cast<CMinion*>(obj);
-                    if (!m || m->IsDeadOrDying())
-                        continue;
-
-                    float d = Target_Distance(m);
-                    if (d < bestDist)
-                    {
-                        bestDist = d;
-                        best = m;
-                    }
-                }
-            };
-        ScanAny(pMelee);
-        ScanAny(pRange);
+        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Melee")));
+        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Range")));
+    }
+    else
+    {
+        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee")));
+        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Range")));
     }
 
-    m_pTarget = best;
-    Safe_Release(GI);
+    // ========== 2) 플레이어 탐색 (후순위) ==========
+    {
+        CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
+
+        if (pPlayer &&  TEAMTYPE::TEAM_BLUE != m_eTeam)
+        {
+            float d = Target_Distance(pPlayer);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = pPlayer;
+            }
+        }
+    }
+
+    // ========== 3) 최종 타겟 설정 ==========
+    if (best)
+        m_pTarget = best;
+
 }
 
 CActor* CMinion::Find_MinDistance_Target()
@@ -338,62 +321,111 @@ _bool CMinion::Is_TargetInAggroRange() const
 
 void CMinion::Follow_Target(_float fTimeDelta)
 {
-    if (!m_pTarget || !m_pTransformCom || !m_bMove)
+    if (!m_pTarget || !m_bMove)
         return;
 
     _vector pos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
     _vector tpos = m_pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-    _vector dir = XMVectorSetY(pos - tpos, 0.f);
-    if (XMVectorGetX(XMVector3LengthSq(dir)) < 1e-6f)
-        dir = XMVectorSet(0, 0, 1, 0);
-    else
-        dir = XMVector3Normalize(dir);
+    // 1) 타겟 방향
+    _vector desired = XMVectorSetY(tpos - pos, 0);
+    float dist = XMVectorGetX(XMVector3Length(desired));
+    if (dist < 0.001f)
+        return;
 
-    float base = m_tStats.m_fAttackRange;
-    float extra = fabsf(m_fLaneOffset) * 0.35f;
-    float range = base + extra;
+    desired = XMVector3Normalize(desired);
 
-    _vector fromTarget = dir * range;
+    // 2) Separation (Apply_Separation에서 계산된 방향)
+    _vector sep = m_vAvoidDir;
 
-    if (fabsf(m_fLaneOffset) > 0.01f)
+    // 3) Lane Offset 방향 ? ★ 여기가 네게 없던 부분
+    const vector<_float3>& path =
+        CMinionManager::GetInstance()->GetLanePath(m_eLane);
+
+    if (m_iLaneNodeIndex < 0 || m_iLaneNodeIndex >= (int)path.size() - 1)
+        return;
+
+    _vector curNode = XMLoadFloat3(&path[m_iLaneNodeIndex]);
+    _vector nextNode = XMLoadFloat3(&path[m_iLaneNodeIndex +
+        CMinionManager::GetInstance()->GetLaneStep(m_eTeam)]);
+
+    _vector laneForward = XMVector3Normalize(nextNode - curNode);
+
+    // lane perpendicular vector (좌/우 폭 유지)
+    _vector laneRight = XMVector3Normalize(XMVector3Cross(
+        XMVectorSet(0, 1, 0, 0), laneForward));
+
+    _vector laneOffsetDir = laneRight * (m_fLaneOffset * 0.22f);
+    // 0.2 세팅이 가장 자연스러움
+
+    // 4) 최종 이동 방향 = 3개 합성
+    _vector finalDir = desired + sep + laneOffsetDir;
+
+    if (XMVectorGetX(XMVector3Length(finalDir)) > 0.001f)
+        finalDir = XMVector3Normalize(finalDir);
+
+    m_vMoveDir = finalDir;
+
+    // 5) 이동 처리
+    if (dist > m_tStats.m_fAttackRange)
     {
-        _vector right = XMVector3Normalize(XMVector3Cross(
-            XMVectorSet(0, 1, 0, 0), dir));
+        pos += m_vMoveDir * (m_tStats.m_fWalkSpeed * fTimeDelta);
+        m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, pos);
+    }
 
-        fromTarget += right * m_fLaneOffset;
+    Check_Navigation();
+}
 
-        _vector flat = XMVectorSetY(fromTarget, 0.f);
-        float lenSq = XMVectorGetX(XMVector3LengthSq(flat));
+void CMinion::Apply_Separation(_float fTimeDelta)
+{
+    auto& group =
+        CCollision_Manager::GetInstance()->Get_CollisionGroup(
+            CCollision_Manager::COLLISION_MINION);
 
-        if (lenSq > 1e-6f)
+    _vector myPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    _vector myFlat = XMVectorSetY(myPos, 0);
+
+    _vector avoid = XMVectorZero();
+    int count = 0;
+
+    const float avoidRadius = 1.6f;        // ★ 훨씬 넓어야 롤처럼 퍼짐
+    const float avoidPower = 2.2f;        // ★ 회피 강도 UP
+
+    for (auto obj : group)
+    {
+        if (!obj || obj == this) continue;
+
+        CMinion* other = (CMinion*)obj;
+
+        _vector oPos = other->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+        _vector oFlat = XMVectorSetY(oPos, 0);
+
+        _vector diff = myFlat - oFlat;
+        float dist = XMVectorGetX(XMVector3Length(diff));
+        if (dist < 0.001f) continue;
+
+        if (dist < avoidRadius)
         {
-            flat = XMVector3Normalize(flat) * range;
-            fromTarget = XMVectorSetY(flat, 0.f);
+            float w = (avoidRadius - dist) / avoidRadius;
+            avoid += XMVector3Normalize(diff) * w;
+            count++;
         }
     }
 
-    _vector desired = tpos + fromTarget;
-    _vector moveDir = XMVectorSetY(desired - pos, 0.f);
+    if (count > 0)
+    {
+        avoid /= (float)count;
+        avoid *= avoidPower;
 
-    float distSq = XMVectorGetX(XMVector3LengthSq(moveDir));
-    if (distSq < 1e-6f)
-        return;
-
-    float dist = sqrtf(distSq);
-    float maxMove = m_tStats.m_fWalkSpeed * fTimeDelta;
-
-    if (dist < 0.05f)
-        return;
-
-    if (maxMove > dist)
-        maxMove = dist;
-
-    moveDir = XMVector3Normalize(moveDir);
-    pos += moveDir * maxMove;
-
-    m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, pos);
-    Check_Navigation();
+        // 스무딩
+        m_vAvoidDir = XMVectorLerp(m_vLastAvoidDir, avoid, 0.25f);
+        m_vLastAvoidDir = m_vAvoidDir;
+    }
+    else
+    {
+        m_vLastAvoidDir = XMVectorLerp(m_vLastAvoidDir, XMVectorZero(), 0.1f);
+        m_vAvoidDir = m_vLastAvoidDir;
+    }
 }
 
 // ======================= Combat / Damage =======================
@@ -466,6 +498,11 @@ void CMinion::ReUse_Setting(void* pArg)
     }
 
     Compute_CurrentIndex();
+
+
+    // ★ 항상 새 HpBar 생성 (기존 HpBar는 owner=null로 날려두고 스스로 죽게)
+    m_pHpBar = nullptr;
+    Create_HpBar();
 }
 
 _bool CMinion::Picking(_float3* PickingPoint)
@@ -511,6 +548,13 @@ void CMinion::Mark_Dead()
     if (m_bDead)
         return;
 
+    // ★ HpBar는 여기서 "주인 사라짐"만 알려주고, 실제 삭제는 HpBar::Update가 처리
+    if (m_pHpBar)
+    {
+        m_pHpBar->Set_Owner(nullptr); // 내부에서 m_pOwner = nullptr;
+        m_pHpBar = nullptr;           // 미니언 쪽 포인터도 비워줌
+    }
+
     CPoolManager* pool = CPoolManager::GetInstance();
     if (pool)
     {
@@ -527,6 +571,35 @@ void CMinion::Mark_Dead()
 
     m_bDead = true;
     m_bDying = false;
+}
+
+void CMinion::Create_HpBar()
+{
+    // 이미 붙어있으면 또 만들 필요 없음
+    if (m_pHpBar)
+        return;
+
+    if (nullptr == m_pGameInstance)
+        return;
+
+    CGameObject* pObj = nullptr;
+
+    // Add_GameObject_Out( PrototypeTag, Level, LayerTag, OutObj, pArg );
+    if (FAILED(m_pGameInstance->Add_GameObject_Out(
+        TEXT("Prototype_GameObject_UI_MinionHpBar"),   // ★ 프로토타입 태그
+        LEVEL_GAMEPLAY,                              // 레벨 인덱스
+        TEXT("Layer_UI_MinionHp"),                   // ★ UI 레이어 태그
+        pObj,                                        // ★ reference 파라미터라 & 붙이지 않음
+        this)))                                      // pArg == 이 미니언
+    {
+        return;
+    }
+
+    m_pHpBar = dynamic_cast<CMinion_HpBar*>(pObj);
+
+    // 선택: HpBar 쪽에 Set_Owner 있으면 한 번 더 연결
+    if (m_pHpBar)
+        m_pHpBar->Set_Owner(this);
 }
 
 // ======================= Lane Offset =======================
