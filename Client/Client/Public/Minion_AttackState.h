@@ -18,7 +18,17 @@ public:
     virtual void Exit()  override;
 
 private:
+    CColider* m_pAttackColider = nullptr;
+
+    _matrix m_ColliderMatrix = XMMatrixIdentity();
+
+private:
+    CColider* Get_Collider(CColider::TYPE eType, _float3 vScale, _float3 vRotation, _float3 vPosition);
+
+private:
     _float m_fAttackElapsed = 0.f;
+
+
 };
 NS_END
 NS_END

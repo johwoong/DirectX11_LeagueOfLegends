@@ -58,11 +58,51 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
         return new CAttackState(m_pOwner);
     }
 
+    vector<ANIMEVENT> pEvents = m_pOwner->Get_Model()->Get_Events();
+
+    for (auto& pEvent : pEvents)
+    {
+        if (pEvent.isPlay)
+        {
+            if (ANIMEVENT::EVENTTYPE::EVENT_COLLIDER == pEvent.eType)
+            {
+                if (nullptr == m_pAttackColider)
+                {
+                    m_pAttackColider = Get_Collider(CColider::TYPE_SPHERE, _float3(0.01f, 0.01f, 0.01f), _float3(0.f, 0.f, 0.f), _float3(0.f, 0.f, 0.f));
+
+                    _float4x4 Pivot = m_pOwner->Get_Model()->Get_PivotFloat4x4();
+                     
+                    m_ColliderMatrix =
+                        m_pOwner->Get_Model()->Get_BonePtr("Staff")->Get_CombinedTransformationMatrix() *
+                        XMLoadFloat4x4(&Pivot) *
+                        m_pOwner->Get_Transform()->Get_WorldMatrix();
+
+                    m_ColliderMatrix.r[0] = XMVector4Normalize(m_ColliderMatrix.r[0]);
+                    m_ColliderMatrix.r[1] = XMVector4Normalize(m_ColliderMatrix.r[1]);
+                    m_ColliderMatrix.r[2] = XMVector4Normalize(m_ColliderMatrix.r[2]);
+                }
+            }
+        }
+        else
+        {
+            if (nullptr != m_pAttackColider)
+            {
+                CCollision_Manager::GetInstance()->Collect_Collider(CColider::TYPE_SPHERE, m_pAttackColider);
+                m_pAttackColider = nullptr;
+            }
+        }
+        if (nullptr != m_pAttackColider)
+            m_pAttackColider->Update(m_ColliderMatrix);
+    }
+
     return nullptr;
 }
 
 CMinionState* CAttackState::Late_Update(_float fTimeDelta)
 {
+#ifdef _DEBUG
+    m_pOwner->Get_Renderer()->Add_Debug(m_pAttackColider);
+#endif
     return nullptr;
 }
 
@@ -81,11 +121,12 @@ void CAttackState::Enter()
 
     if (eType == MINION_MELEE)
     {
-        switch (iIdx % 3)
+        switch (iIdx % 4)
         {
-        case 0: iAnim = CMinion_Melee::ANIM::ATTACK1;   break;
+        case 0: iAnim = CMinion_Melee::ANIM::ATTACK;   break;
         case 1: iAnim = CMinion_Melee::ANIM::ATTACK2;   break;
-        case 2: iAnim = CMinion_Melee::ANIM::ATTACK3_B; break;
+        case 2: iAnim = CMinion_Melee::ANIM::ATTACK3;   break;
+        case 3: iAnim = CMinion_Melee::ANIM::ATTACK3_B; break;
         }
     }
     else // MINION_CASTER
@@ -102,4 +143,31 @@ void CAttackState::Enter()
 
 void CAttackState::Exit()
 {
+    Safe_Release(m_pAttackColider);
+}
+
+CColider* CAttackState::Get_Collider(CColider::TYPE eType, _float3 vScale, _float3 vRotation, _float3 vPosition)
+{
+    CCollision_Manager* pCollisionManager = CCollision_Manager::GetInstance();
+
+    CColider::COLLIDERDESC ColliderDesc;
+
+    ColliderDesc.vScale = vScale;
+    ColliderDesc.vRotation = vRotation;
+    ColliderDesc.vPosition = vPosition;
+
+    switch (eType)
+    {
+    case Engine::CColider::TYPE_AABB:
+        return pCollisionManager->Reuse_Collider(eType, LEVEL_STATIC, TEXT("Prototype_Component_Colider_AABB"), &ColliderDesc);
+        break;
+    case Engine::CColider::TYPE_OBB:
+        return pCollisionManager->Reuse_Collider(eType, LEVEL_STATIC, TEXT("Prototype_Component_Colider_OBB"), &ColliderDesc);
+        break;
+    case Engine::CColider::TYPE_SPHERE:
+        return pCollisionManager->Reuse_Collider(eType, LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), &ColliderDesc);
+        break;
+    }
+
+    return nullptr;
 }

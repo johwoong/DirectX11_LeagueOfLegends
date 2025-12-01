@@ -63,8 +63,8 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
             desc.vStartPos = XMLoadFloat3(&vStartPos);
             desc.vDir = m_vDir;    
             desc.pOwner = m_pOwner;
-            desc.fSpeed = 55.f;                    
-            desc.fMaxDistance = 1150.f;              
+            desc.fSpeed = 20.f;                    
+            desc.fMaxDistance = 10.f;              
             desc.fLifeTime = 2.f;
 
             GI->Add_GameObject(

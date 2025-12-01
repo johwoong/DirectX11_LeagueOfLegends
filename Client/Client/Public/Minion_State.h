@@ -4,6 +4,7 @@
 #include "Client_Defines.h"
 #include "Minion.h"
 #include "MinionManager.h"
+#include "Collision_Manager.h"
 
 
 NS_BEGIN(Client)

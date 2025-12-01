@@ -68,10 +68,11 @@ void CProjectile::Update_Collider_Size_ByType()
         break;
 
     case PROJ_LINEAR:  // ÀÌÁî¸®¾ó Q
-        m_pSphereCom->Set_Scale(_float3(0.15f, 0.15f, 0.15f));
+        m_pSphereCom->Set_Sphere_Radius(1.f);
+        m_pSphereCom->Set_Scale(_float3(0.01f, 0.01f, 0.4f));
         break;
 
-    case PROJ_AREA:    // ±Ã±Ø±â ¹üÀ§±â
+    case PROJ_AREA:    // ±Ã±Ø±â ¹üÀ§±âqq
         m_pSphereCom->Set_Scale(_float3(1.f, 1.f, 1.f));
         break;
     }
@@ -139,6 +140,7 @@ void CProjectile::Check_Hit()
         if (tar && m_pSphereCom->Collision(tar))
             m_bDead = true;
     }
+    
 }
 
 void CProjectile::Late_Update(_float dt)

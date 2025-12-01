@@ -152,7 +152,7 @@ void CEzrealAttackState::Enter()
     };
 
     int idx = rand() % 5;
-    m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ATTACK1);
+    m_pOwner->Get_Model()->Set_CurrentAnimIndex(idx);
 }
 
 void CEzrealAttackState::Exit()

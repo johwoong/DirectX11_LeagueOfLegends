@@ -153,7 +153,8 @@ public:
 public:
     virtual _bool Is_AnimationLoop(_uint eAnim) = 0;
     virtual _float Check_CullingRadius();
-
+public:
+        virtual void Ready_Animation_Event() PURE;
 
 protected:
     // Base info

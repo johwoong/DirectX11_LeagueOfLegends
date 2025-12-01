@@ -26,7 +26,43 @@ void CEzreal::Ready_Animation_Event()
 
 	pAnim->Add_Event(evt);;
 	
+	pAnim = m_pModelCom->Get_Animations()[ATTACK2];
+	evt.fStartTime = 10.f;
+	evt.fEndTime = 12.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
+	pAnim = m_pModelCom->Get_Animations()[ATTACK3];
+	evt.fStartTime = 10.f;
+	evt.fEndTime = 12.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
+	pAnim = m_pModelCom->Get_Animations()[ATTACK4];
+	evt.fStartTime = 11.2f;
+	evt.fEndTime = 13.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
+	pAnim = m_pModelCom->Get_Animations()[CRIT];
+	evt.fStartTime = 8.7f;
+	evt.fEndTime = 11.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
 	pAnim = m_pModelCom->Get_Animations()[Q];
+	evt.fStartTime = 3.78f;
+	evt.fEndTime = 5.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
+
+	pAnim = m_pModelCom->Get_Animations()[W];
+	evt.fStartTime = 7.15f;
+	evt.fEndTime = 8.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+	
 	if (!pAnim) return;
 	
 }

@@ -36,6 +36,7 @@ public:
 public:
 	_float3 Get_Scale() { return m_vScale; }
 	CTransform* Get_Transform() { return m_pTransformCom; }
+	CRenderer* Get_Renderer(void) { return m_pRendererCom; }
 	_vector Get_TransformState(CTransform::STATE eState);
 	void Set_State(CTransform::STATE eState, _fvector vState);
 	void Set_Scale(_float3 vScale);

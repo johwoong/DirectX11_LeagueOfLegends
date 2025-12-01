@@ -84,6 +84,7 @@ HRESULT CMinion::Initialize(void* pArg)
     m_eState = STATE_MOVE;
     CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
     Compute_CurrentIndex();
+    Ready_Animation_Event();
     return S_OK;
 }
 
@@ -121,6 +122,17 @@ void CMinion::Late_Update(_float fTimeDelta)
         m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 
     CPickingManager::GetInstance()->Add_PickingGroup(this);
+
+    CActor* pCollisionTarget = nullptr;
+    if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_MINION, m_pSphereCom, &pCollisionTarget))
+    {
+        CMinion* pCollided = dynamic_cast<CMinion*>(pCollisionTarget);
+        if (pCollided && pCollided->Get_Team() == m_eTeam)
+        {
+            
+        }
+            
+    }
 }
 
 

@@ -23,6 +23,7 @@ public:
     {
         ::GetCursorPos(&m_tMousePos);
         ::ScreenToClient(m_hWnd, &m_tMousePos);
+        Update_Ray();
     }
 
 public:
@@ -30,6 +31,7 @@ public:
     CURSOR_TYPE GetState() const { return m_eState; }
 
     POINT GetCursorPosClient() const { return m_tMousePos; }
+    void Update_Ray();
 
 public:
     _vector Get_RayPos() const { return m_vRayPos; }

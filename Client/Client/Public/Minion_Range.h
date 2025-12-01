@@ -47,6 +47,9 @@ public: /*For.State*/
 public:	/*For Navigation*/
 	virtual void Check_Navigation() override;
 	virtual void On_Death() override;  
+
+public:
+	virtual void Ready_Animation_Event() override;
 private:
 	class CMinionState* m_pState = nullptr;
 public:

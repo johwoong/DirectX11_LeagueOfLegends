@@ -8,10 +8,10 @@ class CMinion_Melee final : public CMinion
 public:
 	enum ANIM
 	{
+		ATTACK,
 		ATTACK2,
-		ATTAKC3,
+		ATTACK3,
 		ATTACK3_B,
-		ATTACK1,
 		DEATH2,
 		DEATH3,
 		DEATH4,
@@ -46,6 +46,9 @@ public: /*For.State*/
 	void AI_Behavior(_float fTimeDelta);
 	void Update_State(_float fTimeDelta);
 	void LateUpdate_State(_float fTimeDelta);
+
+public:
+	virtual void Ready_Animation_Event() override;
 
 public:	/*For Navigation*/
 	virtual void Check_Navigation() override;

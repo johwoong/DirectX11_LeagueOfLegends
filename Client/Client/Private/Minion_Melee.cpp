@@ -20,6 +20,42 @@ _bool CMinion_Melee::Is_AnimationLoop(_uint eAnimId)
     return false;
 }
 
+void CMinion_Melee::Ready_Animation_Event()
+{
+    CAnimation* pAnim = m_pModelCom->Get_Animations()[ATTACK];
+    if (!pAnim) return;
+
+    ANIMEVENT evt{};
+    evt.fStartTime = 11.f;
+    evt.fEndTime = 13.f;
+    evt.eType = ANIMEVENT::EVENT_COLLIDER;
+
+    pAnim->Add_Event(evt);;
+
+    pAnim = m_pModelCom->Get_Animations()[ATTACK2];
+    evt.fStartTime = 10.f;
+    evt.fEndTime = 11.f;
+    evt.eType = ANIMEVENT::EVENT_COLLIDER;
+
+    pAnim->Add_Event(evt);;
+
+    pAnim = m_pModelCom->Get_Animations()[ATTACK3];
+    evt.fStartTime = 10.9f;
+    evt.fEndTime = 12.f;
+    evt.eType = ANIMEVENT::EVENT_COLLIDER;
+
+    pAnim->Add_Event(evt);;
+
+    pAnim = m_pModelCom->Get_Animations()[ATTACK3_B];
+    evt.fStartTime = 11.56f;
+    evt.fEndTime = 13.f;
+    evt.eType = ANIMEVENT::EVENT_COLLIDER;
+
+    pAnim->Add_Event(evt);;
+}
+
+
+
 void CMinion_Melee::ReUse_Setting(void* pArg)
 {
 
@@ -155,7 +191,6 @@ void CMinion_Melee::LateUpdate_State(_float fTimeDelta)
     if (pNewState)
         m_pState = m_pState->ChangeState(m_pState, pNewState);
 }
-
 
 
 void CMinion_Melee::Check_Navigation()

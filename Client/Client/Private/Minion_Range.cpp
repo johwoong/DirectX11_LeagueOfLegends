@@ -185,6 +185,25 @@ void CMinion_Range::On_Death()
 
 }
 
+void CMinion_Range::Ready_Animation_Event()
+{
+    CAnimation* pAnim = m_pModelCom->Get_Animations()[ATTACK1];
+    if (!pAnim) return;
+
+    ANIMEVENT evt{};
+    evt.fStartTime = 14.52f;
+    evt.fEndTime = 16.f;
+    evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+    
+    pAnim->Add_Event(evt);
+
+    pAnim = m_pModelCom->Get_Animations()[ATTACK2];
+    evt.fStartTime = 14.52f;
+    evt.fEndTime = 16.f;
+    evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+
+}
+
 _int CMinion_Range::Take_Damage(int fDamage, CActor* DamageCauser)
 {
     _int iResult = __super::Take_Damage(fDamage, DamageCauser);
