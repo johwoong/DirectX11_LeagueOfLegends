@@ -1,4 +1,7 @@
 #include "Projectile.h"
+#include "Collision_Manager.h"
+#include "Minion.h"
+#include "Champion.h"
 
 CProjectile::CProjectile(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CActor(pDevice, pContext)
@@ -50,7 +53,7 @@ HRESULT CProjectile::Ready_Components(void* pArg)
 
     // Collider
     CColider::COLLIDERDESC cDesc{};
-    cDesc.vScale = _float3(1.f, 1.f, 1.f);   
+    cDesc.vScale = _float3(1.f, 1.f, 1.f);
 
     Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC,
         TEXT("Prototype_Component_Colider_Sphere"),
@@ -131,16 +134,47 @@ void CProjectile::Move_Linear(_float dt)
 
 void CProjectile::Check_Hit()
 {
-    if (m_Desc.eType == PROJ_TARGET)
+    if (!m_pSphereCom) return; CActor* pOwnerActor = dynamic_cast<CActor*>(m_Desc.pOwner);
+    if (m_Desc.eType == PROJ_TARGET) 
     {
-        if (m_Desc.pTarget == nullptr)
-            return;
-
-        CColider* tar = ((CActor*)m_Desc.pTarget)->Get_Collider();
-        if (tar && m_pSphereCom->Collision(tar))
+        CActor* pTargetActor = dynamic_cast<CActor*>(m_Desc.pTarget);
+        if (!pTargetActor) return;
+        if (pTargetActor->Get_Dead())
+        { m_bDead = true; return; }
+        CColider* pTargetCol = pTargetActor->Get_Collider();
+        if (!pTargetCol) return;
+        if (m_pSphereCom->Collision(pTargetCol))
+        { 
+            pTargetActor->Take_Damage(static_cast<int>(m_Desc.fDamage), pOwnerActor);
             m_bDead = true;
-    }
+        }
+        return;
+    } // ================== 2) Á÷¼± ½ºÅ³¼¦ (Q / R) ==================
+    if (m_Desc.eType == PROJ_LINEAR) 
+    {
     
+        auto& group = CCollision_Manager::GetInstance()->Get_CollisionGroup( CCollision_Manager::COLLISION_MINION);
+        CChampion* pOwnerChamp = dynamic_cast<CChampion*>(pOwnerActor); 
+        for (auto obj : group) 
+        { 
+            CActor* pTarget = dynamic_cast<CActor*>(obj);
+            if (!pTarget || pTarget->Get_Dead())
+                continue;
+            if (CMinion* pMin = dynamic_cast<CMinion*>(pTarget)) 
+            {
+                if (pMin->Get_Team() == TEAM_BLUE) continue;
+            }
+            CColider* pTargetCol = pTarget->Get_Collider();
+            if (!pTargetCol)
+                continue;
+            if (m_pSphereCom->Collision(pTargetCol))
+            {
+                pTarget->Take_Damage(static_cast<int>(m_Desc.fDamage), pOwnerActor);
+            }
+        }
+
+    }
+
 }
 
 void CProjectile::Late_Update(_float dt)

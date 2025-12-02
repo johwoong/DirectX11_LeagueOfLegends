@@ -13,9 +13,8 @@ public:
     virtual void Exit() override;
 
 private:
-    bool m_bProjectileSpawned = false;   // 이벤트 기반 발사
-    _float3 m_vDir = { 0,0,0 };          // 마우스 방향
-    _vector m_vDashTarget;
-    bool m_bTeleported = false;
+    _float3 m_vDir = { 0,0,0 };   // 대쉬 방향 (XZ)
+    _vector m_vDashTarget = {};   // 도착 위치
+    bool    m_bTeleported = false;
 };
 

@@ -374,6 +374,7 @@ void CMinion::Follow_Target(_float fTimeDelta)
     }
 
     Check_Navigation();
+    Face_Target();
 }
 
 void CMinion::Apply_Separation(_float fTimeDelta)
@@ -442,15 +443,19 @@ _int CMinion::Take_Damage(int dmg, CActor* causer)
     {
         m_tStats.m_fCurrentHp = 0.f;
         m_bDying = true;
-
-        if (causer)
-            m_pTarget = causer;
-
         return 1;
     }
 
+    // ===== 타겟 변경 로직 수정 =====
+    // 1) 이미 타겟이 있으면 절대로 바꾸지 않음
+    if (m_pTarget != nullptr)
+        return 0;
+
+    // 2) 타겟이 없을 때만, 나를 때린 애를 새 타겟으로 설정
     if (causer)
-        m_pTarget = causer;
+    {
+        m_pTarget = causer; // 지금은 단순히 causer를 타겟으로
+    }
 
     return 0;
 }
@@ -507,21 +512,26 @@ void CMinion::ReUse_Setting(void* pArg)
 
 _bool CMinion::Picking(_float3* PickingPoint)
 {
-    CColider* pCollider = Get_Collider();   
+    // ?? 1) 레드팀이 아니면 아예 타겟 불가
+    if (m_eTeam != TEAM_RED)   // 또는 TEAMTYPE::TEAM_RED
+        return false;
 
+    CColider* pCollider = Get_Collider();
     if (pCollider == nullptr)
         return false;
 
-    float fDist = 0.f;
-    _float3 vHitPos{};
+    float   fDist = 0.f;
+    _float3 vHitPos = {};
 
     // Collider Ray Picking
     if (pCollider->RayPick(m_pTransformCom, &vHitPos, &fDist))
     {
-        CCursorManager::GetInstance()->SetState(CURSOR_ATTACK);
-
-        // 플레이어 타겟 설정
         CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
+        if (!pPlayer)
+            return false;
+
+        // ?? 공격 커서 + 타겟 설정
+        CCursorManager::GetInstance()->SetState(CURSOR_ATTACK);
         pPlayer->Set_AttackTarget(this);
 
         if (PickingPoint)
@@ -548,11 +558,10 @@ void CMinion::Mark_Dead()
     if (m_bDead)
         return;
 
-    // ★ HpBar는 여기서 "주인 사라짐"만 알려주고, 실제 삭제는 HpBar::Update가 처리
     if (m_pHpBar)
     {
-        m_pHpBar->Set_Owner(nullptr); // 내부에서 m_pOwner = nullptr;
-        m_pHpBar = nullptr;           // 미니언 쪽 포인터도 비워줌
+        m_pHpBar->ReturnToPool();   // ★ 바로 풀로
+        m_pHpBar = nullptr;
     }
 
     CPoolManager* pool = CPoolManager::GetInstance();
@@ -575,31 +584,154 @@ void CMinion::Mark_Dead()
 
 void CMinion::Create_HpBar()
 {
-    // 이미 붙어있으면 또 만들 필요 없음
     if (m_pHpBar)
         return;
-
     if (nullptr == m_pGameInstance)
         return;
 
     CGameObject* pObj = nullptr;
+    CPoolManager* pPool = CPoolManager::GetInstance();
 
-    // Add_GameObject_Out( PrototypeTag, Level, LayerTag, OutObj, pArg );
-    if (FAILED(m_pGameInstance->Add_GameObject_Out(
-        TEXT("Prototype_GameObject_UI_MinionHpBar"),   // ★ 프로토타입 태그
-        LEVEL_GAMEPLAY,                              // 레벨 인덱스
-        TEXT("Layer_UI_MinionHp"),                   // ★ UI 레이어 태그
-        pObj,                                        // ★ reference 파라미터라 & 붙이지 않음
-        this)))                                      // pArg == 이 미니언
+    // 팀에 따라 PoolTag 결정
+    const _tchar* szPoolTag = (m_eTeam == TEAM_BLUE)
+        ? TEXT("Pool_UI_MinionHp_Blue")
+        : TEXT("Pool_UI_MinionHp_Red");
+
+    // 1) 팀 전용 풀에서 하나 꺼내본다
+    if (pPool)
     {
-        return;
+        pObj = pPool->Pop_Pooling_Object(
+            LEVEL_GAMEPLAY,
+            szPoolTag);
+
+        if (pObj)
+        {
+            // 새 주인으로 재세팅
+            pObj->ReUse_Setting(this);
+
+            // 렌더 레이어는 여전히 Layer_UI_MinionHp
+            m_pGameInstance->ReAdd_GameObject(
+                LEVEL_GAMEPLAY,
+                TEXT("Layer_UI_MinionHp"),
+                pObj);
+        }
+    }
+
+    // 2) 해당 팀 풀에 아무것도 없으면 새로 생성
+    if (!pObj)
+    {
+        if (FAILED(m_pGameInstance->Add_GameObject_Out(
+            TEXT("Prototype_GameObject_UI_MinionHpBar"),
+            LEVEL_GAMEPLAY,
+            TEXT("Layer_UI_MinionHp"),
+            pObj,
+            this)))
+        {
+            return;
+        }
     }
 
     m_pHpBar = dynamic_cast<CMinion_HpBar*>(pObj);
 
-    // 선택: HpBar 쪽에 Set_Owner 있으면 한 번 더 연결
     if (m_pHpBar)
         m_pHpBar->Set_Owner(this);
+}
+
+void CMinion::Face_Target()
+{
+    if (!m_pTarget || !m_pTransformCom)
+        return;
+
+    CTransform* pMyTr = m_pTransformCom;
+    CTransform* pTargetTr = m_pTarget->Get_Transform();
+    if (!pTargetTr)
+        return;
+
+    _vector vMyPos = pMyTr->Get_State(CTransform::STATE_TRANSLATION);
+    _vector vTargetPos = pTargetTr->Get_State(CTransform::STATE_TRANSLATION);
+
+    // ?? 엔진 기준으로 타겟을 "보게" 하려면 이게 맞음
+    // (LOOK이 모델의 뒤쪽을 향하고 있어서 부호 반전)
+    _vector vLook = XMVectorSetY(vMyPos - vTargetPos, 0.f);
+
+    if (XMVectorGetX(XMVector3LengthSq(vLook)) < 0.0001f)
+        return;
+
+    vLook = XMVector3Normalize(vLook);
+
+    _vector vOldRight = pMyTr->Get_State(CTransform::STATE_RIGHT);
+    float fScale = XMVectorGetX(XMVector3Length(vOldRight));
+    if (fScale < 0.0001f)
+        fScale = 1.f;
+
+    _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+    _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+
+    vRight = vRight * fScale;
+    vLook = vLook * fScale;
+    vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight)) * fScale;
+
+    vRight = XMVectorSetW(vRight, 0.f);
+    vUp = XMVectorSetW(vUp, 0.f);
+    vLook = XMVectorSetW(vLook, 0.f);
+
+    pMyTr->Set_State(CTransform::STATE_RIGHT, vRight);
+    pMyTr->Set_State(CTransform::STATE_UP, vUp);
+    pMyTr->Set_State(CTransform::STATE_LOOK, vLook);
+}
+
+_int CMinion::Find_ForwardLaneNodeIndex()
+{
+    CMinionManager* pMgr = CMinionManager::GetInstance();
+    if (!pMgr || !m_pTransformCom)
+        return m_iLaneNodeIndex;
+
+    const auto& path = pMgr->GetLanePath(m_eLane);
+    if (path.empty())
+        return m_iLaneNodeIndex;
+
+    _vector vMyPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    vMyPos = XMVectorSetY(vMyPos, 0.f);
+
+    const int pathSize = (int)path.size();
+    const int step = pMgr->GetLaneStep(m_eTeam); // BLUE: +1, RED: -1 이런식일 거라 가정
+
+    float bestDistSq = FLT_MAX;
+    int   bestIdx = m_iLaneNodeIndex;
+
+    // ★ 항상 “진행 방향”으로만 검색
+    if (step > 0)
+    {
+        for (int i = max(0, m_iLaneNodeIndex); i < pathSize; ++i)
+        {
+            _vector vNode = XMLoadFloat3(&path[i]);
+            vNode = XMVectorSetY(vNode, 0.f);
+
+            float distSq = XMVectorGetX(XMVector3LengthSq(vNode - vMyPos));
+            if (distSq < bestDistSq)
+            {
+                bestDistSq = distSq;
+                bestIdx = i;
+            }
+        }
+    }
+    else // step < 0  (RED 팀)
+    {
+        for (int i = min(m_iLaneNodeIndex, pathSize - 1); i >= 0; --i)
+        {
+            _vector vNode = XMLoadFloat3(&path[i]);
+            vNode = XMVectorSetY(vNode, 0.f);
+
+            float distSq = XMVectorGetX(XMVector3LengthSq(vNode - vMyPos));
+            if (distSq < bestDistSq)
+            {
+                bestDistSq = distSq;
+                bestIdx = i;
+            }
+        }
+    }
+
+    return bestIdx;
 }
 
 // ======================= Lane Offset =======================

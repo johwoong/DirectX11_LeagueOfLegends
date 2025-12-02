@@ -73,8 +73,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
 
     // 기본 메시지 루프입니다:
-    _float          fTimeAcc = { };
-    
+    _float fTimeAcc = 0.f;  
+
     while (true)
     {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -90,19 +90,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
 
         pGameInstance->Update_TimeDelta(TEXT("Timer_Default"));
+        pGameInstance->Update_TimeDelta(TEXT("Timer_60"));    
+        pGameInstance->Update_TimeDelta(TEXT("Timer_Camera"));
 
-        fTimeAcc += pGameInstance->Get_TimeDelta(TEXT("Timer_Default"));
-
-        if (fTimeAcc >= 1.f / 60.0f)
-        {
-            pGameInstance->Update_TimeDelta(TEXT("Timer_60"));
-            pGameInstance->Update_TimeDelta(TEXT("Timer_Camera"));
-
-            pMainApp->Update(pGameInstance->Get_TimeDelta(TEXT("Timer_60")));
-            pMainApp->Render();
-
-            fTimeAcc = 0.f;
-        }        
+        _float fDelta = pGameInstance->Get_TimeDelta(TEXT("Timer_Default"));
+        pMainApp->Update(fDelta);
+        pMainApp->Render();
     }
 
     Safe_Release(pGameInstance);
@@ -167,10 +160,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }      
 
-   //SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);    // 테두리, 타이틀바 제거
-   //SetWindowPos(hWnd, HWND_TOP,
-   //    0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
-   //    SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+   SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);    // 테두리, 타이틀바 제거
+   SetWindowPos(hWnd, HWND_TOP,
+       0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+       SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);

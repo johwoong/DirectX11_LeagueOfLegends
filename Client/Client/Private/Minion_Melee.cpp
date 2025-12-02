@@ -269,9 +269,9 @@ HRESULT CMinion_Melee::Ready_Components(void* pArg)
 
     CColider::COLLIDERDESC ColliderDesc;
     ZeroMemory(&ColliderDesc, sizeof(CColider::COLLIDERDESC));
-    ColliderDesc.vScale = _float3(1.5f, 1.5f, 1.5f);
+    ColliderDesc.vScale = _float3(2.0f, 2.0f, 2.0f);
     ColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
-    ColliderDesc.vPosition = _float3(0.f, 15.f, 0.f);
+    ColliderDesc.vPosition = _float3(0.f, 60.f, 0.f);
     if (FAILED(__super::Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), (CComponent**)&m_pSphereCom, &ColliderDesc)))
         return E_FAIL;
      

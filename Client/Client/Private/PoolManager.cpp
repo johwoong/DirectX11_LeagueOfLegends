@@ -107,6 +107,19 @@ _bool CPoolManager::Clear_AllPooling_Layer()
 	return true;
 }
 
+CGameObject* CPoolManager::Pop_Pooling_Object(LEVEL iLevelIdx, const _tchar* pLayerTag)
+{
+	auto pLayer = Find_PoolingObjects(iLevelIdx, pLayerTag);
+	if (pLayer == nullptr || pLayer->empty())
+		return nullptr;
+
+	auto iter = pLayer->begin();
+	CGameObject* pObj = *iter;
+	pLayer->erase(iter);
+
+	return pObj;
+}
+
 list<class CGameObject*>* CPoolManager::Find_PoolingObjects(_uint iLevelIdx, const _tchar* pLayerTag)
 {
 	if (iLevelIdx >= LEVEL_END)

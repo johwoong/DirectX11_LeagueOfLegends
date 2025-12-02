@@ -182,7 +182,7 @@
     <ClInclude Include="..\Public\Minion_State.h" />
     <ClInclude Include="..\Public\Minion.h" />
     <ClInclude Include="..\Public\Minion_Melee.h" />
-    <ClInclude Include="..\Public\PlayerChaseState.h" />
+    <ClInclude Include="..\Public\EzrealSkillStateR.h" />
     <ClInclude Include="..\Public\PlayerEmotionState.h" />
     <ClInclude Include="..\Public\PlayerRecallState.h" />
     <ClInclude Include="..\Public\PoolManager.h" />
@@ -259,7 +259,7 @@
     <ClCompile Include="..\Private\Minion.cpp" />
     <ClCompile Include="..\Private\Minion_Melee.cpp" />
     <ClCompile Include="..\Private\Minion_Range.cpp" />
-    <ClCompile Include="..\Private\PlayerChaseState.cpp" />
+    <ClCompile Include="..\Private\EzrealSkillStateR.cpp" />
     <ClCompile Include="..\Private\PlayerEmotionState.cpp" />
     <ClCompile Include="..\Private\PlayerRecallState.cpp" />
     <ClCompile Include="..\Private\PoolManager.cpp" />

@@ -1,6 +1,7 @@
 #include "UI_Minion_HpBar.h"
 #include "Minion.h"
 #include "GameInstance.h"
+#include "PoolManager.h"
 
 CMinion_HpBar::CMinion_HpBar(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CActor(pDevice, pContext)
@@ -67,6 +68,7 @@ HRESULT CMinion_HpBar::Ready_Components(void* pArg)
 
     // ===================== 4) Texture  (팀에 따라 다른 HPBar) =====================
     const _tchar* szTexProto = TEXT("Prototype_Component_Texture_Minion_HpBar"); // 기본 : 레드용
+    const _tchar* szFrameTexProto = TEXT("Prototype_Component_Texture_Minion_Minion_HpBar_Frame"); // 프레임
 
     if (m_pOwner && m_pOwner->Get_Team() == TEAM_BLUE)
     {
@@ -77,6 +79,12 @@ HRESULT CMinion_HpBar::Ready_Components(void* pArg)
         TEXT("Com_Texture"), LEVEL_GAMEPLAY,
         szTexProto,
         (CComponent**)&m_pTextureCom)))
+        return E_FAIL;
+
+    if (FAILED(__super::Add_Components(
+        TEXT("Com_FrameTexture"), LEVEL_GAMEPLAY,
+        szFrameTexProto,
+        (CComponent**)&m_pFrameTextureCom)))
         return E_FAIL;
 
     // ===================== 5) VIBuffer (Rect) =====================
@@ -91,18 +99,16 @@ HRESULT CMinion_HpBar::Ready_Components(void* pArg)
 
 int CMinion_HpBar::Update(_float fDelta)
 {
-    // 이미 죽은 상태면 바로 제거
     if (m_bDead)
-        return OBJ_DEAD;
+        return OBJ_POOL;   // 풀에 들어가 있는 상태
 
-    // ★ 주인이 없거나, 주인이 완전히 Dead 상태면 나도 제거
+    // ★ 주인이 없거나, 주인이 완전히 Dead 상태면 나도 풀로 돌려보냄
     if (!m_pOwner || m_pOwner->Get_Dead())
     {
-        m_bDead = true;
-        return OBJ_DEAD;
+        ReturnToPool();
+        return OBJ_POOL;
     }
 
-    // ★ Dying(죽는 모션 재생 중)일 땐 그냥 안 움직이고 안 그리게만 처리
     if (m_pOwner->Is_Dying())
         return OBJ_NOEVENT;
 
@@ -124,28 +130,27 @@ void CMinion_HpBar::Update_Position_And_Scale()
     float max = m_pOwner->Get_Stats().m_fMaxHp;
     if (max <= 0.f) max = 1.f;
 
-    float ratio = cur / max;
-    ratio = max(0.f, min(1.f, ratio));
+    m_fHpRatio = cur / max;
+    m_fHpRatio = max(0.f, min(1.f, m_fHpRatio));
 
-    // 2) 먼저 빌보드 세팅
+    // 2) 빌보드
     SetUp_BillBoard();
 
-    // 3) 스케일 적용
+    // 3) Transform 스케일은 "프레임 기준" 고정값
     const float fullWidth = 0.7f;
     const float fullHeight = 0.1f;
 
-    m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, fullWidth * ratio);
+    m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, fullWidth);
     m_pTransformCom->Set_Scale(CTransform::STATE_UP, fullHeight);
 
-    // 4) 화면 기준으로 살짝 오른쪽으로 이동
-    const float xOffset = 0.15f; // 여기 값만 취향대로 조절
-
+    // 4) 살짝 오른쪽 오프셋
     _vector vRight = XMVector3Normalize(
-        m_pTransformCom->Get_State(CTransform::STATE_RIGHT)); // 빌보드의 Right 축
+        m_pTransformCom->Get_State(CTransform::STATE_RIGHT));
 
+    const float xOffset = 0.15f;
     pos += vRight * xOffset;
 
-    // 5) 최종 위치 적용
+    // 5) 최종 위치
     m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, pos);
 }
 
@@ -160,36 +165,139 @@ void CMinion_HpBar::Set_Owner(CMinion* pOwner)
 void CMinion_HpBar::Late_Update(_float fDelta)
 {
     if (m_bDead) return;
-    if (!m_pOwner) return;                       // ★ Owner null 방지
-    if (m_pOwner->IsDeadOrDying()) return;       // ★ Owner가 죽은 경우 절대 렌더하지 않기
+    if (!m_pOwner) return;
+    if (m_pOwner->IsDeadOrDying()) return;
+
+    // 1) 미니언이 카메라 프러스텀 밖이면 HpBar도 스킵
+    if (!m_pOwner->Is_Frustum(m_pOwner->Check_CullingRadius()))
+        return;
+
+    // 2) 혹시 HpBar 자체도 한번 더 체크 (원하면)
+    if (!Is_Frustum(0.1f))
+        return;
 
     m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_ALPHABLEND, this);
 }
 
 HRESULT CMinion_HpBar::SetUp_ShaderResources()
 {
-    _float4x4 world = m_pTransformCom->Get_World_TP();
     _float4x4 view = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_VIEW);
     _float4x4 proj = m_pGameInstance->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ);
 
-    m_pShaderCom->Set_RawValue("g_WorldMatrix", &world, sizeof(world));
     m_pShaderCom->Set_RawValue("g_ViewMatrix", &view, sizeof(view));
     m_pShaderCom->Set_RawValue("g_ProjMatrix", &proj, sizeof(proj));
-
-    m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", m_pTextureCom->Get_SRV(0));
 
     return S_OK;
 }
 
 HRESULT CMinion_HpBar::Render()
 {
-    SetUp_ShaderResources();
+    if (!m_pShaderCom || !m_pVIBufferCom || !m_pTextureCom || !m_pFrameTextureCom)
+        return E_FAIL;
 
-    m_pShaderCom->Begin(0);
+    if (FAILED(SetUp_ShaderResources()))
+        return E_FAIL;
+
+    _float4x4 worldNative = m_pTransformCom->Get_World();
+
+    // ================== 1) Frame ==================
+    _float4x4 worldFrameTP;
+    XMStoreFloat4x4(&worldFrameTP,
+        XMMatrixTranspose(XMLoadFloat4x4(&worldNative)));
+
+    float fFrameAlpha = 0.3f; 
+    m_pShaderCom->Set_RawValue("g_fAlpha", &fFrameAlpha, sizeof(float));
+    m_pShaderCom->Set_RawValue("g_WorldMatrix", &worldFrameTP, sizeof(worldFrameTP));
+    m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", m_pFrameTextureCom->Get_SRV(0));
+
+    // ?? 여기 중요: pass 1 사용 (PS_HPBar)
+    m_pShaderCom->Begin(1);
+    m_pVIBufferCom->Render();
+
+    // ================== 2) HP Bar ==================
+    float fBarAlpha = 1.0f;    // HP바는 완전 불투명
+    m_pShaderCom->Set_RawValue("g_fAlpha", &fBarAlpha, sizeof(float));
+
+    _float4x4 barNative = worldNative;
+
+    _vector vRightOrig = XMLoadFloat4((_float4*)&barNative.m[0][0]);
+    _vector vUpOrig = XMLoadFloat4((_float4*)&barNative.m[1][0]);
+    _vector vPosOrig = XMLoadFloat4((_float4*)&barNative.m[3][0]);
+
+    float   fullWidth = XMVectorGetX(XMVector3Length(vRightOrig));
+    _vector rightDir = XMVector3Normalize(vRightOrig);
+
+    const float innerScale = 0.97f;
+    float innerWidth = fullWidth * innerScale;
+    float barWidth = innerWidth * m_fHpRatio;
+    float marginSide = (fullWidth - innerWidth) * 0.5f;
+
+    float centerOffset =
+        (-fullWidth * 0.5f) +
+        marginSide +
+        barWidth * 0.5f;
+
+    _vector vRightNew = rightDir * barWidth;
+    _vector vPosNew = vPosOrig + rightDir * centerOffset;
+
+    XMStoreFloat4((_float4*)&barNative.m[0][0], vRightNew);
+    XMStoreFloat4((_float4*)&barNative.m[1][0], vUpOrig);
+    XMStoreFloat4((_float4*)&barNative.m[3][0], vPosNew);
+
+    _float4x4 barTP;
+    XMStoreFloat4x4(&barTP,
+        XMMatrixTranspose(XMLoadFloat4x4(&barNative)));
+
+    m_pShaderCom->Set_RawValue("g_WorldMatrix", &barTP, sizeof(barTP));
+    m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", m_pTextureCom->Get_SRV(0));
+
+    // ?? HPBar도 pass 1
+    m_pShaderCom->Begin(1);
     m_pVIBufferCom->Render();
 
     return S_OK;
 
+}
+
+void CMinion_HpBar::ReUse_Setting(void* pArg)
+{
+    // 풀에서 꺼낼 때 다시 세팅
+    m_bDead = false;
+    m_pOwner = static_cast<CMinion*>(pArg);
+    m_fHpRatio = 1.f;
+
+    if (m_pOwner)
+        m_pOwner->Set_HpBar(this);
+}
+
+// 풀로 되돌릴 때 호출
+void CMinion_HpBar::ReturnToPool()
+{
+    if (m_bDead)
+        return;
+
+    // 소유자 기준으로 팀 결정
+    TEAMTYPE eTeam = TEAM_BLUE;
+    if (m_pOwner)
+        eTeam = m_pOwner->Get_Team();
+
+    // 팀별 PoolTag 분리 (렌더 레이어가 아님!)
+    const _tchar* szPoolTag = nullptr;
+    if (eTeam == TEAM_BLUE)
+        szPoolTag = TEXT("Pool_UI_MinionHp_Blue");
+    else
+        szPoolTag = TEXT("Pool_UI_MinionHp_Red");
+
+    m_bDead = true;
+    m_pOwner = nullptr;
+
+    if (CPoolManager* pPool = CPoolManager::GetInstance())
+    {
+        pPool->Add_Pooling_Object(
+            LEVEL_GAMEPLAY,
+            szPoolTag,
+            this);
+    }
 }
 
 

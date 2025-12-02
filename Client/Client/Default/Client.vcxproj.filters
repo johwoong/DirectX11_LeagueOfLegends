@@ -178,9 +178,6 @@
     <ClInclude Include="..\Public\EzrealAttackState.h">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\PlayerChaseState.h">
-      <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\UI_AttackRange.h">
       <Filter>02. GameObjects\02. UI\10. UI_AttackRange</Filter>
     </ClInclude>
@@ -219,6 +216,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\UI_Minion_HpBar.h">
       <Filter>02. GameObjects\02. UI\12. UI_HpBar\Minion</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EzrealSkillStateR.h">
+      <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -580,9 +580,6 @@
     <ClCompile Include="..\Private\EzrealAttackState.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\PlayerChaseState.cpp">
-      <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\UI_AttackRange.cpp">
       <Filter>02. GameObjects\02. UI\10. UI_AttackRange</Filter>
     </ClCompile>
@@ -618,6 +615,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\UI_Minion_HpBar.cpp">
       <Filter>02. GameObjects\02. UI\12. UI_HpBar\Minion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EzrealSkillStateR.cpp">
+      <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

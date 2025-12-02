@@ -110,13 +110,17 @@ void CMoveState::Enter()
     if (path.empty())
         return;
 
-    _int nodeIdx = m_pOwner->Get_LaneNodeIndex();
+    // ★ 현재 위치 기준으로 "앞으로 가야 할" 노드 다시 선택
+    _int nodeIdx = m_pOwner->Find_ForwardLaneNodeIndex();
     if (nodeIdx < 0 || nodeIdx >= (_int)path.size())
         return;
+
+    m_pOwner->Set_LaneNodeIndex(nodeIdx);
 
     _float3 vTarget = path[nodeIdx];
     _vector vTargetV = XMLoadFloat3(&vTarget);
 
+    // ★ 이제는 "현재 위치 → 앞으로 가야 할 노드"로 바로 이동
     pTr->Set_Destination(vTargetV, pNavi);
 }
 

@@ -2,6 +2,7 @@
 
 matrix g_WorldMatrix, g_ViewMatrix, g_ProjMatrix;
 Texture2D g_DiffuseTexture;
+float g_fAlpha;
 
 
 struct VS_IN
@@ -45,6 +46,21 @@ PS_OUT PS_MAIN(VS_OUT In)
     return Out;
 }
 
+PS_OUT PS_HPBar(VS_OUT In)
+{
+    PS_OUT Out;
+
+    float4 tex = g_DiffuseTexture.Sample(LinearSampler, In.vTexUV);
+
+    // 텍스처 알파에 g_fAlpha 곱해줌
+    tex.a *= g_fAlpha;
+
+    Out.vColor = tex;
+    return Out;
+}
+
+
+
 BlendState BS_AttackRange
 {
     AlphaToCoverageEnable = FALSE;
@@ -85,7 +101,19 @@ technique11 AttackRangeTech
         VertexShader = compile vs_5_0 VS_MAIN();
         PixelShader = compile ps_5_0 PS_MAIN();
     }
+
+    // ★ 추가 : HPBar / 프레임 전용 pass (알파 적용)
+    pass P1
+    {
+        SetRasterizerState(RS_AttackRange);
+        SetBlendState(BS_AttackRange, float4(0, 0, 0, 0), 0xffffffff);
+        SetDepthStencilState(DSS_AttackRange, 0);
+
+        VertexShader = compile vs_5_0 VS_MAIN();
+        PixelShader = compile ps_5_0 PS_HPBar();
+    }
 }
+
 
 
 

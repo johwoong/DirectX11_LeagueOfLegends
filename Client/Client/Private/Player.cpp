@@ -3,6 +3,7 @@
 
 #include "PlayerState.h"
 #include "PlayerIdleState.h"
+#include "Collision_Manager.h"
 
 using namespace Player;
 
@@ -32,6 +33,8 @@ HRESULT CPlayer::Initialize(void* pArg)
 	if (FAILED(__super::Add_Components(TEXT("Com_Navigation"), LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"), (CComponent**)&m_pNavigationCom, &NaviDesc)))
 		return E_FAIL;
 
+
+
 	// 정상 코드
 	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
 	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 4.f);
@@ -42,13 +45,14 @@ HRESULT CPlayer::Initialize(void* pArg)
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
 
 	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);	
+	CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_PLAYER, this);
 	return S_OK;
 }
 
 int CPlayer::Update(_float fTimeDelta)
 {
 	int iEvent = __super::Update(fTimeDelta);
-
+	Update_Collider();
 	if (iEvent == OBJ_DEAD)
 		return OBJ_DEAD;
 

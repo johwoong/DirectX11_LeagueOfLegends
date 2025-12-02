@@ -59,13 +59,14 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
             XMStoreFloat3(&vStartPos, HandMatrix.r[3]);
 
             CProjectile::PROJECTILEDESC desc{};
-            desc.eType = CProjectile::PROJ_LINEAR;   
+            desc.eType = CProjectile::PROJ_LINEAR;
             desc.vStartPos = XMLoadFloat3(&vStartPos);
-            desc.vDir = m_vDir;    
+            desc.vDir = m_vDir;             
             desc.pOwner = m_pOwner;
-            desc.fSpeed = 20.f;                    
-            desc.fMaxDistance = 10.f;              
+            desc.fSpeed = 20.f;
+            desc.fMaxDistance = 100.f;
             desc.fLifeTime = 2.f;
+            desc.fDamage = 80.f;
 
             GI->Add_GameObject(
                 TEXT("Prototype_GameObject_Projectile"),
@@ -111,7 +112,7 @@ void CEzrealSkillStateQ::Enter()
         XMVectorSetY(hit - myPos, 0.f)
     );
 
-    _vector vLook = -vDir; 
+    _vector vLook = -vDir;
 
     _vector vUp = XMVectorSet(0, 1, 0, 0);
     _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
@@ -121,9 +122,8 @@ void CEzrealSkillStateQ::Enter()
     m_pOwner->Get_Transform()->Set_State(CTransform::STATE_UP, vUp);
     m_pOwner->Get_Transform()->Set_State(CTransform::STATE_LOOK, vLook);
 
-    XMStoreFloat3(&m_vDir, -vLook);   
-
-
+    // 실제 투사체 방향
+    XMStoreFloat3(&m_vDir, -vLook);
 
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::Q);
 }

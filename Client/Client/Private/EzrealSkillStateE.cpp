@@ -24,63 +24,58 @@ CPlayerState* CEzrealSkillStateE::Update(_float fDeltaTime)
     CModel* model = m_pOwner->Get_Model();
     int curAnim = model->Get_CurrentAnimIndex();
 
-    // ===== 1) 방향 애니메이션 재생 =====
-    bool finished =
-        model->Play_Animation(fDeltaTime, false, nullptr, 0.0f);
+    CTransform* pTr = m_pOwner->Get_Transform();
 
+    // 공통: 항상 같은 방향으로 바라보게 유지
+    _vector vLook = XMVector3Normalize(XMLoadFloat3(&m_vDir));
+    _vector vUp = XMVectorSet(0, 1, 0, 0);
+    _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+    vUp = XMVector3Cross(vLook, vRight);
+
+    pTr->Set_State(CTransform::STATE_RIGHT, vRight);
+    pTr->Set_State(CTransform::STATE_UP, vUp);
+    pTr->Set_State(CTransform::STATE_LOOK, vLook);
+
+    // ===== 1) 방향 E (E_-180, E_-90, E90, E180) =====
     if (curAnim == CEzreal::ANIM::E_MINUS_180 ||
         curAnim == CEzreal::ANIM::E_MINUS_90 ||
         curAnim == CEzreal::ANIM::E90 ||
         curAnim == CEzreal::ANIM::E180)
     {
-        // 방향을 항상 유지 (중간에 돌아가는 문제 방지)
-        m_pOwner->Get_Transform()->Set_State(
-            CTransform::STATE_LOOK,
-            XMVector3Normalize(XMLoadFloat3(&m_vDir))
-        );
+        bool finished = model->Play_Animation(fDeltaTime * 1.4F, false, nullptr, 0.2f);
+
+        // 방향 E 끝날 때 텔레포트 + EXIT로 전환
+        if (!m_bTeleported && finished)
+        {
+            m_bTeleported = true;
+            pTr->Set_State(CTransform::STATE_TRANSLATION, m_vDashTarget);
+            // 필요하면 네비 인덱스 재계산
+            m_pOwner->Get_Navigation()->Compute_CurrentIndex_byXZ(m_vDashTarget);
+        }
 
         if (finished)
         {
             model->Set_CurrentAnimIndex(CEzreal::ANIM::E_EXIT);
-            return nullptr;
         }
+
         return nullptr;
     }
 
-    // ===== 2) EXIT 단계 =====
+    // ===== 2) EXIT =====
     if (curAnim == CEzreal::ANIM::E_EXIT)
     {
         bool exitFinished =
-            model->Play_Animation(fDeltaTime * 1.7f, false, nullptr, 0.0f);
-
-        // Look 고정
-        m_pOwner->Get_Transform()->Set_State(
-            CTransform::STATE_LOOK,
-            XMVector3Normalize(XMLoadFloat3(&m_vDir))
-        );
-
-        // 텔레포트는 한 번만
-        if (!m_bTeleported)
-        {
-            m_bTeleported = true;
-            m_pOwner->Get_Transform()->Set_State(
-                CTransform::STATE_TRANSLATION,
-                m_vDashTarget
-            );
-
-            // === 이동 리셋 ===
-            m_pOwner->Set_TargetPosition(
-                *(_float3*)&m_vDashTarget
-            );
-        }
+            model->Play_Animation(fDeltaTime * 1.3f, false, nullptr, 0.0f);
 
         // EXIT 끝 → IDLE
         if (exitFinished)
-        {
             return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
-        }
+
+        return nullptr;
     }
 
+    // 혹시 다른 E 관련 애니로 들어가 있으면 그냥 EXIT로 넘겨버림
+    model->Set_CurrentAnimIndex(CEzreal::ANIM::E_EXIT);
     return nullptr;
 }
 
@@ -93,27 +88,33 @@ void CEzrealSkillStateE::Enter()
 {
     __super::Enter();
     m_pOwner->SetUsingSkill(true);
-
+    m_bTeleported = false;
 
     CCursorManager* CM = CCursorManager::GetInstance();
 
     _vector rayPos = CM->Get_RayPos();
     _vector rayDir = CM->Get_RayDir();
 
-    _vector myPos = m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+    CTransform* pTr = m_pOwner->Get_Transform();
+    _vector myPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
     float y = XMVectorGetY(myPos);
 
-    float t = (y - XMVectorGetY(rayPos)) / XMVectorGetY(rayDir);
+    // ===== 1) 바닥 평면과의 교점 구하기 =====
+    float rayDirY = XMVectorGetY(rayDir);
+    if (fabsf(rayDirY) < 0.0001f)
+        rayDirY = (rayDirY >= 0.f ? 0.0001f : -0.0001f);
+
+    float t = (y - XMVectorGetY(rayPos)) / rayDirY;
     _vector hit = rayPos + rayDir * t;
 
+    // ===== 2) 대쉬 방향 (XZ) =====
     _vector dir = XMVector3Normalize(
         XMVectorSetY(hit - myPos, 0.f)
     );
     XMStoreFloat3(&m_vDir, dir);
 
-
-
-    float maxRange = 200.f;
+    // ===== 3) 도착 위치 (사거리 클램프) =====
+    const float maxRange = 200.f;
     float dist = XMVectorGetX(XMVector3Length(hit - myPos));
 
     if (dist > maxRange)
@@ -121,41 +122,42 @@ void CEzrealSkillStateE::Enter()
     else
         m_vDashTarget = hit;
 
-
+    // ===== 4) 현재 바라보는 방향과의 각도로 애니 선택 =====
     _vector look = XMVector3Normalize(
-        XMVectorSetY(m_pOwner->Get_Transform()->Get_State(CTransform::STATE_LOOK), 0.f)
+        XMVectorSetY(pTr->Get_State(CTransform::STATE_LOOK), 0.f)
     );
 
     float dot = XMVectorGetX(XMVector3Dot(look, dir));
     dot = std::clamp(dot, -1.f, 1.f);
 
-    float angle = XMConvertToDegrees(acosf(dot));
-
+    float angle = XMConvertToDegrees(acosf(dot)); // 0~180
     float crossY = XMVectorGetY(XMVector3Cross(look, dir));
-    if (crossY < 0) angle = -angle;
+    if (crossY < 0) angle = -angle;              // -180 ~ 180
 
     int anim = CEzreal::ANIM::E90;
 
     if (angle < -135.f)
-        anim = CEzreal::ANIM::E_MINUS_180;
-    else if (angle < 0)
-        anim = CEzreal::ANIM::E_MINUS_90;
+        anim = CEzreal::ANIM::E_MINUS_180;  // 거의 정반대 (뒤)
+    else if (angle < -45.f)
+        anim = CEzreal::ANIM::E_MINUS_90;   // 왼쪽
+    else if (angle < 45.f)
+        anim = CEzreal::ANIM::E180;         // 정면
     else if (angle < 135.f)
-        anim = CEzreal::ANIM::E90;
+        anim = CEzreal::ANIM::E90;          // 오른쪽
     else
-        anim = CEzreal::ANIM::E180;
+        anim = CEzreal::ANIM::E_MINUS_180;  // 거의 정반대 (뒤)
 
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(anim);
 
-
+    // ===== 5) 현재 프레임부터 바로 대쉬 방향으로 바라보게 회전 =====
     _vector vLook = dir;
     _vector vUp = XMVectorSet(0, 1, 0, 0);
     _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
     vUp = XMVector3Cross(vLook, vRight);
 
-    m_pOwner->Get_Transform()->Set_State(CTransform::STATE_RIGHT, vRight);
-    m_pOwner->Get_Transform()->Set_State(CTransform::STATE_UP, vUp);
-    m_pOwner->Get_Transform()->Set_State(CTransform::STATE_LOOK, vLook);
+    pTr->Set_State(CTransform::STATE_RIGHT, vRight);
+    pTr->Set_State(CTransform::STATE_UP, vUp);
+    pTr->Set_State(CTransform::STATE_LOOK, vLook);
 }
 
 

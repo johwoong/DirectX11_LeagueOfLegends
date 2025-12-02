@@ -477,6 +477,10 @@ HRESULT CLoader::Loading_For_GameUI()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Minion_Minion_HpBar_Blue"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/Minion_HpBar_Blue.dds"), 1))))
 		return E_FAIL;
+	// Frame
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Minion_Minion_HpBar_Frame"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/Minion_HpBarFrame.dds"), 1))))
+		return E_FAIL;
 #pragma endregion
 	return S_OK;
 }

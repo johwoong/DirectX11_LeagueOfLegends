@@ -13,6 +13,8 @@
 USING(Client)
 USING(Player)
 
+
+
 CEzrealAttackState::CEzrealAttackState(CPlayer* pPlayer, STATE_ID eStateType, _float /*fTime*/)
 {
     m_pOwner = pPlayer;
@@ -31,17 +33,43 @@ CPlayerState* CEzrealAttackState::HandleInput()
         _float3 clickPos = PM->Get_PickingPos();
         CGameObject* pickedObj = PM->Get_PickedObj();
 
+        // 1) Enemy 찍었는지 확인
         if (CEnemy* enemy = dynamic_cast<CEnemy*>(pickedObj))
         {
             m_pOwner->Set_AttackTarget(enemy);
+
+            _vector myPos = m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+            _vector tarPos = enemy->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+
+            float dist = GetDistanceXZ(myPos, tarPos);
+            float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();
+
+            if (dist <= range)
+            {
+                // 이미 사거리 안 → 현 위치에서 계속 공격
+                m_bIsAnimationFinished = false;
+                m_bProjectileSpawned = false;
+                // 필요하면 여기서 평타 애니 다시 세팅
+                return nullptr; // AttackState 유지
+            }
+            else
+            {
+                // 사거리 밖 → "공격 포지션"으로 이동 설정 후 RunState로
+                Set_AttackMoveToTarget(m_pOwner, enemy);
+                return new CRunState(m_pOwner);
+            }
         }
         else
         {
+            // 2) Enemy 아닌 곳 찍으면 → 타겟 해제 + 땅으로 이동
             m_pOwner->Set_AttackTarget(nullptr);
-        }
+            m_pOwner->Set_TargetPosition(clickPos);
+            m_pOwner->Get_Transform()->Set_Destination(
+                XMLoadFloat3(&clickPos),
+                m_pOwner->Get_Navigation());
 
-        m_pOwner->Set_TargetPosition(clickPos);
-        return new CRunState(m_pOwner);
+            return new CRunState(m_pOwner);
+        }
     }
 
     return nullptr;
@@ -58,14 +86,20 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
     _vector tarPos = target->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
     float dist = GetDistanceXZ(myPos, tarPos);
-    float range = dynamic_cast<CChampion*>(m_pOwner)->Get_AttackRange();
+    float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();  
 
     if (dist > range)
     {
-        _float3 go;
-        XMStoreFloat3(&go, tarPos);
-        m_pOwner->Set_TargetPosition(go);
-        return new CRunState(m_pOwner);
+        CActor* pTarget = m_pOwner->Get_AttackTarget();
+        if (pTarget)
+        {
+            // 공격용 포지션으로 이동 설정
+            Set_AttackMoveToTarget(m_pOwner, pTarget);
+            return new CRunState(m_pOwner);
+        }
+
+        // 타겟이 없으면 그냥 Idle
+        return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
     }
 
     _vector lookDir = tarPos - myPos;  
@@ -157,6 +191,5 @@ void CEzrealAttackState::Enter()
 
 void CEzrealAttackState::Exit()
 {
-    m_pOwner->Set_AttackTarget(nullptr);
     __super::Exit();
 }

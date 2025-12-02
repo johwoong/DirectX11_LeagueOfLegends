@@ -58,36 +58,55 @@ void CPickingManager::Set_PickedObj(CGameObject* pGameObject)
 
 _bool CPickingManager::Picking()
 {
-	if (m_bMouseInUI)
-		return false;
+    if (m_bMouseInUI)
+        return false;
 
-	CCursorManager::GetInstance()->SetState(CURSOR_DEFAULT);
+    CCursorManager::GetInstance()->SetState(CURSOR_DEFAULT);
 
-	list<CGameObject*> vecPicked;
-	vector<_float3>		vecPos;
-	_float3 vPosition;
+    struct HitInfo
+    {
+        CGameObject* pObj;
+        _float3      vPos;
+    };
 
-	for (auto& pGameObject : m_GameObjects)
-	{
-		if (pGameObject->Picking(&vPosition) == true)
-		{
-			vecPicked.push_back(pGameObject);
-			vecPos.push_back(vPosition);
-			m_vPickingPos = vPosition;
-		}
-	}
+    vector<HitInfo> hits;
 
-	if (!vecPicked.empty())
-	{
-		vecPicked.sort([](CGameObject* pSour, CGameObject* pDest)
-			{
-				return pSour->Get_CamDistance() < pDest->Get_CamDistance();
-			});
+    _float3 vPosition;
 
-		vecPicked.front()->PickingTrue();
-		return true;
-	}
-	return false;
+    for (auto& pGameObject : m_GameObjects)
+    {
+        if (pGameObject->Picking(&vPosition))
+        {
+            HitInfo info;
+            info.pObj = pGameObject;
+            info.vPos = vPosition;
+            hits.push_back(info);
+        }
+    }
+
+    if (hits.empty())
+    {
+        Set_PickedObj(nullptr);
+        return false;
+    }
+
+    // 카메라에 가장 가까운 오브젝트 기준으로 정렬
+    std::sort(hits.begin(), hits.end(),
+        [](const HitInfo& a, const HitInfo& b)
+        {
+            return a.pObj->Get_CamDistance() < b.pObj->Get_CamDistance();
+        });
+
+    CGameObject* pFront = hits.front().pObj;
+
+    // ★ 여기서 PickedObj / PickingPos를 "같은 애" 기준으로 세팅
+    Set_PickedObj(pFront);
+    m_vPickingPos = hits.front().vPos;
+
+    // 선택된 오브젝트에 피킹 true
+    pFront->PickingTrue();
+
+    return true;
 }
 
 

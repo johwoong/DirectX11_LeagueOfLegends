@@ -32,16 +32,21 @@ private:
     void Update_Position_And_Scale();
 public:
     void Set_Owner(CMinion* pOwner);
+    // ★ 풀링용
+    virtual void ReUse_Setting(void* pArg) override;
+    void ReturnToPool();
 private:
     CMinion* m_pOwner = nullptr;
 
     float m_fMaxWidth = 0.8f; 
     float m_fHeight = 0.08f;
     float m_fOffsetY = 2.0f;  // 머리 위로 살짝
+    float m_fHpRatio = 0.f;
 
     // HPBar 전용 컴포넌트
     CVIBuffer_Rect*   m_pVIBufferCom = nullptr;
     CTexture*         m_pTextureCom  = nullptr;
+    CTexture* m_pFrameTextureCom = nullptr; 
 
 public:
     static CMinion_HpBar* Create(ID3D11Device*, ID3D11DeviceContext*);

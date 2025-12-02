@@ -134,7 +134,11 @@ public:
     virtual _bool Picking(_float3* PickingPoint);
     virtual void PickingTrue();
     virtual void Set_Picked();
+
+public:
     void Create_HpBar();
+    void Face_Target();
+    _int Find_ForwardLaneNodeIndex();
 protected:
     virtual HRESULT SetUp_ShaderResources();
     virtual HRESULT SetUp_ShaderID();

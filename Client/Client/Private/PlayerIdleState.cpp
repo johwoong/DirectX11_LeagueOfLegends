@@ -5,7 +5,9 @@
 #include "PlayerEmotionState.h"
 #include "EzrealAttackState.h"
 #include "EzrealSkillStateQ.h"
+#include "EzrealSkillStateW.h"
 #include "EzrealSkillStateE.h"
+#include "EzrealSkillStateR.h"
 
 using namespace Player;
 
@@ -26,11 +28,22 @@ CPlayerState* CIdleState::HandleInput()
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
             return new CEzrealSkillStateQ(m_pOwner);
     }
+    if (GI->Key_Down(DIK_W))
+    {
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+            return new CEzrealSkillStateW(m_pOwner, CEzrealSkillStateW::CAST_IDLE);
+    }
     if (GI->Key_Down(DIK_E))
     {
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
             return new CEzrealSkillStateE(m_pOwner);
     }
+    if (GI->Key_Down(DIK_R))
+    {
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+            return new CEzrealSkillStateR(m_pOwner);
+    }
+
 
     if (GI->Key_Pressing(DIK_LCONTROL))
     {

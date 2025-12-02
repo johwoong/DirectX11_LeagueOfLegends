@@ -30,7 +30,15 @@ HRESULT CStoreNpc::Initialize(void* pArg)
 	}
 	m_eState = IDLE;
 	m_pModelCom->Set_CurrentAnimIndex(m_eState);
+	if (m_BuildDesc.eTeamType == BLUE)
+	{
+		Set_Scale(_float3(0.015f, 0.015f, 0.015f));
+		// Y축 180도 회전 → 곰이 반대 방향(왼쪽) 보게
+		m_pTransformCom->Rotation(
+			XMVectorSet(0.f, 1.f, 0.f, 0.f),
+			XMConvertToRadians(180.f));
 
+	}
 	return S_OK;
 }
 

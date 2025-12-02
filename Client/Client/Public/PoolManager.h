@@ -24,6 +24,7 @@ public:
     _bool Reuse_Pooling_Layer(LEVEL iLevelIdx, const _tchar* pLayerTag, void* pArg = nullptr);
     _bool Reuse_Pooling_Object(LEVEL iLevelIdx, const _tchar* pLayerTag, void* pArg = nullptr);
     _bool Clear_AllPooling_Layer();
+    CGameObject* Pop_Pooling_Object(LEVEL iLevelIdx, const _tchar* pLayerTag);
 
 private:
     list<class CGameObject*>* m_pLayers;

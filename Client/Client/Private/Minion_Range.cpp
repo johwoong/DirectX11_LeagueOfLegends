@@ -20,6 +20,24 @@ _bool CMinion_Range::Is_AnimationLoop(_uint eAnimId)
     return false;
 }
 
+void CMinion_Range::Ready_Animation_Event()
+{
+    CAnimation* pAnim = m_pModelCom->Get_Animations()[ATTACK1];
+    if (!pAnim) return;
+
+    ANIMEVENT evt{};
+    evt.fStartTime = 14.5f;
+    evt.fEndTime = 15.f;
+    evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+    pAnim->Add_Event(evt);
+
+    pAnim = m_pModelCom->Get_Animations()[ATTACK2];
+    evt.fStartTime = 13.5f;
+    evt.fEndTime = 14.f;
+    evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+    pAnim->Add_Event(evt);
+}
+
 void CMinion_Range::ReUse_Setting(void* pArg)
 {
     __super::ReUse_Setting(pArg);
@@ -185,24 +203,7 @@ void CMinion_Range::On_Death()
 
 }
 
-void CMinion_Range::Ready_Animation_Event()
-{
-    CAnimation* pAnim = m_pModelCom->Get_Animations()[ATTACK1];
-    if (!pAnim) return;
 
-    ANIMEVENT evt{};
-    evt.fStartTime = 14.52f;
-    evt.fEndTime = 16.f;
-    evt.eType = ANIMEVENT::EVENT_PROJECTILE;
-    
-    pAnim->Add_Event(evt);
-
-    pAnim = m_pModelCom->Get_Animations()[ATTACK2];
-    evt.fStartTime = 14.52f;
-    evt.fEndTime = 16.f;
-    evt.eType = ANIMEVENT::EVENT_PROJECTILE;
-
-}
 
 _int CMinion_Range::Take_Damage(int fDamage, CActor* DamageCauser)
 {
@@ -253,9 +254,9 @@ HRESULT CMinion_Range::Ready_Components(void* pArg)
 
     CColider::COLLIDERDESC ColliderDesc;
     ZeroMemory(&ColliderDesc, sizeof(CColider::COLLIDERDESC));
-    ColliderDesc.vScale = _float3(1.5f, 1.5f, 1.5f);
+    ColliderDesc.vScale = _float3(2.0f, 2.0f, 2.0f);
     ColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
-    ColliderDesc.vPosition = _float3(0.f, 15.f, 0.f);
+    ColliderDesc.vPosition = _float3(0.f, 60.f, 0.f);
     if (FAILED(__super::Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), (CComponent**)&m_pSphereCom, &ColliderDesc)))
         return E_FAIL;
 

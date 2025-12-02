@@ -62,7 +62,19 @@ void CEzreal::Ready_Animation_Event()
 	evt.fEndTime = 8.f;
 	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
 	pAnim->Add_Event(evt);;
+
+	pAnim = m_pModelCom->Get_Animations()[RUNW];
+	evt.fStartTime = 20.4f;
+	evt.fEndTime = 21.f;
+	evt.eType = ANIMEVENT::EVENT_INPUT;
+	pAnim->Add_Event(evt);;
 	
+	pAnim = m_pModelCom->Get_Animations()[R];
+	evt.fStartTime = 29.f;
+	evt.fEndTime = 30.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
 	if (!pAnim) return;
 	
 }
@@ -125,6 +137,14 @@ HRESULT CEzreal::Ready_Components(void* pArg)
 
 	/* For.Com_Model*/
 	if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Ezreal"), (CComponent**)&m_pModelCom)))
+		return E_FAIL;
+
+	CColider::COLLIDERDESC ColliderDesc;
+	ZeroMemory(&ColliderDesc, sizeof(CColider::COLLIDERDESC));
+	ColliderDesc.vScale = _float3(0.02f, 0.02f, 0.02f);
+	ColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
+	ColliderDesc.vPosition = _float3(0.f, 0.3f, 0.f);
+	if (FAILED(__super::Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), (CComponent**)&m_pSphereCom, &ColliderDesc)))
 		return E_FAIL;
 
 	return S_OK;
