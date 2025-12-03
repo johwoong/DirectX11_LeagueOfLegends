@@ -61,12 +61,17 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
             CProjectile::PROJECTILEDESC desc{};
             desc.eType = CProjectile::PROJ_LINEAR;
             desc.vStartPos = XMLoadFloat3(&vStartPos);
-            desc.vDir = m_vDir;             
+            desc.vDir = m_vDir;
             desc.pOwner = m_pOwner;
             desc.fSpeed = 20.f;
             desc.fMaxDistance = 100.f;
             desc.fLifeTime = 2.f;
             desc.fDamage = 80.f;
+
+            // ★ 콜라이더 직접 설정
+            desc.bUseCustomCollider = true;
+            desc.vColliderScale = _float3(1.f, 1.f, 1.f); // 원하는 막대기 길이/굵기
+            desc.fColliderRadius = 1.f;                         // 필요 없으면 0으로
 
             GI->Add_GameObject(
                 TEXT("Prototype_GameObject_Projectile"),

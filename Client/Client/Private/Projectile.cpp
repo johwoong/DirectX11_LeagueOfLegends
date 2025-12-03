@@ -64,6 +64,25 @@ HRESULT CProjectile::Ready_Components(void* pArg)
 
 void CProjectile::Update_Collider_Size_ByType()
 {
+    if (!m_pSphereCom) return;
+
+    // 1) 커스텀 설정이 있으면 그걸 우선 사용
+    if (m_Desc.bUseCustomCollider)
+    {
+        if (m_Desc.fColliderRadius > 0.f)
+            m_pSphereCom->Set_Sphere_Radius(m_Desc.fColliderRadius);
+
+        if (m_Desc.vColliderScale.x != 0.f ||
+            m_Desc.vColliderScale.y != 0.f ||
+            m_Desc.vColliderScale.z != 0.f)
+        {
+            m_pSphereCom->Set_Scale(m_Desc.vColliderScale);
+        }
+
+        return; // 타입별 기본값은 안 씀
+    }
+
+    // 2) 기본 타입별 설정
     switch (m_Desc.eType)
     {
     case PROJ_TARGET:  // 평타용
@@ -75,7 +94,7 @@ void CProjectile::Update_Collider_Size_ByType()
         m_pSphereCom->Set_Scale(_float3(0.01f, 0.01f, 0.4f));
         break;
 
-    case PROJ_AREA:    // 궁극기 범위기qq
+    case PROJ_AREA:    // 궁극기 범위기
         m_pSphereCom->Set_Scale(_float3(1.f, 1.f, 1.f));
         break;
     }

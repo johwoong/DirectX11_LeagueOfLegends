@@ -32,6 +32,11 @@ public:
 
         // === 기타 ===
         CActor* pOwner = nullptr;
+
+        // === 콜라이더 커스텀 설정 ===
+        _bool   bUseCustomCollider = false;           // true면 아래 값 사용
+        _float3 vColliderScale = { 0.f, 0.f, 0.f };   // 0이면 무시
+        float   fColliderRadius = 0.f;                // >0이면 반지름 세팅
     };
 
 private:
