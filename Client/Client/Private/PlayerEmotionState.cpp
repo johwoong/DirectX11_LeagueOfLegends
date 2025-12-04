@@ -89,21 +89,6 @@ void CPlayerEmotionState::Enter(void)
         }
         break;
 
-    case CPlayer::RENEKTON:
-        switch (m_eType)
-        {
-        case EMOTE_JOKE:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::JOKE);
-            break;
-        case EMOTE_LAUGH:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::LAUGH);
-            break;
-        case EMOTE_TAUNT:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CRenekton::ANIM::TAUNT);
-            break;
-        }
-        break;
-
     case CPlayer::VI:
         switch (m_eType)
         {

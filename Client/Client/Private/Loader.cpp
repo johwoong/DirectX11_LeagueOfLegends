@@ -21,7 +21,6 @@
 
 // Champion
 #include "Ezreal.h"
-#include "Renekton.h"
 #include "Vi.h"
 
 // Enemy
@@ -165,10 +164,6 @@ HRESULT CLoader::Loading_For_Prtotype()
 		CEzreal::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 	/*For.Prototype_GameObject_Champion*/
-	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Renekton"),
-		CRenekton::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	/*For.Prototype_GameObject_Champion*/
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Vi"),
 		CVi::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
@@ -280,10 +275,6 @@ HRESULT CLoader::Loading_For_GamePlay()
 	// ÀÌÁî¸®¾ó
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Ezreal/Ezreal.dat"))))
-		return E_FAIL;
-	// ·¹³ØÅæ
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Renekton/Renekton.dat"))))
 		return E_FAIL;
 	// ¹ÙÀÌ
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vi"),
@@ -423,27 +414,6 @@ HRESULT CLoader::Loading_For_GameUI()
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_EzrealSkill_R"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Ezreal/ezreal_r.dds"), 1))))
-		return E_FAIL;
-#pragma endregion
-
-#pragma region Renekton_SkillImage
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Renekton_Icon"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_circle_0.dds"), 1))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_Passive"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_passive.dds"), 1))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_Q"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_q.dds"), 1))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_W"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_w.dds"), 1))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_E"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_e.dds"), 1))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_RenektonSkill_R"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Renekton/renekton_r.dds"), 1))))
 		return E_FAIL;
 #pragma endregion
 

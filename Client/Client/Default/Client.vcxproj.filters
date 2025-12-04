@@ -67,9 +67,6 @@
     <ClInclude Include="..\Public\PlayerManager.h">
       <Filter>02. GameObjects\00. Actor\00. Player\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Renekton.h">
-      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\01. Renekton</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\PlayerState.h">
       <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
     </ClInclude>
@@ -220,6 +217,24 @@
     <ClInclude Include="..\Public\EzrealSkillStateR.h">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Renekton.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\RenektonState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\RenektonIdleState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Alistar.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar</Filter>
+    </ClInclude>
+    <ClInclude Include="AlistarState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\AlistarIdleState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -289,9 +304,6 @@
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\00. Ezreal">
       <UniqueIdentifier>{18ee8c1c-af76-425b-a0ed-e2c6943e11c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\01. Renekton">
-      <UniqueIdentifier>{4c38113e-f281-4659-8194-197d53cb3731}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\00. Player\Manager">
       <UniqueIdentifier>{236a6db1-f629-49b4-95e3-7bfb297fe696}</UniqueIdentifier>
@@ -419,6 +431,21 @@
     <Filter Include="02. GameObjects\02. UI\12. UI_HpBar\Minion">
       <UniqueIdentifier>{67547860-c90f-4e57-a159-3880cf312011}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Renekton">
+      <UniqueIdentifier>{bc395185-8652-4182-bd3b-6d0180a9bd26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\01. LeeSin">
+      <UniqueIdentifier>{4c38113e-f281-4659-8194-197d53cb3731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Renekton\State">
+      <UniqueIdentifier>{e5b8c47a-f45c-4dda-8909-632b111761fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Alistar">
+      <UniqueIdentifier>{603dfc1e-6e9a-484c-9386-197a855c03db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Alistar\State">
+      <UniqueIdentifier>{8daff700-06fd-4231-8238-e67750ce4e75}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -477,9 +504,6 @@
     </ClCompile>
     <ClCompile Include="..\Private\PlayerManager.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Renekton.cpp">
-      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\01. Renekton</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PlayerIdleState.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
@@ -618,6 +642,18 @@
     </ClCompile>
     <ClCompile Include="..\Private\EzrealSkillStateR.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Renekton.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\RenektonIdleState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Alistar.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\AlistarIdleState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

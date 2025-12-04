@@ -36,7 +36,6 @@ HRESULT CVi::Initialize_Prototype()
 
 HRESULT CVi::Initialize(void* pArg)
 {
-	m_ePlayerID = RENEKTON;
 
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
@@ -101,7 +100,7 @@ CGameObject* CVi::Clone(void* pArg)
 
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CRenekton");
+		MSG_BOX("Failed to Cloned : CLeeSin");
 		Safe_Release(pInstance);
 	}
 	return pInstance;

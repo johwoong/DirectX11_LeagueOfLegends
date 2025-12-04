@@ -1,32 +1,33 @@
 #include "Renekton.h"
+#include "RenektonState.h"
+#include "RenektonIdleState.h"
 
-#include "GameInstance.h"
+using namespace Renekton;
 
 _bool CRenekton::Is_AnimationLoop(_uint eAnimId)
 {
 	switch ((ANIM)eAnimId)
 	{
+	case IDLE:
 	case IDLE1:
 	case IDLE2:
 	case IDLE3:
-	case RUN:
+	case IDLE4:
 		return true;
 	}
+
 	return false;
 }
 
-void CRenekton::Ready_Animation_Event()
-{
-}
 
 
 CRenekton::CRenekton(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CChampion(pDevice, pContext)
+	: CEnemy(pDevice, pContext)
 {
 }
 
 CRenekton::CRenekton(const CRenekton& rhs)
-	: CChampion(rhs)
+	: CEnemy(rhs)
 {
 }
 
@@ -37,25 +38,86 @@ HRESULT CRenekton::Initialize_Prototype()
 
 HRESULT CRenekton::Initialize(void* pArg)
 {
-	m_ePlayerID = RENEKTON;
-
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
-	Set_Scale(_float3(0.01f, 0.01f, 0.01f));
-	SetSkillInfo();
+
+	CRenektonState* pState = new CIdleState(this);
+	m_pState = m_pState->ChangeState(m_pState, pState);
+	m_eEnemyType = VAYNE;
+	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 20.f);
+	vPos = XMVectorSetX(vPos, XMVectorGetX(vPos) - 10.f);
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
+	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
+	m_tStats.Hp = 100;
 	return S_OK;
 }
 
-void CRenekton::SetSkillInfo()
+int CRenekton::Update(_float fTimeDelta)
 {
-	m_ChampionIconTag = L"Prototype_Component_Texture_Renekton_Icon";
-	m_Skills[0] = { L"Rising Sell Force", L"Prototype_Component_Texture_RenektonSkill_Passive", 0.f };
-	m_Skills[1] = { L"Mystic Sht", L"Prototype_Component_Texture_RenektonSkill_Q", 0.f };
-	m_Skills[2] = { L"Essence lux", L"Prototype_Component_Texture_RenektonSkill_W", 0.f };
-	m_Skills[3] = { L"Arcane hift", L"Prototype_Component_Texture_RenektonSkill_E", 0.f };
-	m_Skills[4] = { L"Truesht Barrage", L"Prototype_Component_Texture_RenektonSkill_R", 0.f };
+	__super::Update(fTimeDelta);
+
+	AI_Behavior(fTimeDelta);
+	Update_State(fTimeDelta);
+
+	m_fTimeDeltaAcc += fTimeDelta;
+
+
+	return OBJ_NOEVENT;
 }
 
+void CRenekton::Late_Update(_float fTimeDelta)
+{
+
+	//if (!Is_Frustum(2.f))
+	//	return;
+	__super::Late_Update(fTimeDelta);
+	if (m_pRendererCom)
+		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
+
+	LateUpdate_State(fTimeDelta);
+}
+
+HRESULT CRenekton::Render()
+{
+	__super::Render();
+	return S_OK;
+}
+
+HRESULT CRenekton::Render_Glow()
+{
+	return S_OK;
+}
+
+void CRenekton::AI_Behavior(_float fTimeDelta)
+{
+	CRenektonState* pNewState = m_pState->AI_Behaviour(fTimeDelta);
+	if (pNewState)
+		m_pState = m_pState->ChangeState(m_pState, pNewState);
+}
+
+void CRenekton::Update_State(_float fTimeDelta)
+{
+	CRenektonState* pNewState = m_pState->Update(fTimeDelta);
+	if (pNewState)
+		m_pState = m_pState->ChangeState(m_pState, pNewState);
+}
+
+void CRenekton::LateUpdate_State(_float fTimeDelta)
+{
+	CRenektonState* pNewState = m_pState->LateUpdate(fTimeDelta);
+	if (pNewState)
+		m_pState = m_pState->ChangeState(m_pState, pNewState);
+}
+
+void CRenekton::Check_Navigation()
+{
+	_vector vPosition = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	_float m_fWalkingHeight = m_pNavigationCom->Compute_Height(vPosition, 0.f);
+
+	vPosition = XMVectorSetY(vPosition, m_fWalkingHeight);
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
+}
 
 HRESULT CRenekton::Ready_Components(void* pArg)
 {
@@ -71,18 +133,36 @@ HRESULT CRenekton::Ready_Components(void* pArg)
 	if (FAILED(__super::Add_Components(TEXT("Com_Transform"), LEVEL_STATIC, TEXT("Prototype_Component_Transform"), (CComponent**)&m_pTransformCom, &TransformDesc)))
 		return E_FAIL;
 
-
 	/* For.Com_Shader */
 	if (FAILED(__super::Add_Components(TEXT("Com_Shader"), LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxAnimModel"), (CComponent**)&m_pShaderCom)))
 		return E_FAIL;
 
 	/* For.Com_Model*/
-	if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Renekton"), (CComponent**)&m_pModelCom)))
+	if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Vayne"), (CComponent**)&m_pModelCom)))
 		return E_FAIL;
 
+	CNavigation::NAVDESC NaviDesc;
+	ZeroMemory(&NaviDesc, sizeof NaviDesc);
+	if (FAILED(__super::Add_Components(TEXT("Com_Navigation"), LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"), (CComponent**)&m_pNavigationCom, &NaviDesc)))
+		return E_FAIL;
+
+
+	CColider::COLLIDERDESC ColliderDesc;
+	ZeroMemory(&ColliderDesc, sizeof(CColider::COLLIDERDESC));
+	ColliderDesc.vScale = _float3(1.f, 1.f, 1.f);
+	ColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
+	ColliderDesc.vPosition = _float3(0.f, 30.f, 0.f);
+	if (FAILED(__super::Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), (CComponent**)&m_pSphereCom, &ColliderDesc)))
+		return E_FAIL;
 	return S_OK;
 }
 
+HRESULT CRenekton::SetUp_ShaderID()
+{
+	m_eShaderID = SHADER_ANIMDEFAULT;
+
+	return S_OK;
+}
 
 CRenekton* CRenekton::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
@@ -90,9 +170,10 @@ CRenekton* CRenekton::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContex
 
 	if (FAILED(pInstance->Initialize_Prototype()))
 	{
-		MSG_BOX("Failed to Created : CRenekton");
+		MSG_BOX("Failed to Created : CIce_Wolf");
 		Safe_Release(pInstance);
 	}
+
 	return pInstance;
 }
 
@@ -102,13 +183,16 @@ CGameObject* CRenekton::Clone(void* pArg)
 
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CRenekton");
+		MSG_BOX("Failed to Cloned : CIce_Wolf");
 		Safe_Release(pInstance);
 	}
+
 	return pInstance;
 }
 
 void CRenekton::Free()
 {
 	__super::Free();
+
+	Safe_Delete(m_pState);
 }

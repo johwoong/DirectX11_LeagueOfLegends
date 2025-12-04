@@ -159,6 +159,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Public\Alistar.h" />
+    <ClInclude Include="..\Public\AlistarIdleState.h" />
     <ClInclude Include="..\Public\Building.h" />
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
     <ClInclude Include="..\Public\Cursor_UI.h" />
@@ -169,6 +171,8 @@
     <ClInclude Include="..\Public\EzrealSkillStateE.h" />
     <ClInclude Include="..\Public\EzrealSkillStateW.h" />
     <ClInclude Include="..\Public\Projectile.h" />
+    <ClInclude Include="..\Public\RenektonIdleState.h" />
+    <ClInclude Include="..\Public\RenektonState.h" />
     <ClInclude Include="..\Public\UI_AttackRange.h" />
     <ClInclude Include="..\Public\EzrealAttackState.h" />
     <ClInclude Include="..\Public\EzrealSkillStateQ.h" />
@@ -228,6 +232,7 @@
     <ClInclude Include="..\Public\Vayne.h" />
     <ClInclude Include="..\Public\VayneIdleState.h" />
     <ClInclude Include="..\Public\VayneState.h" />
+    <ClInclude Include="AlistarState.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Vi.h" />
     <ClInclude Include="framework.h" />
@@ -237,6 +242,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Private\Alistar.cpp" />
+    <ClCompile Include="..\Private\AlistarIdleState.cpp" />
     <ClCompile Include="..\Private\Building.cpp" />
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
     <ClCompile Include="..\Private\Cursor_UI.cpp" />
@@ -247,6 +254,7 @@
     <ClCompile Include="..\Private\EzrealSkillStateE.cpp" />
     <ClCompile Include="..\Private\EzrealSkillStateW.cpp" />
     <ClCompile Include="..\Private\Projectile.cpp" />
+    <ClCompile Include="..\Private\RenektonIdleState.cpp" />
     <ClCompile Include="..\Private\UI_AttackRange.cpp" />
     <ClCompile Include="..\Private\EzrealAttackState.cpp" />
     <ClCompile Include="..\Private\EzrealSkillStateQ.cpp" />

@@ -15,7 +15,7 @@ class CPlayerState;
 class CPlayer abstract :public CActor
 { 
 public:
-	enum PLAYERID{EZREAL, RENEKTON, VI, };
+	enum PLAYERID{EZREAL, VI, };
 protected:
 	CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CPlayer(const CPlayer& rhs);

@@ -1,7 +1,6 @@
 #include "PlayerManager.h"
 #include "Champion.h"
 #include "Ezreal.h"
-#include "Renekton.h"
 #include "Vi.h"
 #include "GameInstance.h"
 #include "UI_SkillMenu.h"
@@ -53,11 +52,6 @@ HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
     pEzreal->Compute_CurrentIndex();
     pEzreal->Check_Navigation();
     m_vChampions.push_back(pEzreal);
-
-    auto pRenekton = CRenekton::Create(m_pDevice, m_pContext);
-    pRenekton->Initialize(nullptr);
-    pRenekton->Set_PlayerID(CChampion::RENEKTON);
-    m_vChampions.push_back(pRenekton);
 
     auto pVi = CVi::Create(m_pDevice, m_pContext);
     pVi->Initialize(nullptr);

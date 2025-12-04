@@ -5,7 +5,6 @@
 #include "PlayerManager.h"
 #include "PickingManager.h"
 #include "Ezreal.h"
-#include "Renekton.h"
 #include "Building.h"
 #include "PoolManager.h"
 #include "MinionManager.h"
@@ -21,6 +20,8 @@ HRESULT CLevel_GamePlay::Initialize()
 	if (FAILED(__super::Initialize()))
 		return E_FAIL;
 
+	if (FAILED(Ready_Lights()))
+		return E_FAIL;
 
 	if(FAILED(Ready_Layer_Terrian(TEXT("Layer_BackGround"))))
 		return E_FAIL;
@@ -102,6 +103,22 @@ HRESULT CLevel_GamePlay::Ready_Layer_Terrian(const _tchar* pLayerTag)
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Sky"), LEVEL_GAMEPLAY, pLayerTag, nullptr)))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Lights()
+{
+	m_pGameInstance->Clear_AllLight();
+	LIGHTDESC LightDesc;
+	LightDesc.eTYPE = LIGHTDESC::TYPE_DIRECTIONAL;
+	LightDesc.vDirection = _float4(1.f, -1.f, 1.f, 0.f);
+	LightDesc.vDiffuse = _float4(1.f, 1.f, 1.f, 1.f);
+	LightDesc.vAmbient = _float4(1.f, 1.f, 1.f, 1.f);
+	LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
+
+	if (FAILED(m_pGameInstance->Add_Light(m_pDevice, m_pContext, LightDesc)))
 		return E_FAIL;
 
 	return S_OK;

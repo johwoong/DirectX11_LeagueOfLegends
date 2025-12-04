@@ -176,13 +176,6 @@ void CIdleState::Enter()
         };
         break;
 
-    case CPlayer::RENEKTON:
-        m_vecIdleAnim = {
-            CRenekton::ANIM::IDLE1,
-            CRenekton::ANIM::IDLE2
-        };
-        break;
-
     case CPlayer::VI:
         m_vecIdleAnim = {
             CVi::ANIM::IDLE1,

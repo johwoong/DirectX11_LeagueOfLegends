@@ -20,6 +20,7 @@ public:
 
 public:
 	HRESULT Ready_Layer_Terrian(const _tchar* pLayerTag);
+	HRESULT Ready_Lights();
 	HRESULT Ready_Layer_MapObject(const _tchar* pLayerTag);
 	HRESULT Ready_Layer_Building(const _tchar* pLayerTag);
 	HRESULT Ready_Layer_Player(const _tchar* pLayerTag);
