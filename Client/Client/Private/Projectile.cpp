@@ -51,52 +51,59 @@ HRESULT CProjectile::Ready_Components(void* pArg)
         TEXT("Prototype_Component_Renderer"),
         (CComponent**)&m_pRendererCom);
 
-    // Collider
     CColider::COLLIDERDESC cDesc{};
-    cDesc.vScale = _float3(1.f, 1.f, 1.f);
+    // Collider - Sphere
+    if (m_Desc.eType == PROJ_TARGET)
+    {
+        cDesc.vScale = _float3(1.f, 1.f, 1.f);
 
-    Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC,
-        TEXT("Prototype_Component_Colider_Sphere"),
-        (CComponent**)&m_pSphereCom, &cDesc);
+        Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC,
+            TEXT("Prototype_Component_Colider_Sphere"),
+            (CComponent**)&m_pSphereCom, &cDesc);
+    }
+
+    // CColider - OBB
+    if (m_Desc.eType == PROJ_LINEAR)
+    {
+        ZeroMemory(&cDesc, sizeof(CColider::COLLIDERDESC));
+        cDesc.vScale = _float3(1.f, 1.f, 1.f);
+        if (FAILED(__super::Add_Components(TEXT("Com_OBB"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_OBB"), (CComponent**)&m_pOBBCom, &cDesc)))
+            return E_FAIL;
+    }
+
+    
 
     return S_OK;
 }
 
 void CProjectile::Update_Collider_Size_ByType()
 {
-    if (!m_pSphereCom) return;
+    if (!m_pSphereCom && !m_pOBBCom) return;
 
     // 1) 커스텀 설정이 있으면 그걸 우선 사용
     if (m_Desc.bUseCustomCollider)
     {
-        if (m_Desc.fColliderRadius > 0.f)
-            m_pSphereCom->Set_Sphere_Radius(m_Desc.fColliderRadius);
-
-        if (m_Desc.vColliderScale.x != 0.f ||
-            m_Desc.vColliderScale.y != 0.f ||
-            m_Desc.vColliderScale.z != 0.f)
+        switch (m_Desc.eType)
         {
-            m_pSphereCom->Set_Scale(m_Desc.vColliderScale);
+        case PROJ_TARGET:
+            m_pSphereCom->Set_Sphere_Radius(m_Desc.fColliderRadius);
+            if (m_Desc.vColliderScale.x != 0.f ||
+                m_Desc.vColliderScale.y != 0.f ||
+                m_Desc.vColliderScale.z != 0.f)
+            {
+                m_pSphereCom->Set_Scale(m_Desc.vColliderScale);
+            }
+            break;
+        default:
+            m_pOBBCom->Set_Sphere_Radius(m_Desc.fColliderRadius);
+            if (m_Desc.vColliderScale.x != 0.f ||
+                m_Desc.vColliderScale.y != 0.f ||
+                m_Desc.vColliderScale.z != 0.f)
+            {
+                m_pOBBCom->Set_Scale(m_Desc.vColliderScale);
+            }
+            break;
         }
-
-        return; // 타입별 기본값은 안 씀
-    }
-
-    // 2) 기본 타입별 설정
-    switch (m_Desc.eType)
-    {
-    case PROJ_TARGET:  // 평타용
-        m_pSphereCom->Set_Scale(_float3(0.003f, 0.003f, 0.003f));
-        break;
-
-    case PROJ_LINEAR:  // 이즈리얼 Q
-        m_pSphereCom->Set_Sphere_Radius(1.f);
-        m_pSphereCom->Set_Scale(_float3(0.01f, 0.01f, 0.4f));
-        break;
-
-    case PROJ_AREA:    // 궁극기 범위기
-        m_pSphereCom->Set_Scale(_float3(1.f, 1.f, 1.f));
-        break;
     }
 }
 

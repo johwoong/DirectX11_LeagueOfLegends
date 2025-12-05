@@ -33,14 +33,32 @@ HRESULT CPlayer::Initialize(void* pArg)
 	if (FAILED(__super::Add_Components(TEXT("Com_Navigation"), LEVEL_STATIC, TEXT("Prototype_Component_ChampionNavigation"), (CComponent**)&m_pNavigationCom, &NaviDesc)))
 		return E_FAIL;
 
+	HANDLE hFile = 0;
+	_ulong dwByte = 0;
 
+	NONANIMDESC PlayerDeSC;
+	_uint iNum = 0;
+
+	hFile = CreateFile(TEXT("../../../Bin/Data/PositionData/PlayerSpawnPos.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (0 == hFile)
+		return E_FAIL;
+
+	ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+
+	for (_uint i = 0; i < iNum; ++i)
+	{
+		ReadFile(hFile, &(PlayerDeSC), sizeof(NONANIMDESC), &dwByte, nullptr);
+	}
+	CloseHandle(hFile);
+
+	
 
 	// 정상 코드
-	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 4.f);
-	vPos = XMVectorSetX(vPos, XMVectorGetX(vPos) - 2.f);
+	_vector vPos = XMLoadFloat3(&PlayerDeSC.vPosition);
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 
+
+	m_vSpawnPos = vPos;
 	// 반드시 셀 기준 업데이트
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
 
@@ -129,6 +147,11 @@ void CPlayer::Late_Update_State(_float fTimeDelta)
 	CPlayerState* pNewState = m_pPlayerState->Late_Update(fTimeDelta);
 	if (pNewState)
 		m_pPlayerState = m_pPlayerState->ChangeState(m_pPlayerState, pNewState);
+}
+
+void CPlayer::Respawon()
+{
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, m_vSpawnPos);
 }
 
 void CPlayer::Check_Navigation()

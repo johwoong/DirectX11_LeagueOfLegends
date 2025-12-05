@@ -11,6 +11,11 @@ public:
         JOKE, LAUGH, RUN, Q,E, TAUNT, Q_ATTACK, Q_IDLE, Q_RUN, R_ATTACK, RQ_IDLE, R_RUN,
         R_THREE_ATTACK, R_IDLE, IDLE
     };
+	
+	enum LINE_TYPE
+	{
+		TOP, MID, BOTTOM,
+	};
 
 public:
 	CModel* Get_Model() { return m_pModelCom; }
@@ -47,6 +52,7 @@ private:
 
 private:
 	class CVayneState* m_pState = nullptr;
+	LINE_TYPE m_eLineType = LINE_TYPE::BOTTOM;
 
 
 public:

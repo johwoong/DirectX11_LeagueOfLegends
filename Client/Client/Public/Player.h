@@ -53,6 +53,10 @@ public: // State
 	void Update_State(_float fTimeDelta);
 	void Late_Update_State(_float fTimeDelta);
 
+public: // Behavior
+	void Respawon();
+	 
+
 public: // Navigation
 	void Check_Navigation();
 	void Compute_CurrentIndex();
@@ -73,6 +77,7 @@ protected: // 챔피언 교체
 protected: // 플레이어 이동
 	_bool m_bMoving = false;
 	_float3 m_vTargetPos = { 0.f, 0.f, 0.f };
+	_vector m_vSpawnPos = { 0.f, 0.f, 0.f };
 
 protected: // 애니메이션 교체 관련
  	bool m_bPlayIdleQ = false;

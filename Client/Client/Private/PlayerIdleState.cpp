@@ -8,6 +8,7 @@
 #include "EzrealSkillStateW.h"
 #include "EzrealSkillStateE.h"
 #include "EzrealSkillStateR.h"
+#include "PlayerRecallState.h"
 
 using namespace Player;
 
@@ -55,6 +56,11 @@ CPlayerState* CIdleState::HandleInput()
 
         if (GI->Key_Down(DIK_3))
             return new CPlayerEmotionState(m_pOwner, CPlayerEmotionState::EMOTE_TAUNT);
+    }
+
+    if (GI->Key_Pressing(DIK_B))
+    {
+        return new CPlayerRecallState(m_pOwner);
     }
 
 

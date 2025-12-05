@@ -25,6 +25,7 @@ CVayneState* CIdleState::LateUpdate(_float fTimeDelta)
 {
 	m_pOwner->Check_Navigation();
 	m_fTimeDeltaAcc += fTimeDelta;
+
 	return nullptr;
 }
 
@@ -32,8 +33,11 @@ CVayneState* CIdleState::LateUpdate(_float fTimeDelta)
 void CIdleState::Enter()
 {
 	m_eStateId = STATE_ID::STATE_IDLE;
+	
 
-	m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVayne::ANIM::IDLE3);
+	m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVayne::ANIM::IDLE);
+
+
 }
 
 void CIdleState::Exit()

@@ -694,7 +694,7 @@ _int CMinion::Find_ForwardLaneNodeIndex()
     vMyPos = XMVectorSetY(vMyPos, 0.f);
 
     const int pathSize = (int)path.size();
-    const int step = pMgr->GetLaneStep(m_eTeam); // BLUE: +1, RED: -1 이런식일 거라 가정
+    const int step = pMgr->GetLaneStep(m_eTeam); 
 
     float bestDistSq = FLT_MAX;
     int   bestIdx = m_iLaneNodeIndex;

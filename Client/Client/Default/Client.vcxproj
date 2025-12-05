@@ -191,6 +191,7 @@
     <ClInclude Include="..\Public\PlayerRecallState.h" />
     <ClInclude Include="..\Public\PoolManager.h" />
     <ClInclude Include="..\Public\StoreNpc.h" />
+    <ClInclude Include="..\Public\UI_Champion_HpBar.h" />
     <ClInclude Include="..\Public\UI_GameInfo.h" />
     <ClInclude Include="..\Public\UI_ChampionIcon.h" />
     <ClInclude Include="..\Public\UI_ExpBar.h" />
@@ -231,6 +232,7 @@
     <ClInclude Include="..\Public\UI_Manager.h" />
     <ClInclude Include="..\Public\Vayne.h" />
     <ClInclude Include="..\Public\VayneIdleState.h" />
+    <ClInclude Include="..\Public\VayneMoveState.h" />
     <ClInclude Include="..\Public\VayneState.h" />
     <ClInclude Include="AlistarState.h" />
     <ClInclude Include="Client.h" />
@@ -272,6 +274,7 @@
     <ClCompile Include="..\Private\PlayerRecallState.cpp" />
     <ClCompile Include="..\Private\PoolManager.cpp" />
     <ClCompile Include="..\Private\StoreNpc.cpp" />
+    <ClCompile Include="..\Private\UI_Champion_HpBar.cpp" />
     <ClCompile Include="..\Private\UI_GameInfo.cpp" />
     <ClCompile Include="..\Private\UI_ChampionIcon.cpp" />
     <ClCompile Include="..\Private\UI_ExpBar.cpp" />
@@ -311,6 +314,7 @@
     <ClCompile Include="..\Private\UI_Manager.cpp" />
     <ClCompile Include="..\Private\Vayne.cpp" />
     <ClCompile Include="..\Private\VayneIdleState.cpp" />
+    <ClCompile Include="..\Private\VayneMoveState.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Vi.cpp" />
     <ClCompile Include="stdafx.cpp" />

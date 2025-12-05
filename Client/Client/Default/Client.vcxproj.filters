@@ -187,9 +187,6 @@
     <ClInclude Include="..\Public\VayneState.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\VayneIdleState.h">
-      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\CursorManager.h">
       <Filter>06. CursorManager</Filter>
     </ClInclude>
@@ -234,6 +231,15 @@
     </ClInclude>
     <ClInclude Include="..\Public\AlistarIdleState.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VayneIdleState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VayneMoveState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_Champion_HpBar.h">
+      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Champion</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -446,6 +452,12 @@
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Alistar\State">
       <UniqueIdentifier>{8daff700-06fd-4231-8238-e67750ce4e75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar\Build">
+      <UniqueIdentifier>{d2139c84-8b60-421a-851a-5beb0cb97aac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar\Champion">
+      <UniqueIdentifier>{1d4879bb-f188-4294-864b-b07f9d775582}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -654,6 +666,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\AlistarIdleState.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VayneMoveState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_Champion_HpBar.cpp">
+      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Champion</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
