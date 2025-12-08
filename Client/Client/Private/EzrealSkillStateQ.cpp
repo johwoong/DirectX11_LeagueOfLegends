@@ -69,7 +69,8 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
             desc.fDamage = 80.f;
 
             desc.bUseCustomCollider = true;
-            desc.vColliderScale = _float3(0.4f, 0.01f, 0.5f); // 원하는 막대기 길이/굵기
+            desc.vColliderScale = _float3(0.2f, 0.5f, 1.f); 
+            desc.eSkillTag = CProjectile::SKILL_EZREAL_Q; 
 
             GI->Add_GameObject(
                 TEXT("Prototype_GameObject_Projectile"),

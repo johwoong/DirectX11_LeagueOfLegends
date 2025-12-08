@@ -88,6 +88,7 @@ public:
     _float Get_AttackTimer()    const { return m_fAttackTimer; }
     _float Get_AttackCoolTime() const { return m_fAttackCoolTime; }
     void   Reset_AttackTimer() { m_fAttackTimer = 0.f; }
+    float Get_DesiredAttackDist(CActor* pTarget) const;
 
 public:
     void Set_HpBar(class CMinion_HpBar* pBar) { m_pHpBar = pBar; }
@@ -120,9 +121,6 @@ public: // Navigation logic
     virtual void Compute_CurrentIndex(LEVEL eLevel);
     void Compute_CurrentIndex();
 
-public:
-    // Colider
-    void Check_Collision(_float fTimeDelta);
 public: // Pool reuse
     virtual void ReUse_Setting(void* pArg) override;
 

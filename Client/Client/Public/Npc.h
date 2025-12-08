@@ -1,7 +1,7 @@
 #pragma once
 #include "Building.h"
-class CStoreNpc :
-    public CBuilding
+class CNpc :
+    public CActor
 {
 public:
 	enum TEAMTYPE { RED, BLUE };
@@ -9,9 +9,9 @@ public:
 	enum STATE { IDLE, SPAWN };
 
 private:
-	CStoreNpc(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CStoreNpc(const CStoreNpc& rhs);
-	virtual ~CStoreNpc() = default;
+	CNpc(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CNpc(const CNpc& rhs);
+	virtual ~CNpc() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype();
@@ -31,7 +31,7 @@ private:
 	_uint m_eState = IDLE;
 
 public:
-	static CStoreNpc* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CNpc* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr);
 	virtual void Free() override;
 };

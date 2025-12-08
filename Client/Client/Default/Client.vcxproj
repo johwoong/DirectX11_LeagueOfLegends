@@ -190,8 +190,9 @@
     <ClInclude Include="..\Public\PlayerEmotionState.h" />
     <ClInclude Include="..\Public\PlayerRecallState.h" />
     <ClInclude Include="..\Public\PoolManager.h" />
-    <ClInclude Include="..\Public\StoreNpc.h" />
-    <ClInclude Include="..\Public\UI_Champion_HpBar.h" />
+    <ClInclude Include="..\Public\Npc.h" />
+    <ClInclude Include="..\Public\UI_Building_HpBar.h" />
+    <ClInclude Include="..\Public\UI_Enemy_HpBar.h" />
     <ClInclude Include="..\Public\UI_GameInfo.h" />
     <ClInclude Include="..\Public\UI_ChampionIcon.h" />
     <ClInclude Include="..\Public\UI_ExpBar.h" />
@@ -199,9 +200,9 @@
     <ClInclude Include="..\Public\UI_Minion_HpBar.h" />
     <ClInclude Include="..\Public\UI_SkillImage.h" />
     <ClInclude Include="..\Public\UI_SkillMenu.h" />
-    <ClInclude Include="..\Public\Inhibitor.h" />
-    <ClInclude Include="..\Public\Nexus.h" />
     <ClInclude Include="..\Public\Turret.h" />
+    <ClInclude Include="..\Public\Nexus.h" />
+    <ClInclude Include="..\Public\Inhibitor.h" />
     <ClInclude Include="..\Public\Ezreal.h" />
     <ClInclude Include="..\Public\PickingManager.h" />
     <ClInclude Include="..\Public\Player.h" />
@@ -273,8 +274,9 @@
     <ClCompile Include="..\Private\PlayerEmotionState.cpp" />
     <ClCompile Include="..\Private\PlayerRecallState.cpp" />
     <ClCompile Include="..\Private\PoolManager.cpp" />
-    <ClCompile Include="..\Private\StoreNpc.cpp" />
-    <ClCompile Include="..\Private\UI_Champion_HpBar.cpp" />
+    <ClCompile Include="..\Private\Npc.cpp" />
+    <ClCompile Include="..\Private\UI_Building_HpBar.cpp" />
+    <ClCompile Include="..\Private\UI_Enemy_HpBar.cpp" />
     <ClCompile Include="..\Private\UI_GameInfo.cpp" />
     <ClCompile Include="..\Private\UI_ChampionIcon.cpp" />
     <ClCompile Include="..\Private\UI_ExpBar.cpp" />
@@ -282,9 +284,9 @@
     <ClCompile Include="..\Private\UI_Minion_HpBar.cpp" />
     <ClCompile Include="..\Private\UI_SkillImage.cpp" />
     <ClCompile Include="..\Private\UI_SkillMenu.cpp" />
-    <ClCompile Include="..\Private\Inhibitor.cpp" />
-    <ClCompile Include="..\Private\Nexus.cpp" />
     <ClCompile Include="..\Private\Turret.cpp" />
+    <ClCompile Include="..\Private\Nexus.cpp" />
+    <ClCompile Include="..\Private\Inhibitor.cpp" />
     <ClCompile Include="..\Private\Ezreal.cpp" />
     <ClCompile Include="..\Private\PickingManager.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />

@@ -18,6 +18,9 @@
 #include "UI_ItemInfo.h"
 #include "UI_AttackRange.h"
 #include "UI_Minion_HpBar.h"
+#include "UI_Enemy_HpBar.h"
+#include "UI_Building_HpBar.h"
+
 
 // Champion
 #include "Ezreal.h"
@@ -33,7 +36,6 @@
 #include "Nexus.h"
 #include "Turret.h"
 #include "Inhibitor.h"
-#include "StoreNpc.h"
 
 // Minion
 #include "Minion_Melee.h"
@@ -157,15 +159,17 @@ HRESULT CLoader::Loading_For_Prtotype()
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_UI_MinionHpBar"),
 		CMinion_HpBar::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_EnemyHpBar"),
+		CEnemy_HpBar::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_BuildingHpBar"),
+		CBuilding_HpBar::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 #pragma endregion 
 #pragma region Champion
 	/*For.Prototype_GameObject_Champion*/
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Ezreal"),
 		CEzreal::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	/*For.Prototype_GameObject_Champion*/
-	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Vi"),
-		CVi::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 #pragma endregion
@@ -189,13 +193,10 @@ HRESULT CLoader::Loading_For_Prtotype()
 		CNexus::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Inhibitor"),
-		CTurret::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Turret"),
 		CInhibitor::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Npc"),
-		CStoreNpc::Create(m_pDevice, m_pContext))))
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Turret"),
+		CTurret::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 #pragma endregion Building
 
@@ -306,10 +307,10 @@ HRESULT CLoader::Loading_For_GamePlay()
 	m_fProgress = 70.f;
 	// ³Ø¼­½º
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Blue_NonAnim"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Nexus_Blue/Nexus_Blue.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Nexus_Blue/Nexus_Blue.dat"))))
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Nexus_Red_NonAnim"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/NonAnim/Champion/Buildings/Nexus_Red/Nexus_Red.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Buildings/Nexus_Red/Nexus_Red.dat"))))
 		return E_FAIL;
 	// Æ÷Å¾
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Turret_Blue_NonAnim"),
@@ -450,6 +451,25 @@ HRESULT CLoader::Loading_For_GameUI()
 	// Frame
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Minion_Minion_HpBar_Frame"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/Minion_HpBarFrame.dds"), 1))))
+		return E_FAIL;
+	// Champion Frame
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Champion_HpBar_Frame"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/ChampionHpBarFrame.dds"), 1))))
+		return E_FAIL;
+
+	// Enemy HpBar
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Enemy_HpBar"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/EnemyHpBar.dds"), 1))))
+		return E_FAIL;
+
+	// Building Frame
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Building_HpBar_Frame"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/BuildingHpBarFrame.dds"), 1))))
+		return E_FAIL;
+
+	// Builindg HpBar
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Building_HpBar"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/BuildingHpBar.dds"), 1))))
 		return E_FAIL;
 #pragma endregion
 	return S_OK;

@@ -45,7 +45,7 @@ public:
 	_bool Between_Keyframe(char* pChannelName, _uint iKeyframeLower, _uint iKeyframeUpper);
 
 public:
-	vector<class CChannel*>	Get_Channels(void) { return m_Channels; }
+	const vector<class CChannel*>& Get_Channels(void) const { return m_Channels; }
 	void	Set_TimeReset();
 	void Reset(void);
 	void Reset_ChannelKeyFrame(void);

@@ -163,6 +163,50 @@ _bool CCollision_Manager::CollisionwithGroupCollider(COLLISION_GROUP CollisionGr
 	return false;
 }
 
+_bool CCollision_Manager::CollisionwithGroup_All(COLLISION_GROUP CollisionGroup, CColider* pCollider, std::vector<CActor*>* pOut, COLLIDER_TYPE eType)
+{
+	if (!pCollider || !pOut)
+		return false;
+
+	pOut->clear();
+	_bool bHit = false;
+
+	for (auto& iter : m_GameObjects[CollisionGroup])
+	{
+		if (iter == nullptr || iter->Get_Collider() == pCollider)
+			continue;
+
+		CColider* pTargetCollider = nullptr;
+
+		switch (eType)
+		{
+		case Client::CCollision_Manager::COLLIDER_AABB:
+			pTargetCollider = iter->Get_AABBCollider();
+			break;
+		case Client::CCollision_Manager::COLLIDER_OBB:
+			pTargetCollider = iter->Get_OBBCollider();
+			break;
+		case Client::CCollision_Manager::COLLIDER_SPHERE:
+			pTargetCollider = iter->Get_SphereCollider();
+			break;
+		case Client::CCollision_Manager::COLLIDER_END:
+			pTargetCollider = iter->Get_Collider();
+			break;
+		}
+
+		if (nullptr == pTargetCollider)
+			continue;
+
+		if (pCollider->Collision(pTargetCollider))
+		{
+			pOut->push_back(iter);
+			bHit = true;   // ?? 여기서는 return 안 하고 계속 탐색
+		}
+	}
+
+	return bHit; // 하나라도 맞았는지만 리턴
+}
+
 _bool CCollision_Manager::CollisionwithGroup(COLLISION_GROUP SourGroup, COLLISION_GROUP DestGroup, CActor** outSour, CActor** outDest)
 {
 	for (auto& Sour : m_GameObjects[SourGroup])
@@ -176,6 +220,8 @@ _bool CCollision_Manager::CollisionwithGroup(COLLISION_GROUP SourGroup, COLLISIO
 			CColider* pDestCollider = Dest->Get_Collider();
 			if (pDestCollider == nullptr || Dest == Sour)
 				continue;
+
+
 
 			if (pDestCollider->Collision(pSourCollider))
 			{

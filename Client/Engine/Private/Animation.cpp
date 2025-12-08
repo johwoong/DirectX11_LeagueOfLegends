@@ -183,7 +183,7 @@ _bool CAnimation::Invalidate_TransformationMatrix(_float fTimeDelta, _bool isLoo
 _bool CAnimation::Animation_Linear_Interpolation(_float fTimeDelta, CAnimation* NextAnim, const char* pBoneName)
 {
 	/* 현재 재생중인 시간. */
-	vector<CChannel*> NextAnimChannels = NextAnim->Get_Channels();
+	const auto& NextAnimChannels = NextAnim->Get_Channels();
 
 	m_bLinearFinished = false;
 

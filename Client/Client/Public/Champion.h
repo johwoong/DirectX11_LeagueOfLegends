@@ -14,13 +14,13 @@ class CChampion abstract : public CPlayer
 		// 기본 능력치
 		float Hp; // 체력
 		float HpPerLevel; // 레벨당 체력 증가량
-		
+
 		float Mp; // 마나
 		float MpPerLevel; // 레벨당 마나 증가량
 
 		float MoveSpeed; // 이동속도
 		float AttackRange; // 공격 사거리
-		
+
 		// ---------- 공격 ------------
 		float AttackDamage; // 기본공격력
 		float AttackDamagePerLevel; // 레벨당 공격력 증가량
@@ -30,11 +30,11 @@ class CChampion abstract : public CPlayer
 
 		float Critical;	// 치명타 확률
 		float CritDamage; // 치명타 피해량
-		
+
 		// -----------방어 ------------
 		float Armor; // 방어력
 		float ArmorPerLevel;
-		
+
 		// ------- 회복 관련 ---------
 		float HPRegen; // 초당 체력 재생
 		float HpRegenPerLevel; // 초당 체력 재생 증가량

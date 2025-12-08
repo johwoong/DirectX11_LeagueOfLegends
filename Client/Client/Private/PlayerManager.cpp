@@ -53,10 +53,6 @@ HRESULT CPlayerManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* p
     pEzreal->Check_Navigation();
     m_vChampions.push_back(pEzreal);
 
-    auto pVi = CVi::Create(m_pDevice, m_pContext);
-    pVi->Initialize(nullptr);
-    pVi->Set_PlayerID(CChampion::VI);
-    m_vChampions.push_back(pVi);
 
     m_iCurrentChampionIndex = 0;
     m_pActivePlayer = pEzreal;

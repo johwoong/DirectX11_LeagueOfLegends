@@ -48,7 +48,6 @@ HRESULT CUI_SkillMenu::Initialize(void* pArg)
 
 		if (pObj)
 		{
-			pObj->AddRef();
 			m_pSkillImages.push_back(static_cast<CUI_SkillImage*>(pObj));
 		}
 	}
@@ -177,9 +176,6 @@ CGameObject* CUI_SkillMenu::Clone(void* pArg)
 
 void CUI_SkillMenu::Free()
 {
-	for (auto& pImg : m_pSkillImages)
-		Safe_Release(pImg);
-
 	m_pSkillImages.clear();
 	__super::Free();
 }

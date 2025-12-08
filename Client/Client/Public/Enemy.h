@@ -20,7 +20,8 @@ public:
 		int iLevel; // 현재 레벨
 
 		// 기본 능력치
-		float Hp; // 체력
+		float Hp;        // 현재 HP
+		float MaxHp;     // 최대 HP  ← 추가
 		float HpPerLevel; // 레벨당 체력 증가량
 
 		float Mp; // 마나
@@ -76,6 +77,8 @@ public:
 	ENEMY_TYPE Get_EnemyType(void) { return m_eEnemyType; }
 	STATS Get_Stats() { return m_tStats; }
 	CNavigation* Get_Navigation(void) { return m_pNavigationCom; }
+	void Set_HpBar(class CEnemy_HpBar* pBar) { m_pHpBar = pBar; }
+	class CEnemy_HpBar* Get_HpBar() { return m_pHpBar; }
 
 public:
 	virtual void AI_Behaviour(_float fTimeDelta) {};
@@ -89,8 +92,9 @@ public:
 protected:
 	virtual HRESULT SetUp_ShaderResources();
 	virtual HRESULT SetUp_ShaderID();
-
-
+public: // Damage
+	virtual _int Take_Damage(int iDamage, CActor* DamageCauser) override;
+	void Mark_Dead();
 
 protected:
 	virtual HRESULT Ready_Components(void* pArg = nullptr)	PURE;
@@ -101,6 +105,7 @@ protected:
 	STATS m_tStats;
 	ENEMY_TYPE	m_eEnemyType = ENEMY_END;
 	_float m_fTimeDeltaAcc = 0.f;
+	CEnemy_HpBar* m_pHpBar = nullptr; // Hp Bar
 protected: /* For.Components */
 	CModel* m_pModelCom = nullptr;
 	CNavigation* m_pNavigationCom = nullptr;

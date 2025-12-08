@@ -36,6 +36,11 @@ CNavigation::CNavigation(const CNavigation& rhs)
 {
     for (auto& pCell : m_Cells)
         Safe_AddRef(pCell);
+
+#ifdef _DEBUG
+    if (m_pShader)
+        Safe_AddRef(m_pShader);  
+#endif
 }
 
 HRESULT CNavigation::Initialize_Prototype(const _tchar* pNavigationData)

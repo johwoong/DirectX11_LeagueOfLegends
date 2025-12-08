@@ -129,6 +129,4 @@ CColider* CActor::Get_Collider()
 void CActor::Free()
 {
 	__super::Free();
-	Safe_Release(m_pAABBCom);
-	Safe_Release(m_pOBBCom);
 }

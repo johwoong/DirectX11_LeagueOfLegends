@@ -264,8 +264,8 @@ _bool CModel::Play_Animation(_float fTimeDelta, _bool isLoop, const char* pBoneN
 
         m_fLinearCurrentTime += fTimeDelta;
 
-        vector<CChannel*> PreChannels = m_Animations[m_iPreAnimIndex]->Get_Channels();
-        vector<CChannel*> CurChannels = m_Animations[m_iCurrentAnimIndex]->Get_Channels();
+        const auto& PreChannels = m_Animations[m_iPreAnimIndex]->Get_Channels();
+        const auto& CurChannels = m_Animations[m_iCurrentAnimIndex]->Get_Channels();
 
         for (_int i = 0; i < PreChannels.size(); ++i)
         {
@@ -552,3 +552,4 @@ void CModel::Free()
             Safe_Release(mat.pMaterials[i]);
     m_Materials.clear();
 }
+ 

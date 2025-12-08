@@ -9,6 +9,8 @@ CPlayerRecallState::CPlayerRecallState(CPlayer* pPlayer)
 {
     m_pOwner = pPlayer;
     m_ePlayerID = m_pOwner->Get_PlayerID();
+    m_bIsRecall = false;
+    m_bIsAnimationFinished = false;
 }
 
 CPlayerState* CPlayerRecallState::HandleInput(void)
@@ -80,6 +82,11 @@ void CPlayerRecallState::Enter(void)
 {
     __super::Enter();
     m_eState = STATE_RECALL;
+
+    // 들어갈 때도 깔끔하게 리셋
+    m_bIsRecall = false;
+    m_bIsAnimationFinished = false;
+
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RECALL);
 }
 

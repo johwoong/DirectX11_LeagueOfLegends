@@ -27,11 +27,29 @@ HRESULT CProjectile::Initialize(void* pArg)
 
     Update_Collider_Size_ByType();
 
+    // 1) 위치 설정
     m_pTransformCom->Set_State(
         CTransform::STATE_TRANSLATION,
         m_Desc.vStartPos
     );
 
+    // 2) === 직선형 스킬이면 발사 방향으로 회전 세팅 ===
+    if (m_Desc.eType == PROJ_LINEAR)
+    {
+        _vector vDir = XMLoadFloat3(&m_Desc.vDir);
+        vDir = XMVector3Normalize(vDir);
+        _vector vLook = vDir;         
+
+        _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+        _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+        vUp = XMVector3Cross(vLook, vRight);
+
+        m_pTransformCom->Set_State(CTransform::STATE_RIGHT, vRight);
+        m_pTransformCom->Set_State(CTransform::STATE_UP, vUp);
+        m_pTransformCom->Set_State(CTransform::STATE_LOOK, vLook);
+    }
+
+    CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_PROJECT, this);
     return S_OK;
 }
 
@@ -52,59 +70,89 @@ HRESULT CProjectile::Ready_Components(void* pArg)
         (CComponent**)&m_pRendererCom);
 
     CColider::COLLIDERDESC cDesc{};
-    // Collider - Sphere
+
+    // ====== 1) 평타(PROJ_TARGET) → Sphere ======
     if (m_Desc.eType == PROJ_TARGET)
     {
-        cDesc.vScale = _float3(1.f, 1.f, 1.f);
+        // 기본 크기
+        cDesc.vScale = _float3(0.004f, 0.004f, 0.004f);
+
+        // 커스텀 콜라이더 쓰면 desc 값 덮어쓰기
+        if (m_Desc.bUseCustomCollider)
+        {
+            if (m_Desc.vColliderScale.x != 0.f ||
+                m_Desc.vColliderScale.y != 0.f ||
+                m_Desc.vColliderScale.z != 0.f)
+            {
+                cDesc.vScale = m_Desc.vColliderScale;
+            }
+        }
+
+        // ★ 회전 / 위치 오프셋 적용
+        cDesc.vRotation = m_Desc.vColliderRotation;
+        cDesc.vPosition = m_Desc.vColliderOffset;
 
         Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC,
             TEXT("Prototype_Component_Colider_Sphere"),
             (CComponent**)&m_pSphereCom, &cDesc);
     }
 
-    // CColider - OBB
+    // ====== 2) 직선 스킬(PROJ_LINEAR) → OBB ======
     if (m_Desc.eType == PROJ_LINEAR)
     {
         ZeroMemory(&cDesc, sizeof(CColider::COLLIDERDESC));
-        cDesc.vScale = _float3(1.f, 1.f, 1.f);
-        if (FAILED(__super::Add_Components(TEXT("Com_OBB"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_OBB"), (CComponent**)&m_pOBBCom, &cDesc)))
+
+        // 크기
+        if (m_Desc.bUseCustomCollider &&
+            (m_Desc.vColliderScale.x != 0.f ||
+                m_Desc.vColliderScale.y != 0.f ||
+                m_Desc.vColliderScale.z != 0.f))
+        {
+            cDesc.vScale = m_Desc.vColliderScale;
+        }
+        else
+        {
+            cDesc.vScale = _float3(1.f, 1.f, 1.f);
+        }
+
+        // ★ 회전 / 위치 오프셋 적용
+        cDesc.vRotation = m_Desc.vColliderRotation;  // 로컬 회전
+        cDesc.vPosition = m_Desc.vColliderOffset;    // 로컬 위치
+
+        if (FAILED(__super::Add_Components(
+            TEXT("Com_OBB"), LEVEL_STATIC,
+            TEXT("Prototype_Component_Colider_OBB"),
+            (CComponent**)&m_pOBBCom, &cDesc)))
             return E_FAIL;
     }
-
-    
 
     return S_OK;
 }
 
 void CProjectile::Update_Collider_Size_ByType()
 {
-    if (!m_pSphereCom && !m_pOBBCom) return;
+    // 콜라이더 없으면 패스
+    if (!m_pSphereCom && !m_pOBBCom)
+        return;
 
-    // 1) 커스텀 설정이 있으면 그걸 우선 사용
-    if (m_Desc.bUseCustomCollider)
+    // ====== 평타 전용 커스텀 ======
+    if (m_Desc.eType == PROJ_TARGET && m_pSphereCom)
     {
-        switch (m_Desc.eType)
-        {
-        case PROJ_TARGET:
+        if (!m_Desc.bUseCustomCollider)
+            return;
+
+        if (m_Desc.fColliderRadius > 0.f)
             m_pSphereCom->Set_Sphere_Radius(m_Desc.fColliderRadius);
-            if (m_Desc.vColliderScale.x != 0.f ||
-                m_Desc.vColliderScale.y != 0.f ||
-                m_Desc.vColliderScale.z != 0.f)
-            {
-                m_pSphereCom->Set_Scale(m_Desc.vColliderScale);
-            }
-            break;
-        default:
-            m_pOBBCom->Set_Sphere_Radius(m_Desc.fColliderRadius);
-            if (m_Desc.vColliderScale.x != 0.f ||
-                m_Desc.vColliderScale.y != 0.f ||
-                m_Desc.vColliderScale.z != 0.f)
-            {
-                m_pOBBCom->Set_Scale(m_Desc.vColliderScale);
-            }
-            break;
+
+        if (m_Desc.vColliderScale.x != 0.f ||
+            m_Desc.vColliderScale.y != 0.f ||
+            m_Desc.vColliderScale.z != 0.f)
+        {
+            m_pSphereCom->Set_Scale(m_Desc.vColliderScale);
         }
     }
+
+    // PROJ_LINEAR는 Ready_Components에서 이미 크기 적용해버렸으니까 여기선 안 만져도 됨.
 }
 
 int CProjectile::Update(_float fDeltaTime)
@@ -160,45 +208,154 @@ void CProjectile::Move_Linear(_float dt)
 
 void CProjectile::Check_Hit()
 {
-    if (!m_pSphereCom) return; CActor* pOwnerActor = dynamic_cast<CActor*>(m_Desc.pOwner);
-    if (m_Desc.eType == PROJ_TARGET) 
+    CActor* pOwnerActor = dynamic_cast<CActor*>(m_Desc.pOwner);
+    if (!pOwnerActor)
+        return;
+
+    // ================== 1) 타겟 추적형 평타 ==================
+    if (m_Desc.eType == PROJ_TARGET)
     {
+        if (!m_pSphereCom)
+            return;
+
         CActor* pTargetActor = dynamic_cast<CActor*>(m_Desc.pTarget);
-        if (!pTargetActor) return;
+        if (!pTargetActor)
+            return;
+
         if (pTargetActor->Get_Dead())
-        { m_bDead = true; return; }
+        {
+            m_bDead = true;
+            return;
+        }
+
         CColider* pTargetCol = pTargetActor->Get_Collider();
-        if (!pTargetCol) return;
+        if (!pTargetCol)
+            return;
+
         if (m_pSphereCom->Collision(pTargetCol))
-        { 
+        {
             pTargetActor->Take_Damage(static_cast<int>(m_Desc.fDamage), pOwnerActor);
             m_bDead = true;
         }
-        return;
-    } // ================== 2) 직선 스킬샷 (Q / R) ==================
-    if (m_Desc.eType == PROJ_LINEAR) 
-    {
-    
-        auto& group = CCollision_Manager::GetInstance()->Get_CollisionGroup( CCollision_Manager::COLLISION_MINION);
-        CChampion* pOwnerChamp = dynamic_cast<CChampion*>(pOwnerActor); 
-        for (auto obj : group) 
-        { 
-            CActor* pTarget = dynamic_cast<CActor*>(obj);
-            if (!pTarget || pTarget->Get_Dead())
-                continue;
-            if (CMinion* pMin = dynamic_cast<CMinion*>(pTarget)) 
-            {
-                if (pMin->Get_Team() == TEAM_BLUE) continue;
-            }
-            CColider* pTargetCol = pTarget->Get_Collider();
-            if (!pTargetCol)
-                continue;
-            if (m_pSphereCom->Collision(pTargetCol))
-            {
-                pTarget->Take_Damage(static_cast<int>(m_Desc.fDamage), pOwnerActor);
-            }
-        }
 
+        return;
+    }
+
+    if (m_Desc.eType == PROJ_LINEAR)
+    {
+        CActor* pTargetActor = nullptr;
+        bool bHit = false;
+
+        switch (m_Desc.eSkillTag)
+        {
+        case SKILL_EZREAL_Q:
+        {
+            // 1) Enemy 먼저 체크
+            if (CCollision_Manager::GetInstance()->CollisionwithGroup(
+                CCollision_Manager::COLLISION_ENEMY,
+                m_pOBBCom,
+                &pTargetActor))
+            {
+                bHit = true;
+            }
+
+            // 2) 아직 안 맞았으면 Minion 그룹도 체크
+            if (!bHit && CCollision_Manager::GetInstance()->CollisionwithGroup(
+                CCollision_Manager::COLLISION_MINION,
+                m_pOBBCom,
+                &pTargetActor))
+            {
+                if (dynamic_cast<CMinion*>(pTargetActor)->Get_Team() == TEAM_BLUE)
+                    return;
+
+                bHit = true;
+            }
+
+            if (bHit && pTargetActor)
+            {
+                // 혹시라도 자기 자신이면 무시
+                if (pTargetActor == pOwnerActor)
+                    return;
+
+                pTargetActor->Take_Damage(m_Desc.fDamage, m_Desc.pOwner);
+                m_bDead = true;
+            }
+
+            break;
+        }
+        case SKILL_EZREAL_W:
+            // 1) Enemy 먼저 체크
+            if (CCollision_Manager::GetInstance()->CollisionwithGroup(
+                CCollision_Manager::COLLISION_ENEMY,
+                m_pOBBCom,
+                &pTargetActor))
+            {
+                bHit = true;
+            }
+            if (bHit && pTargetActor)
+            {
+                // 혹시라도 자기 자신이면 무시
+                if (pTargetActor == pOwnerActor)
+                    return;
+                m_bDead = true;
+            }
+            break;
+
+        case SKILL_EZREAL_R:
+        {
+            CCollision_Manager* pCM = CCollision_Manager::GetInstance();
+
+            std::vector<CActor*> vHits;
+            std::vector<CActor*> vTemp;
+
+            // Enemy
+            if (pCM->CollisionwithGroup_All(
+                CCollision_Manager::COLLISION_ENEMY,
+                m_pOBBCom,
+                &vTemp))
+            {
+                vHits.insert(vHits.end(), vTemp.begin(), vTemp.end());
+            }
+
+            // Minion
+            vTemp.clear();
+            if (pCM->CollisionwithGroup_All(
+                CCollision_Manager::COLLISION_MINION,
+                m_pOBBCom,
+                &vTemp))
+            {
+                vHits.insert(vHits.end(), vTemp.begin(), vTemp.end());
+            }
+
+            // 맞은 애들 전부 처리
+            for (CActor* pActor : vHits)
+            {
+                if (!pActor) continue;
+                if (pActor == pOwnerActor) continue; // 자기 자신 제외
+
+                // 이미 맞은 애면 또 때리지 않기
+                if (std::find(m_HitActors.begin(), m_HitActors.end(), pActor) != m_HitActors.end())
+                    continue;
+
+                // 아군 미니언이면 제외 (너 팀 기준 맞게 수정)
+                if (auto pMinion = dynamic_cast<CMinion*>(pActor))
+                {
+                    if (pMinion->Get_Team() == TEAM_BLUE)
+                        continue;
+                }
+
+                // 실제 데미지
+                pActor->Take_Damage(m_Desc.fDamage, m_Desc.pOwner);
+
+                // 맞았다고 기록
+                m_HitActors.push_back(pActor);
+            }
+
+            break;
+        }
+        default:
+            break;
+        }
     }
 
 }

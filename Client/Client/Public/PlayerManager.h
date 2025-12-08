@@ -27,8 +27,8 @@ public:
 	CChampion* Get_ActivePlayer() const { return m_pActivePlayer; }
 	void        Set_ActivePlayer(CChampion* pPlayer);
 	void Set_SkillMenu(CUI_SkillMenu* pMenu);
-	void Set_ExpBar(CUI_ExpBar* pBar);
 	
+	void Set_ExpBar(CUI_ExpBar* pBar);
 public:
 	HRESULT Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	void    ChangeChampion(); // F4로 호출 시 활성 플레이어 교체
@@ -38,7 +38,7 @@ private:
 	ID3D11DeviceContext*	m_pContext	=	{ nullptr };
 
 private:
-	std::vector<CChampion*> m_vChampions;     // 생성된 챔피언 목록
+	vector<CChampion*> m_vChampions;     // 생성된 챔피언 목록
 	_int                    m_iCurrentChampionIndex = 0; // 현재 조종 중인 챔피언 인덱스
 	CChampion* m_pActivePlayer = nullptr; 	// 현재 조작 중인 플레이어
 	CUI_SkillMenu* m_pSkillMenu = nullptr;

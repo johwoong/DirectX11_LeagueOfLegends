@@ -53,16 +53,18 @@ HRESULT CPlayer::Initialize(void* pArg)
 
 	
 
-	// 정상 코드
-	_vector vPos = XMLoadFloat3(&PlayerDeSC.vPosition);
+	// 1) 스폰 좌표 저장
+	m_vSpawnPos = PlayerDeSC.vPosition;
+
+	// 2) 반드시 w = 1.f 로 만들어서 Set_State
+	_vector vPos = XMVectorSet(m_vSpawnPos.x, m_vSpawnPos.y, m_vSpawnPos.z, 1.f);
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 
-
-	m_vSpawnPos = vPos;
-	// 반드시 셀 기준 업데이트
+	// 3) 네비 인덱스 & 높이 보정 (있으면)
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
+	Check_Navigation();    // 지형 높이 맞추고 싶으면 여기서
 
-	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);	
+	m_pPlayerState = new Player::CIdleState(this, Client::Player::CIdleState::IDLE_MAIN);
 	CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_PLAYER, this);
 	return S_OK;
 }
@@ -151,7 +153,11 @@ void CPlayer::Late_Update_State(_float fTimeDelta)
 
 void CPlayer::Respawon()
 {
-	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, m_vSpawnPos);
+	_vector vPos = XMVectorSet(m_vSpawnPos.x, m_vSpawnPos.y, m_vSpawnPos.z, 1.f);
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
+
+	m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
+	Check_Navigation();   // 필요하면
 }
 
 void CPlayer::Check_Navigation()

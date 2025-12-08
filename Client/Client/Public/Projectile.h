@@ -7,9 +7,18 @@ class CProjectile final : public CActor
 public:
     enum PROJ_TYPE
     {
-        PROJ_TARGET,        // 평타 - 타겟 추적
-        PROJ_LINEAR,        // Q,W 등 직선 발사
-        PROJ_AREA,          // E,R 범위기 (나중에)
+        PROJ_TARGET,
+        PROJ_LINEAR,
+        PROJ_AREA,
+    };
+
+    // ★ 어떤 스킬에서 나온 투사체인지
+    enum SKILL_TAG
+    {
+        SKILL_NONE,
+        SKILL_EZREAL_Q,
+        SKILL_EZREAL_W,
+        SKILL_EZREAL_R,
     };
 
     struct PROJECTILEDESC
@@ -34,9 +43,14 @@ public:
         CActor* pOwner = nullptr;
 
         // === 콜라이더 커스텀 설정 ===
-        _bool   bUseCustomCollider = false;           // true면 아래 값 사용
-        _float3 vColliderScale = { 0.f, 0.f, 0.f };   // 0이면 무시
-        float   fColliderRadius = 0.f;                // >0이면 반지름 세팅
+        _bool   bUseCustomCollider = false;
+        _float3 vColliderScale = { 0.f, 0.f, 0.f };
+        float   fColliderRadius = 0.f;
+        _float3 vColliderRotation = { 0.f, 0.f, 0.f };
+        _float3 vColliderOffset = { 0.f, 0.f, 0.f };
+
+        // ★ 추가: 이 투사체가 어떤 스킬에서 나왔는지
+        SKILL_TAG eSkillTag = SKILL_NONE;
     };
 
 private:
@@ -57,6 +71,8 @@ private:
     float           m_fAccTime = 0.f;
     float           m_fTraveled = 0.f;
 
+private:
+    vector<CActor*> m_HitActors;   // R 등 관통형 광역 스킬용
 private:
     HRESULT Ready_Components(void* pArg) override;
     HRESULT SetUp_ShaderResources() override { return S_OK; }

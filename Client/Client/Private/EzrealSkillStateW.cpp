@@ -61,7 +61,6 @@ CPlayerState* CEzrealSkillStateW::Update(_float fDeltaTime)
                 fBlend_Default
             );
 
-            // --- PROJECTILE ¿Ã∫•∆Æ ---
             vector<ANIMEVENT> events = pModel->Get_Events();
             for (auto& evt : events)
             {
@@ -96,8 +95,13 @@ CPlayerState* CEzrealSkillStateW::Update(_float fDeltaTime)
                     desc.vDir = m_vDir;
                     desc.pOwner = m_pOwner;
                     desc.fSpeed = 20.f;
-                    desc.fMaxDistance = 10.f;
+                    desc.fMaxDistance = 100.f;
                     desc.fLifeTime = 2.f;
+                    desc.fDamage = 80.f;
+
+                    desc.bUseCustomCollider = true;
+                    desc.vColliderScale = _float3(0.4f, 0.5f, 1.f);
+                    desc.eSkillTag = CProjectile::SKILL_EZREAL_W;
 
                     GI->Add_GameObject(
                         TEXT("Prototype_GameObject_Projectile"),

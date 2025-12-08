@@ -4,6 +4,9 @@
 #include "EzrealAttackState.h"
 #include "EzrealSkillStateQ.h"
 #include "EzrealSkillStateW.h"
+#include "EzrealSkillStateE.h"
+#include "EzrealSkillStateR.h"
+#include "PlayerRecallState.h"
 
 using namespace Player;
 
@@ -33,6 +36,17 @@ CPlayerState* CRunState::HandleInput()
             // 인자는 생략해도 내부에서 Get_TargetPosition()을 기본으로 사용하니까 아래 한 줄이면 됨
             return new CEzrealSkillStateW(m_pOwner, CEzrealSkillStateW::CAST_RUN);
         }
+    }
+
+    if (GI->Key_Down(DIK_E))
+    {
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+            return new CEzrealSkillStateE(m_pOwner);
+    }
+    if (GI->Key_Down(DIK_R))
+    {
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+            return new CEzrealSkillStateR(m_pOwner);
     }
 
     if (GI->Mouse_Down(DIMK_RBUTTON))
@@ -73,6 +87,11 @@ CPlayerState* CRunState::HandleInput()
                 m_pOwner->Get_Navigation());
             return nullptr;
         }
+    }
+
+    if (GI->Key_Pressing(DIK_B))
+    {
+        return new CPlayerRecallState(m_pOwner);
     }
 
     return nullptr;

@@ -9,7 +9,7 @@ class CNexus final : public CBuilding
 public:
 	enum TEAMTYPE { RED, BLUE };
 
-	enum STATE { IDLE, DESTORY };
+	enum STATE { DEATH, IDLE, SPAWN };
 
 private:
 	CNexus(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -22,6 +22,13 @@ public:
 	virtual int		Update(_float fTimeDelta);
 	virtual void	Late_Update(_float fTimeDelta);
 
+public: /*For.State*/
+	virtual _bool	Is_AnimationLoop(_uint eAnimId);
+	void			Update_State(_float fTimeDelta);
+	void			LateUpdate_State(_float fTimeDelta);
+
+public:
+	virtual HPBARDESC Get_HpBarDesc() const override;
 
 private:
 	virtual HRESULT Ready_Components(void* pArg);
@@ -30,7 +37,7 @@ private:
 	_uint m_eState = IDLE;
 
 public:
-	static CNexus* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CNexus* Create(ID3D11Device* epDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr);
 	virtual void Free() override;
 };

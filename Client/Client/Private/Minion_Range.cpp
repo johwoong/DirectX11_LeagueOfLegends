@@ -294,6 +294,5 @@ CGameObject* CMinion_Range::Clone(void* pArg)
 void CMinion_Range::Free()
 {
     __super::Free();
-
     Safe_Delete(m_pState);
 }

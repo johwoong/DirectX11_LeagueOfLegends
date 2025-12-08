@@ -5,6 +5,7 @@
 #include "Champion.h"
 #include "CursorManager.h"
 #include "Collision_Manager.h"
+#include "UI_Enemy_HpBar.h"
 
 
 CEnemy::CEnemy(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -55,6 +56,22 @@ HRESULT CEnemy::Initialize(void* pArg)
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(Get_TransformState(CTransform::STATE_TRANSLATION));
 	Check_Navigation();
 
+	CGameObject* pObj = nullptr;
+
+	if (FAILED(m_pGameInstance->Add_GameObject_Out(
+		TEXT("Prototype_GameObject_EnemyHpBar"),
+		LEVEL_GAMEPLAY,
+		TEXT("Layer_UI_HpBar"),
+		pObj,
+		this)))
+	{
+		return E_FAIL;
+	}
+
+	m_pHpBar = dynamic_cast<CEnemy_HpBar*>(pObj);
+
+	if (m_pHpBar)
+		m_pHpBar->Set_Owner(this);
 
 	return S_OK;
 }
@@ -73,6 +90,9 @@ int CEnemy::Update(_float fTimeDelta)
 
 void CEnemy::Late_Update(_float fTimeDelta)
 {
+	if (m_bDead)
+		return;
+
 	__super::Late_Update(fTimeDelta);
 
 	if (m_pRendererCom)
@@ -81,7 +101,6 @@ void CEnemy::Late_Update(_float fTimeDelta)
 	}
 
 	CPickingManager::GetInstance()->Add_PickingGroup(this);
-
 }
 
 HRESULT CEnemy::Render()
@@ -185,8 +204,47 @@ HRESULT CEnemy::SetUp_ShaderID()
 	return S_OK;
 }
 
+_int CEnemy::Take_Damage(int iDamage, CActor* DamageCauser)
+{
+	m_tStats.Hp -= iDamage;
+	if (m_tStats.Hp < 0.f)
+		m_tStats.Hp = 0.f;
+
+	if (m_tStats.Hp <= 0.f)
+	{
+		Mark_Dead();
+	}
+
+	return (_int)m_tStats.Hp;
+}
+
+void CEnemy::Mark_Dead()
+{
+	if (m_bDead)
+		return;
+
+	m_bDead = true;
+
+	// 0) 이 적을 타겟팅하고 있는 플레이어 타겟 해제
+	CPlayerManager* pPM = CPlayerManager::GetInstance();
+	if (pPM)
+	{
+		// 현재는 1챔프만 있다고 치고
+		CChampion* pChampion = pPM->Get_ActivePlayer();
+		if (pChampion && pChampion->Get_AttackTarget() == this)
+		{
+			pChampion->Set_AttackTarget(nullptr);
+		}
+	}
+
+	// 1) 충돌 그룹에서 적 제거
+	CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
+	CPickingManager::GetInstance()->Out_PickingGroup(this);
+}
+
 
 void CEnemy::Free()
 {
 	__super::Free();
+	CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
 }

@@ -36,7 +36,7 @@
     <ClCompile Include="FbxToDat.cpp">
       <Filter>소스 파일\Anim</Filter>
     </ClCompile>
-    <ClCompile Include="FbxToNonAnimMat.cpp">
+    <ClCompile Include="FbxToAnimMat.cpp">
       <Filter>소스 파일\Anim</Filter>
     </ClCompile>
     <ClCompile Include="FbxToAnimReverse.cpp">

@@ -21,14 +21,6 @@ HRESULT CTurret::Initialize(void* pArg)
 {
 	__super::Initialize(pArg);
 
-	switch (m_BuildDesc.eTeamType)
-	{
-	case BLUE:
-		break;
-	case RED:
-		break;
-	}
-
 	return S_OK;
 }
 
@@ -70,6 +62,15 @@ HRESULT CTurret::Ready_Components(void* pArg)
 	if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, szModeltag, (CComponent**)&m_pModelCom)))
 		return E_FAIL;
 	return S_OK;
+}
+
+CBuilding::HPBARDESC CTurret::Get_HpBarDesc() const
+{
+	HPBARDESC desc;
+	desc.fWidth = 3.f;    // 넥서스보다 조금 작게
+	desc.fHeight = 0.5f;
+	desc.fOffsetY = 5.f;    // 포탑 높이에 맞게
+	return desc;
 }
 
 CTurret* CTurret::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

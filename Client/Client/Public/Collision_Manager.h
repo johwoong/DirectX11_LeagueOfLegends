@@ -13,7 +13,7 @@ class CCollision_Manager : public CBase
 {
     DECLARE_SINGLETON(CCollision_Manager)
 public:
-    enum COLLISION_GROUP {COLLISION_PLAYER, COLLISION_ENEMY, COLLISION_MINION, COLLISION_PROJECT, COLLISION_END};
+    enum COLLISION_GROUP {COLLISION_PLAYER, COLLISION_ENEMY, COLLISION_MINION, COLLISION_PROJECT, COLLISION_BUILDING, COLLISION_END};
     enum COLLIDER_TYPE {COLLIDER_AABB, COLLIDER_OBB, COLLIDER_SPHERE, COLLIDER_END};
 
 public:
@@ -28,6 +28,7 @@ public:
 public:
     _bool	CollisionwithGroup(COLLISION_GROUP CollisionGroup, CColider* pCollider, CActor** pOut = nullptr, COLLIDER_TYPE eType = COLLIDER_END);
     _bool	CollisionwithGroupCollider(COLLISION_GROUP CollisionGroup, CColider* pCollider, CActor** pOut = nullptr, COLLIDER_TYPE eType = COLLIDER_END);
+    _bool CollisionwithGroup_All(COLLISION_GROUP CollisionGroup, CColider* pCollider, std::vector<CActor*>* pOut,COLLIDER_TYPE eType = COLLIDER_END);
     _bool	CollisionwithGroup(COLLISION_GROUP SourGroup, COLLISION_GROUP DestGroup, CActor** outSour, CActor** outDest);
     void	Update_Collider();
 

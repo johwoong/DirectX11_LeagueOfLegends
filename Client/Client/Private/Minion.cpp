@@ -4,6 +4,7 @@
 #include "PickingManager.h"
 #include "CursorManager.h"
 #include "Champion.h"
+#include "Building.h" 
 #include "PlayerManager.h"
 #include "Collision_Manager.h"
 #include "UI_Minion_HpBar.h"
@@ -85,8 +86,6 @@ HRESULT CMinion::Initialize(void* pArg)
 
     m_fAttackTimer = 0.f;
     m_eState = STATE_MOVE;
-    CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_MINION,this);
-    
     Compute_CurrentIndex();
     Ready_Animation_Event();
     Create_HpBar();
@@ -129,7 +128,7 @@ void CMinion::Late_Update(_float fTimeDelta)
 
     CPickingManager::GetInstance()->Add_PickingGroup(this);
 
-    Apply_Separation(fTimeDelta);  // ? 마무리 단계
+    Apply_Separation(fTimeDelta);  
 }
 
 
@@ -212,8 +211,8 @@ void CMinion::Find_Target(_float fTimeDelta)
     CActor* best = nullptr;
     float bestDist = m_tStats.m_fAggroRadius;
 
-    // ========== 1) 적 미니언 탐색 (최우선) ==========
-    auto ScanList = [&](const list<CGameObject*>* L)
+    // ================= 1) 적 미니언 탐색 (최우선) =================
+    auto ScanMinionList = [&](const list<CGameObject*>* L)
         {
             if (!L) return;
 
@@ -235,20 +234,21 @@ void CMinion::Find_Target(_float fTimeDelta)
     // 팀별로 적 미니언 레이어 선택
     if (m_eTeam == TEAM_BLUE)
     {
-        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Melee")));
-        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Range")));
+        ScanMinionList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Melee")));
+        ScanMinionList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Range")));
     }
-    else
+    else // TEAM_RED
     {
-        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee")));
-        ScanList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Range")));
+        ScanMinionList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee")));
+        ScanMinionList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Range")));
     }
 
-    // ========== 2) 플레이어 탐색 (후순위) ==========
+    // ================= 2) 플레이어 탐색 (그 다음) =================
     {
         CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
 
-        if (pPlayer &&  TEAMTYPE::TEAM_BLUE != m_eTeam)
+        // 예시 : 블루 플레이어만 있다고 가정 (RED 미니언이만 적으로 인식)
+        if (pPlayer && m_eTeam != TEAM_BLUE)
         {
             float d = Target_Distance(pPlayer);
             if (d < bestDist)
@@ -259,7 +259,34 @@ void CMinion::Find_Target(_float fTimeDelta)
         }
     }
 
-    // ========== 3) 최종 타겟 설정 ==========
+    // ================= 3) 빌딩 탐색 (타워/억제기/넥서스) =================
+    {
+        auto& buildingGroup =
+            CCollision_Manager::GetInstance()->Get_CollisionGroup(
+                CCollision_Manager::COLLISION_BUILDING);
+
+        for (auto obj : buildingGroup)
+        {
+            if (!obj) continue;
+
+            CBuilding* pB = dynamic_cast<CBuilding*>(obj);
+            if (!pB || pB->Get_Dead())
+                continue;
+
+            // 같은 팀 빌딩은 무시
+            if (pB->Get_TeamType() == m_eTeam) // ★ Get_TeamType() 같은 함수 만들어놨다고 가정
+                continue;
+
+            float d = Target_Distance(pB);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = pB;
+            }
+        }
+    }
+
+    // ========== 4) 최종 타겟 설정 ==========
     if (best)
         m_pTarget = best;
 
@@ -306,9 +333,8 @@ _bool CMinion::Is_TargetInAttackRange() const
     if (!m_pTarget)
         return false;
 
-    float base = m_tStats.m_fAttackRange;
-    float extra = fabsf(m_fLaneOffset) * 0.35f;
-    return Target_Distance(m_pTarget) <= base + extra + 0.1f;
+    float dist = Target_Distance(m_pTarget);
+    return dist <= Get_DesiredAttackDist(m_pTarget) + 0.1f;
 }
 
 _bool CMinion::Is_TargetInAggroRange() const
@@ -327,7 +353,6 @@ void CMinion::Follow_Target(_float fTimeDelta)
     _vector pos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
     _vector tpos = m_pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-    // 1) 타겟 방향
     _vector desired = XMVectorSetY(tpos - pos, 0);
     float dist = XMVectorGetX(XMVector3Length(desired));
     if (dist < 0.001f)
@@ -358,16 +383,16 @@ void CMinion::Follow_Target(_float fTimeDelta)
     _vector laneOffsetDir = laneRight * (m_fLaneOffset * 0.22f);
     // 0.2 세팅이 가장 자연스러움
 
-    // 4) 최종 이동 방향 = 3개 합성
     _vector finalDir = desired + sep + laneOffsetDir;
-
     if (XMVectorGetX(XMVector3Length(finalDir)) > 0.001f)
         finalDir = XMVector3Normalize(finalDir);
 
     m_vMoveDir = finalDir;
 
-    // 5) 이동 처리
-    if (dist > m_tStats.m_fAttackRange)
+    // ★ 여기서도 같은 기준 사용
+    float stopDist = Get_DesiredAttackDist(m_pTarget);
+
+    if (dist > stopDist)
     {
         pos += m_vMoveDir * (m_tStats.m_fWalkSpeed * fTimeDelta);
         m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, pos);
@@ -460,10 +485,7 @@ _int CMinion::Take_Damage(int dmg, CActor* causer)
     return 0;
 }
 
-void CMinion::Check_Collision(_float fTimeDelta)
-{
 
-}
 
 void CMinion::ReUse_Setting(void* pArg)
 {
@@ -508,6 +530,8 @@ void CMinion::ReUse_Setting(void* pArg)
     // ★ 항상 새 HpBar 생성 (기존 HpBar는 owner=null로 날려두고 스스로 죽게)
     m_pHpBar = nullptr;
     Create_HpBar();
+    CCollision_Manager::GetInstance()->Add_CollisionGroup(
+        CCollision_Manager::COLLISION_MINION, this);
 }
 
 _bool CMinion::Picking(_float3* PickingPoint)
@@ -580,6 +604,23 @@ void CMinion::Mark_Dead()
 
     m_bDead = true;
     m_bDying = false;
+}
+
+float CMinion::Get_DesiredAttackDist(CActor* pTarget) const
+{
+    if (!pTarget)
+        return 0.f;
+
+    float base = m_tStats.m_fAttackRange;
+    float extra = fabsf(m_fLaneOffset) * 0.35f;   // 라인 오프셋 보정
+
+    float padding = 0.f;
+
+    // ★ 건물인 경우는 조금 더 멀리서 멈추게 (값은 취향대로 튜닝)
+    if (dynamic_cast<CBuilding*>(pTarget))
+        padding = 1.5f;     // 1.5 ~ 2.0 정도부터 시작해서 눈으로 맞춰봐
+
+    return base + extra + padding;
 }
 
 void CMinion::Create_HpBar()
@@ -783,6 +824,6 @@ _float CMinion::Check_CullingRadius()
 
 void CMinion::Free()
 {
-    CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
     __super::Free();
+    CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
 }

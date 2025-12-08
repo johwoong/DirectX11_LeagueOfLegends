@@ -38,43 +38,52 @@ HRESULT CVayne::Initialize_Prototype()
 
 HRESULT CVayne::Initialize(void* pArg)
 {
+
+	// 2) Enemy 쪽 Initialize (여기서 HPBar 생성 + Set_Owner + MaxHp 스냅샷)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
+	// 3) 상태, 위치 이런 건 그 다음
 	CVayneState* pState = new CIdleState(this);
 	m_pState = m_pState->ChangeState(m_pState, pState);
 	m_eEnemyType = VAYNE;
+
 	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
 	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 20.f);
 	vPos = XMVectorSetX(vPos, XMVectorGetX(vPos) - 10.f);
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
-	m_tStats.Hp = 100;
+	m_tStats.MaxHp = 500.f;
+	m_tStats.Hp = m_tStats.MaxHp;
 	return S_OK;
 }
 
 int CVayne::Update(_float fTimeDelta)
 {
-	__super::Update(fTimeDelta);
+	// 1) 이미 죽었으면 바로 리턴
+	if (m_bDead)
+		return OBJ_DEAD;
 
+	// 2) 부모 Update 호출하고, 여기 리턴값을 그대로 반영
+	int iEvent = __super::Update(fTimeDelta);
+	if (iEvent < 0)       // OBJ_DEAD(-1) 이나 OBJ_POOL(-2) 같은 값이면
+		return iEvent;
+
+	// 3) 살아 있는 경우에만 AI / State 진행
 	AI_Behavior(fTimeDelta);
 	Update_State(fTimeDelta);
 
 	m_fTimeDeltaAcc += fTimeDelta;
 
-	
 	return OBJ_NOEVENT;
 }
 
 void CVayne::Late_Update(_float fTimeDelta)
 {
+	if (m_bDead)
+		return;
 
-	//if (!Is_Frustum(2.f))
-	//	return;
 	__super::Late_Update(fTimeDelta);
-	if (m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
-
 	LateUpdate_State(fTimeDelta);
 }
 
@@ -149,9 +158,9 @@ HRESULT CVayne::Ready_Components(void* pArg)
 
 	CColider::COLLIDERDESC ColliderDesc;
 	ZeroMemory(&ColliderDesc, sizeof(CColider::COLLIDERDESC));
-	ColliderDesc.vScale = _float3(1.f, 1.f, 1.f);
+	ColliderDesc.vScale = _float3(1., 1.f, 1.f);
 	ColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
-	ColliderDesc.vPosition = _float3(0.f, 30.f, 0.f);
+	ColliderDesc.vPosition = _float3(0.f, 80.f, 0.f);
 	if (FAILED(__super::Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), (CComponent**)&m_pSphereCom, &ColliderDesc)))
 		return E_FAIL;
 	return S_OK;
@@ -170,7 +179,7 @@ CVayne* CVayne::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 
 	if (FAILED(pInstance->Initialize_Prototype()))
 	{
-		MSG_BOX("Failed to Created : CIce_Wolf");
+		MSG_BOX("Failed to Created : CVayne");
 		Safe_Release(pInstance);
 	}
 
@@ -183,7 +192,7 @@ CGameObject* CVayne::Clone(void* pArg)
 
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned : CIce_Wolf");
+		MSG_BOX("Failed to Cloned : CVayne");
 		Safe_Release(pInstance);
 	}
 
@@ -193,6 +202,5 @@ CGameObject* CVayne::Clone(void* pArg)
 void CVayne::Free()
 {
 	__super::Free();
-
 	Safe_Delete(m_pState);
 }

@@ -50,7 +50,7 @@ HRESULT CAnim::Initialize(void* pArg)
 		scaleFactor = 1.f;
 		break;
 	default:
-		scaleFactor = 0.02f;
+		scaleFactor = 0.001F;
 	}
 
 

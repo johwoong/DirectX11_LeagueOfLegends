@@ -58,15 +58,23 @@ CPlayerState* CEzrealSkillStateR::Update(_float fDeltaTime)
             _float3 vStartPos;
             XMStoreFloat3(&vStartPos, HandMatrix.r[3]);
 
+            // ? 시작 위치 Y를 조금 내려서 발사체가 낮게 나가도록
+            const float fYOffset = 1.f;    // 필요하면 0.3f, 1.0f 이런 식으로 조절
+            vStartPos.y -= fYOffset;
+
 
             CProjectile::PROJECTILEDESC desc{};
             desc.eType = CProjectile::PROJ_LINEAR;
             desc.vStartPos = XMLoadFloat3(&vStartPos);
             desc.vDir = m_vDir;
             desc.pOwner = m_pOwner;
-            desc.fSpeed = 160.f;
+            desc.fSpeed = 50.f;
             desc.fMaxDistance = 1150.f;
             desc.fLifeTime = 2.f;
+
+            desc.bUseCustomCollider = true;
+            desc.vColliderScale = _float3(2.f, 0.5f, 1.f);
+            desc.eSkillTag = CProjectile::SKILL_EZREAL_R;
 
             GI->Add_GameObject(
                 TEXT("Prototype_GameObject_Projectile"),

@@ -32,10 +32,10 @@
       <Filter>01. Level\Loading\Loader</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_Base.h">
-      <Filter>02. GameObjects\02. UI\Base</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_BackGround.h">
-      <Filter>02. GameObjects\02. UI\00. UI_BackGround</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\00. UI_BackGround</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>98.Default</Filter>
@@ -82,47 +82,47 @@
     <ClInclude Include="..\Public\Nexus.h">
       <Filter>02. GameObjects\00. Actor\01. Building\03. Nexus</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Inhibitor.h">
-      <Filter>02. GameObjects\00. Actor\01. Building\01. Inhibitor</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Turret.h">
-      <Filter>02. GameObjects\00. Actor\01. Building\02. Turret</Filter>
+      <Filter>02. GameObjects\00. Actor\01. Building\01. Turret</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Inhibitor.h">
+      <Filter>02. GameObjects\00. Actor\01. Building\02. Inhibitor</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Actor.h">
       <Filter>02. GameObjects\00. Actor</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_Manager.h">
-      <Filter>02. GameObjects\02. UI\Manager</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\Manager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_ChampionImage.h">
-      <Filter>02. GameObjects\02. UI\01. UI_Loading</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\01. UI_Loading</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_LoadingBar.h">
-      <Filter>02. GameObjects\02. UI\01. UI_Loading\UI_LoadingBar</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\01. UI_Loading\UI_LoadingBar</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_Text.h">
-      <Filter>02. GameObjects\02. UI\02. UI_Text</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\02. UI_Text</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_SkillMenu.h">
-      <Filter>02. GameObjects\02. UI\03. UI_SkillMenu</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\03. UI_SkillMenu</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_SkillImage.h">
-      <Filter>02. GameObjects\02. UI\04. UI_SkillImage</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\04. UI_SkillImage</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_ExpBar.h">
-      <Filter>02. GameObjects\02. UI\05. UI_ExpBar</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\05. UI_ExpBar</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_MiniMap.h">
-      <Filter>02. GameObjects\02. UI\06. UI_MiniMap</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\06. UI_MiniMap</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_ChampionIcon.h">
-      <Filter>02. GameObjects\02. UI\07. UI_ChampionIcon</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\07. UI_ChampionIcon</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_GameInfo.h">
-      <Filter>02. GameObjects\02. UI\08. UI_GameInfo</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\08. UI_GameInfo</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_ItemInfo.h">
-      <Filter>02. GameObjects\02. UI\09. UI_ItemInfo</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\09. UI_ItemInfo</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Player.h">
       <Filter>02. GameObjects\00. Actor\00. Player</Filter>
@@ -130,8 +130,8 @@
     <ClInclude Include="Vi.h">
       <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Vi</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\StoreNpc.h">
-      <Filter>02. GameObjects\00. Actor\01. Building\04. Npc</Filter>
+    <ClInclude Include="..\Public\Npc.h">
+      <Filter>02. GameObjects\00. Actor\05. Npc</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion.h">
       <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
@@ -176,7 +176,7 @@
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_AttackRange.h">
-      <Filter>02. GameObjects\02. UI\10. UI_AttackRange</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\10. UI_AttackRange</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Enemy.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy</Filter>
@@ -194,7 +194,7 @@
       <Filter>07. CollisionManager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Cursor_UI.h">
-      <Filter>02. GameObjects\02. UI\11. UI_Cursor</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\11. UI_Cursor</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Projectile.h">
       <Filter>02. GameObjects\00. Actor\04. Projectile</Filter>
@@ -209,7 +209,7 @@
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\UI_Minion_HpBar.h">
-      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Minion</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Minion</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\EzrealSkillStateR.h">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
@@ -238,8 +238,11 @@
     <ClInclude Include="..\Public\VayneMoveState.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\UI_Champion_HpBar.h">
-      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Champion</Filter>
+    <ClInclude Include="..\Public\UI_Enemy_HpBar.h">
+      <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Champion</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_Building_HpBar.h">
+      <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Build</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -260,29 +263,14 @@
     <Filter Include="00..MainApp">
       <UniqueIdentifier>{92236fa1-322c-4101-801a-cb8abb822f1e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects">
-      <UniqueIdentifier>{b45ac153-307b-40b1-b011-4acca8f3a12f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI">
-      <UniqueIdentifier>{29eeaa24-460e-4799-8f0b-2763223bd21e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\Base">
-      <UniqueIdentifier>{311dce30-bbdb-42be-9421-08ae53a52b51}</UniqueIdentifier>
-    </Filter>
     <Filter Include="97. ShaderFiles">
       <UniqueIdentifier>{acceb22e-8979-4f7a-939e-28cc06a5a476}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\03. NonAnim">
-      <UniqueIdentifier>{72368801-c3a9-419f-8476-3a10cea71ca2}</UniqueIdentifier>
     </Filter>
     <Filter Include="03. Camera">
       <UniqueIdentifier>{dc9ab2b6-d073-4443-a7b4-952dd9fb10ea}</UniqueIdentifier>
     </Filter>
     <Filter Include="04. PickingManager">
       <UniqueIdentifier>{1902d77a-0c7c-4b48-b91c-40a48938c7e5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\03. NonAnim\02. Sky">
-      <UniqueIdentifier>{41bbd8e3-8ee6-48d1-adf5-dd3f0dafffc2}</UniqueIdentifier>
     </Filter>
     <Filter Include="01. Level">
       <UniqueIdentifier>{e7c9e66b-9e50-485b-9868-bdd7980e642d}</UniqueIdentifier>
@@ -299,6 +287,27 @@
     <Filter Include="01. Level\Loading\Loader">
       <UniqueIdentifier>{19244d70-b85c-4ecc-9489-ebadd54a079e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="05. PoolingManager">
+      <UniqueIdentifier>{c7a474a7-da43-49e8-bec2-c72ec948da01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="06. CursorManager">
+      <UniqueIdentifier>{ff01b1af-d5d4-4bf5-b67c-51a0c02f5778}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="07. CollisionManager">
+      <UniqueIdentifier>{498fcb4e-c460-4893-874f-b202919b675c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects">
+      <UniqueIdentifier>{b45ac153-307b-40b1-b011-4acca8f3a12f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\03. NonAnim">
+      <UniqueIdentifier>{72368801-c3a9-419f-8476-3a10cea71ca2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\03. NonAnim\02. Sky">
+      <UniqueIdentifier>{41bbd8e3-8ee6-48d1-adf5-dd3f0dafffc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\03. NonAnim\01. Terrian">
+      <UniqueIdentifier>{70e15da3-4527-4ac8-b978-c4a99f1515a8}</UniqueIdentifier>
+    </Filter>
     <Filter Include="02. GameObjects\00. Actor">
       <UniqueIdentifier>{cd51af7c-274a-4ffa-b8cf-1aa2c30dabc1}</UniqueIdentifier>
     </Filter>
@@ -311,77 +320,38 @@
     <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\00. Ezreal">
       <UniqueIdentifier>{18ee8c1c-af76-425b-a0ed-e2c6943e11c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Vi">
+      <UniqueIdentifier>{72d12b63-0e20-4be1-8569-cff933386923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\03. Gwen">
+      <UniqueIdentifier>{84c419de-8527-4d11-8903-a28daeb90eec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\04. Alistar">
+      <UniqueIdentifier>{00dbdb09-0cec-44b1-ab7f-54d51b72513b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\01. LeeSin">
+      <UniqueIdentifier>{4c38113e-f281-4659-8194-197d53cb3731}</UniqueIdentifier>
+    </Filter>
     <Filter Include="02. GameObjects\00. Actor\00. Player\Manager">
       <UniqueIdentifier>{236a6db1-f629-49b4-95e3-7bfb297fe696}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\00. Player\State">
       <UniqueIdentifier>{eec2726e-2ca4-415b-a309-a35da2ee5b7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\State\Ezreal">
+      <UniqueIdentifier>{8b47ee40-366a-42ba-8e97-a03deeec284b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill">
+      <UniqueIdentifier>{1c62ec2f-ca09-441c-8c0a-8049f6969949}</UniqueIdentifier>
+    </Filter>
     <Filter Include="02. GameObjects\00. Actor\01. Building">
       <UniqueIdentifier>{913d6b14-1285-4636-ba9e-3dce2817b9a9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\01. Building\01. Inhibitor">
-      <UniqueIdentifier>{7670024e-9cd0-49a0-a8c8-278e1c758853}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\01. Building\02. Turret">
-      <UniqueIdentifier>{66bb0a24-df37-46c8-a40f-8554bdf384fc}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\01. Building\03. Nexus">
       <UniqueIdentifier>{d1ee38a3-ee3f-42ab-a373-48723c28f78f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\03. NonAnim\01. Terrian">
-      <UniqueIdentifier>{70e15da3-4527-4ac8-b978-c4a99f1515a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\Manager">
-      <UniqueIdentifier>{43e71344-5f99-4e10-904e-c90b72edbc38}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\00. UI_BackGround">
-      <UniqueIdentifier>{1b572ae8-7a2d-45c3-b31f-7cd2acf8d6c8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\01. UI_Loading">
-      <UniqueIdentifier>{c27dc556-5f16-4f65-8648-570190a9883d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\01. UI_Loading\UI_LoadingBar">
-      <UniqueIdentifier>{18eaac69-e116-4504-8629-35065e3c33f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\04. Anim">
-      <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\02. UI_Text">
-      <UniqueIdentifier>{f3409f9c-b1aa-4bb7-9780-c12a192fecf0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\03. UI_SkillMenu">
-      <UniqueIdentifier>{523598c9-0ffe-4068-be56-cabc047f79c7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\04. UI_SkillImage">
-      <UniqueIdentifier>{fe540d99-ad2b-4407-b2b1-ae92057fc6c2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\05. UI_ExpBar">
-      <UniqueIdentifier>{cbb2232d-6c16-4975-bc8e-6db9d5191577}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\07. UI_ChampionIcon">
-      <UniqueIdentifier>{803156de-cba5-410f-bdf9-3f3c8e690aec}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\06. UI_MiniMap">
-      <UniqueIdentifier>{19c7646a-18da-4d0d-b80f-aab716c6b6d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\08. UI_GameInfo">
-      <UniqueIdentifier>{04325750-dd85-477d-947f-d62ad4f6aaa7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\09. UI_ItemInfo">
-      <UniqueIdentifier>{1312dfe1-08df-44a2-8765-7558f12ca1e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Vi">
-      <UniqueIdentifier>{72d12b63-0e20-4be1-8569-cff933386923}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\01. Building\04. Npc">
-      <UniqueIdentifier>{31a5841f-1076-4503-9297-919ee9542ed0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects\00. Actor\02. Minion">
       <UniqueIdentifier>{f7c77ae0-5301-4127-ba02-333bae55700e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="05. PoolingManager">
-      <UniqueIdentifier>{c7a474a7-da43-49e8-bec2-c72ec948da01}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\02. Minion\Minion_Melee">
       <UniqueIdentifier>{d9bb48e4-5a77-4e62-99f1-bab39ab1b24e}</UniqueIdentifier>
@@ -395,21 +365,6 @@
     <Filter Include="02. GameObjects\00. Actor\02. Minion\Minion_Range">
       <UniqueIdentifier>{222d7195-60c1-4796-9a61-1d798275e6c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\03. Gwen">
-      <UniqueIdentifier>{84c419de-8527-4d11-8903-a28daeb90eec}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\04. Alistar">
-      <UniqueIdentifier>{00dbdb09-0cec-44b1-ab7f-54d51b72513b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\00. Player\State\Ezreal">
-      <UniqueIdentifier>{8b47ee40-366a-42ba-8e97-a03deeec284b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\10. UI_AttackRange">
-      <UniqueIdentifier>{3cdd6202-1c1a-478f-be21-6542975a07e9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="06. CursorManager">
-      <UniqueIdentifier>{ff01b1af-d5d4-4bf5-b67c-51a0c02f5778}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects\00. Actor\03. Enemy">
       <UniqueIdentifier>{ca244f5a-2856-42a9-a00e-3fe8f0d68a09}</UniqueIdentifier>
     </Filter>
@@ -419,29 +374,8 @@
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Vayne\State">
       <UniqueIdentifier>{1087a76d-acef-4bf0-b917-e42c397c9c46}</UniqueIdentifier>
     </Filter>
-    <Filter Include="07. CollisionManager">
-      <UniqueIdentifier>{498fcb4e-c460-4893-874f-b202919b675c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\11. UI_Cursor">
-      <UniqueIdentifier>{5f5ca43a-0e20-43f3-a131-eba19458c796}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\04. Projectile">
-      <UniqueIdentifier>{d9aedf97-4d23-478c-8be0-f54d1f0201b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill">
-      <UniqueIdentifier>{1c62ec2f-ca09-441c-8c0a-8049f6969949}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar">
-      <UniqueIdentifier>{909cc54a-0568-4d35-8364-ecaffe7f9848}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar\Minion">
-      <UniqueIdentifier>{67547860-c90f-4e57-a159-3880cf312011}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Renekton">
       <UniqueIdentifier>{bc395185-8652-4182-bd3b-6d0180a9bd26}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\01. LeeSin">
-      <UniqueIdentifier>{4c38113e-f281-4659-8194-197d53cb3731}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Renekton\State">
       <UniqueIdentifier>{e5b8c47a-f45c-4dda-8909-632b111761fb}</UniqueIdentifier>
@@ -452,11 +386,80 @@
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Alistar\State">
       <UniqueIdentifier>{8daff700-06fd-4231-8238-e67750ce4e75}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar\Build">
+    <Filter Include="02. GameObjects\00. Actor\04. Projectile">
+      <UniqueIdentifier>{d9aedf97-4d23-478c-8be0-f54d1f0201b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI">
+      <UniqueIdentifier>{29eeaa24-460e-4799-8f0b-2763223bd21e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\Base">
+      <UniqueIdentifier>{311dce30-bbdb-42be-9421-08ae53a52b51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\Manager">
+      <UniqueIdentifier>{43e71344-5f99-4e10-904e-c90b72edbc38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\00. UI_BackGround">
+      <UniqueIdentifier>{1b572ae8-7a2d-45c3-b31f-7cd2acf8d6c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\01. UI_Loading">
+      <UniqueIdentifier>{c27dc556-5f16-4f65-8648-570190a9883d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\01. UI_Loading\UI_LoadingBar">
+      <UniqueIdentifier>{18eaac69-e116-4504-8629-35065e3c33f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\02. UI_Text">
+      <UniqueIdentifier>{f3409f9c-b1aa-4bb7-9780-c12a192fecf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\03. UI_SkillMenu">
+      <UniqueIdentifier>{523598c9-0ffe-4068-be56-cabc047f79c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\04. UI_SkillImage">
+      <UniqueIdentifier>{fe540d99-ad2b-4407-b2b1-ae92057fc6c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\05. UI_ExpBar">
+      <UniqueIdentifier>{cbb2232d-6c16-4975-bc8e-6db9d5191577}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\07. UI_ChampionIcon">
+      <UniqueIdentifier>{803156de-cba5-410f-bdf9-3f3c8e690aec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\06. UI_MiniMap">
+      <UniqueIdentifier>{19c7646a-18da-4d0d-b80f-aab716c6b6d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\08. UI_GameInfo">
+      <UniqueIdentifier>{04325750-dd85-477d-947f-d62ad4f6aaa7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\09. UI_ItemInfo">
+      <UniqueIdentifier>{1312dfe1-08df-44a2-8765-7558f12ca1e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\10. UI_AttackRange">
+      <UniqueIdentifier>{3cdd6202-1c1a-478f-be21-6542975a07e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\11. UI_Cursor">
+      <UniqueIdentifier>{5f5ca43a-0e20-43f3-a131-eba19458c796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\12. UI_HpBar">
+      <UniqueIdentifier>{909cc54a-0568-4d35-8364-ecaffe7f9848}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Minion">
+      <UniqueIdentifier>{67547860-c90f-4e57-a159-3880cf312011}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Build">
       <UniqueIdentifier>{d2139c84-8b60-421a-851a-5beb0cb97aac}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\02. UI\12. UI_HpBar\Champion">
+    <Filter Include="02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Champion">
       <UniqueIdentifier>{1d4879bb-f188-4294-864b-b07f9d775582}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\04. Anim">
+      <UniqueIdentifier>{dc8ea519-3267-40c9-80a1-505bf15885f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\01. Building\02. Inhibitor">
+      <UniqueIdentifier>{66bb0a24-df37-46c8-a40f-8554bdf384fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\01. Building\01. Turret">
+      <UniqueIdentifier>{7670024e-9cd0-49a0-a8c8-278e1c758853}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\05. Npc">
+      <UniqueIdentifier>{31a5841f-1076-4503-9297-919ee9542ed0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -476,10 +479,10 @@
       <Filter>01. Level\Loading</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_Base.cpp">
-      <Filter>02. GameObjects\02. UI\Base</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_BackGround.cpp">
-      <Filter>02. GameObjects\02. UI\00. UI_BackGround</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\00. UI_BackGround</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>98.Default</Filter>
@@ -529,53 +532,53 @@
     <ClCompile Include="..\Private\Nexus.cpp">
       <Filter>02. GameObjects\00. Actor\01. Building\03. Nexus</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Inhibitor.cpp">
-      <Filter>02. GameObjects\00. Actor\01. Building\01. Inhibitor</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Turret.cpp">
-      <Filter>02. GameObjects\00. Actor\01. Building\02. Turret</Filter>
+      <Filter>02. GameObjects\00. Actor\01. Building\01. Turret</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Inhibitor.cpp">
+      <Filter>02. GameObjects\00. Actor\01. Building\02. Inhibitor</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Actor.cpp">
       <Filter>02. GameObjects\00. Actor</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_Manager.cpp">
-      <Filter>02. GameObjects\02. UI\Manager</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\Manager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_ChampionImage.cpp">
-      <Filter>02. GameObjects\02. UI\01. UI_Loading</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\01. UI_Loading</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_LoadingBar.cpp">
-      <Filter>02. GameObjects\02. UI\01. UI_Loading\UI_LoadingBar</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\01. UI_Loading\UI_LoadingBar</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_Text.cpp">
-      <Filter>02. GameObjects\02. UI\02. UI_Text</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\02. UI_Text</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_SkillMenu.cpp">
-      <Filter>02. GameObjects\02. UI\03. UI_SkillMenu</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\03. UI_SkillMenu</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_SkillImage.cpp">
-      <Filter>02. GameObjects\02. UI\04. UI_SkillImage</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\04. UI_SkillImage</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_ExpBar.cpp">
-      <Filter>02. GameObjects\02. UI\05. UI_ExpBar</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\05. UI_ExpBar</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_MiniMap.cpp">
-      <Filter>02. GameObjects\02. UI\06. UI_MiniMap</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\06. UI_MiniMap</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_ChampionIcon.cpp">
-      <Filter>02. GameObjects\02. UI\07. UI_ChampionIcon</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\07. UI_ChampionIcon</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_GameInfo.cpp">
-      <Filter>02. GameObjects\02. UI\08. UI_GameInfo</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\08. UI_GameInfo</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_ItemInfo.cpp">
-      <Filter>02. GameObjects\02. UI\09. UI_ItemInfo</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\09. UI_ItemInfo</Filter>
     </ClCompile>
     <ClCompile Include="Vi.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Vi</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\StoreNpc.cpp">
-      <Filter>02. GameObjects\00. Actor\01. Building\04. Npc</Filter>
+    <ClCompile Include="..\Private\Npc.cpp">
+      <Filter>02. GameObjects\00. Actor\05. Npc</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion.cpp">
       <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
@@ -617,7 +620,7 @@
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_AttackRange.cpp">
-      <Filter>02. GameObjects\02. UI\10. UI_AttackRange</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\10. UI_AttackRange</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Enemy.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy</Filter>
@@ -635,7 +638,7 @@
       <Filter>07. CollisionManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Cursor_UI.cpp">
-      <Filter>02. GameObjects\02. UI\11. UI_Cursor</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\11. UI_Cursor</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Projectile.cpp">
       <Filter>02. GameObjects\00. Actor\04. Projectile</Filter>
@@ -650,7 +653,7 @@
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\UI_Minion_HpBar.cpp">
-      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Minion</Filter>
+      <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Minion</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\EzrealSkillStateR.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\State\Ezreal\Skill</Filter>
@@ -670,8 +673,11 @@
     <ClCompile Include="..\Private\VayneMoveState.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\UI_Champion_HpBar.cpp">
-      <Filter>02. GameObjects\02. UI\12. UI_HpBar\Champion</Filter>
+    <ClCompile Include="..\Private\UI_Enemy_HpBar.cpp">
+      <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Champion</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_Building_HpBar.cpp">
+      <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Build</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
