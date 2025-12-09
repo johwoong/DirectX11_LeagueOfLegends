@@ -1,14 +1,21 @@
 #pragma once
-#include "Building.h"
-class CNpc :
-    public CActor
+#include "Actor.h"
+#include "Client_Defines.h"
+
+NS_BEGIN(Engine)
+class CModel;
+NS_END
+
+NS_BEGIN(Client)
+class CNpc abstract : public CActor
 {
 public:
-	enum TEAMTYPE { RED, BLUE };
+	typedef struct BuildgTag
+	{
+		NONANIMDESC ModelDesc;
+	}BUILDINGDESC;
 
-	enum STATE { IDLE, SPAWN };
-
-private:
+protected:
 	CNpc(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CNpc(const CNpc& rhs);
 	virtual ~CNpc() = default;
@@ -16,23 +23,26 @@ private:
 public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
-	virtual int		Update(_float fTimeDelta);
-	virtual void	Late_Update(_float fTimeDelta);
+	virtual int Update(_float fTimeDelta);
+	virtual void Late_Update(_float fTimeDelta);
+	virtual HRESULT Render();
+	virtual HRESULT Render_ShadowDepth() override;
+	virtual HRESULT Render_EdgeDetection() override;
 
-public: /*For.State*/
-	virtual _bool	Is_AnimationLoop(_uint eAnimId);
-	void			Update_State(_float fTimeDelta);
-	void			LateUpdate_State(_float fTimeDelta);
-
-private:
-	virtual HRESULT Ready_Components(void* pArg);
-
-private:
-	_uint m_eState = IDLE;
 
 public:
-	static CNpc* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	virtual CGameObject* Clone(void* pArg = nullptr);
-	virtual void Free() override;
-};
+	virtual _bool Picking(_float3* PickingPoint);
+	virtual void PickingTrue();
+	virtual void Set_Picked();
 
+
+protected:
+	CModel* m_pModelCom = nullptr;
+	BUILDINGDESC	m_BuildDesc;
+protected:
+	virtual HRESULT Ready_Components(void* pArg) PURE;
+	virtual HRESULT SetUp_ShaderResources();
+public:
+	virtual void  Free() override;
+};
+NS_END

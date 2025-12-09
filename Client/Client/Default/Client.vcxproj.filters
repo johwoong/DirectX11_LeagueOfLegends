@@ -244,6 +244,9 @@
     <ClInclude Include="..\Public\UI_Building_HpBar.h">
       <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Build</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\StoreNpc.h">
+      <Filter>02. GameObjects\00. Actor\05. Npc\00. StoreNpc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -460,6 +463,9 @@
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\05. Npc">
       <UniqueIdentifier>{31a5841f-1076-4503-9297-919ee9542ed0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\05. Npc\00. StoreNpc">
+      <UniqueIdentifier>{7152d795-814e-446c-8bb9-ee3ee5ccf634}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -678,6 +684,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\UI_Building_HpBar.cpp">
       <Filter>02. GameObjects\00. Actor\02. UI\12. UI_HpBar\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\StoreNpc.cpp">
+      <Filter>02. GameObjects\00. Actor\05. Npc\00. StoreNpc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

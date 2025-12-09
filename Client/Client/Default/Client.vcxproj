@@ -173,6 +173,7 @@
     <ClInclude Include="..\Public\Projectile.h" />
     <ClInclude Include="..\Public\RenektonIdleState.h" />
     <ClInclude Include="..\Public\RenektonState.h" />
+    <ClInclude Include="..\Public\StoreNpc.h" />
     <ClInclude Include="..\Public\UI_AttackRange.h" />
     <ClInclude Include="..\Public\EzrealAttackState.h" />
     <ClInclude Include="..\Public\EzrealSkillStateQ.h" />
@@ -258,6 +259,7 @@
     <ClCompile Include="..\Private\EzrealSkillStateW.cpp" />
     <ClCompile Include="..\Private\Projectile.cpp" />
     <ClCompile Include="..\Private\RenektonIdleState.cpp" />
+    <ClCompile Include="..\Private\StoreNpc.cpp" />
     <ClCompile Include="..\Private\UI_AttackRange.cpp" />
     <ClCompile Include="..\Private\EzrealAttackState.cpp" />
     <ClCompile Include="..\Private\EzrealSkillStateQ.cpp" />
