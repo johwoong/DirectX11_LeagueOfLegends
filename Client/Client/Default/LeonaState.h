@@ -1,9 +1,9 @@
 #pragma once
-#include "Alistar.h"
+#include "Leona.h"
 #include "Client_Defines.h"
 
 NS_BEGIN(Client)
-class CAlistarState
+class CLeonaState
 {
 public:
 	enum STATE_ID
@@ -13,16 +13,16 @@ public:
 		STATE_END
 	};
 
-	virtual ~CAlistarState() {};
-	virtual CAlistarState* AI_Behaviour(_float fTimeDelta) { return nullptr; };
-	virtual CAlistarState* Update(_float fTimeDelta) PURE;
-	virtual CAlistarState* LateUpdate(_float fTimeDelta) PURE;
+	virtual ~CLeonaState() {};
+	virtual CLeonaState* AI_Behaviour(_float fTimeDelta) { return nullptr; };
+	virtual CLeonaState* Update(_float fTimeDelta) PURE;
+	virtual CLeonaState* LateUpdate(_float fTimeDelta) PURE;
 
 
 	virtual void Enter() PURE;
 	virtual void Exit() PURE;
 
-	CAlistarState* ChangeState(CAlistarState* pCurrentState, CAlistarState* pNewState)
+	CLeonaState* ChangeState(CLeonaState* pCurrentState, CLeonaState* pNewState)
 	{
 		if (pCurrentState)
 		{
@@ -43,7 +43,7 @@ protected:
 	_bool		m_bIsAnimationFinished = false;
 	_bool		m_bAnimFinish = false;
 	_float		m_fTimeDeltaAcc = 0.f;
-	CAlistar* m_pOwner = nullptr;
+	CLeona* m_pOwner = nullptr;
 
 	CActor* m_pOriginTarget = nullptr;
 	CActor* m_pCurTarget = nullptr;

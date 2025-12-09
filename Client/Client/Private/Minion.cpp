@@ -102,6 +102,7 @@ int CMinion::Update(_float fTimeDelta)
 
     if (FAILED(__super::Update(fTimeDelta)))
         return -1;
+
     m_fAttackTimer += fTimeDelta;
 
     if (m_tStats.m_fCurrentHp <= 0.f && m_eState != STATE_DIE)
@@ -111,6 +112,12 @@ int CMinion::Update(_float fTimeDelta)
         m_eState = STATE_DIE;
         On_Death();
     }
+
+    // ★ 현재 타겟이 있으면, 매 프레임 유효성 검사를 해서
+    //    죽었거나 사거리 벗어나면 nullptr 로 만들어줌
+    if (m_pTarget)
+        Check_FiledTarget();
+
     Update_Collider();
     CPickingManager::GetInstance()->Out_PickingGroup(this);
     return 0;
@@ -231,7 +238,6 @@ void CMinion::Find_Target(_float fTimeDelta)
             }
         };
 
-    // 팀별로 적 미니언 레이어 선택
     if (m_eTeam == TEAM_BLUE)
     {
         ScanMinionList(m_pGameInstance->Get_ObjectList(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Red_Melee")));
@@ -274,7 +280,7 @@ void CMinion::Find_Target(_float fTimeDelta)
                 continue;
 
             // 같은 팀 빌딩은 무시
-            if (pB->Get_TeamType() == m_eTeam) // ★ Get_TeamType() 같은 함수 만들어놨다고 가정
+            if (pB->Get_TeamType() == m_eTeam)
                 continue;
 
             float d = Target_Distance(pB);
@@ -286,7 +292,34 @@ void CMinion::Find_Target(_float fTimeDelta)
         }
     }
 
-    // ========== 4) 최종 타겟 설정 ==========
+    // ================= 4) 적 챔피언(Enemy, Vayne 등) 탐색 ?? 추가 =================
+    {
+        // Enemy(Vayne)는 COLLISION_ENEMY 그룹에 들어있으니까 여기서 스캔
+        auto& enemyGroup =
+            CCollision_Manager::GetInstance()->Get_CollisionGroup(
+                CCollision_Manager::COLLISION_ENEMY);
+
+        for (auto obj : enemyGroup)
+        {
+            if (!obj) continue;
+
+            CActor* pA = dynamic_cast<CActor*>(obj);
+            if (!pA || pA->Get_Dead())
+                continue;
+
+            // 여기선 일단 "전부 적" 취급
+            // (나중에 Enemy 쪽에도 팀이 생기면 팀 비교해서 같은 팀이면 continue 추가)
+
+            float d = Target_Distance(pA);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = pA;
+            }
+        }
+    }
+
+    // ========== 5) 최종 타겟 설정 ==========
     if (best)
         m_pTarget = best;
 
@@ -302,6 +335,14 @@ CActor* CMinion::Check_FiledTarget()
     if (!m_pTarget)
         return nullptr;
 
+    // 0) 엔진에서 이미 제거된 오브젝트인지부터 검사
+    if (!Is_TargetStillExist(m_pTarget))
+    {
+        m_pTarget = nullptr;
+        return nullptr;
+    }
+
+    // 1) 타겟이 미니언인 경우
     if (CMinion* pMin = dynamic_cast<CMinion*>(m_pTarget))
     {
         if (pMin->IsDeadOrDying())
@@ -310,6 +351,16 @@ CActor* CMinion::Check_FiledTarget()
             return nullptr;
         }
     }
+    // 2) 타겟이 빌딩(포탑/넥서스)인 경우
+    else if (CBuilding* pBuild = dynamic_cast<CBuilding*>(m_pTarget))
+    {
+        if (pBuild->Get_Dead())
+        {
+            m_pTarget = nullptr;
+            return nullptr;
+        }
+    }
+    // 3) 그 외(챔피언 등)
     else
     {
         if (m_pTarget->Get_Dead())
@@ -319,6 +370,7 @@ CActor* CMinion::Check_FiledTarget()
         }
     }
 
+    // 4) 사거리 완전히 벗어나면 타겟 해제
     if (Target_Distance(m_pTarget) > m_tStats.m_fAggroRadius * 1.5f)
     {
         m_pTarget = nullptr;
@@ -328,76 +380,139 @@ CActor* CMinion::Check_FiledTarget()
     return m_pTarget;
 }
 
-_bool CMinion::Is_TargetInAttackRange() const
+_bool CMinion::Is_TargetInAttackRange()
 {
-    if (!m_pTarget)
+    // ★ 먼저 타겟 유효성 검사 + 포인터 받기
+    CActor* pTarget = Check_FiledTarget();
+    if (!pTarget)
         return false;
 
-    float dist = Target_Distance(m_pTarget);
-    return dist <= Get_DesiredAttackDist(m_pTarget) + 0.1f;
+    float dist = Target_Distance(pTarget);
+    return dist <= Get_DesiredAttackDist(pTarget) + 0.1f;
 }
 
-_bool CMinion::Is_TargetInAggroRange() const
+_bool CMinion::Is_TargetInAggroRange()
 {
-    if (!m_pTarget)
+    CActor* pTarget = Check_FiledTarget();
+    if (!pTarget)
         return false;
 
-    return Target_Distance(m_pTarget) <= m_tStats.m_fAggroRadius;
+    return Target_Distance(pTarget) <= m_tStats.m_fAggroRadius;
+}
+
+_bool CMinion::Is_TargetStillExist(CActor* pTarget) const
+{
+    if (!pTarget)
+        return false;
+
+    CCollision_Manager* pColMgr = CCollision_Manager::GetInstance();
+    if (!pColMgr)
+        return false;
+
+    // 1) 미니언 그룹
+    auto& minionGroup =
+        pColMgr->Get_CollisionGroup(CCollision_Manager::COLLISION_MINION);
+
+    for (auto obj : minionGroup)
+    {
+        if (obj == pTarget)
+            return true;
+    }
+
+    // 2) 빌딩(포탑/넥서스) 그룹
+    auto& buildingGroup =
+        pColMgr->Get_CollisionGroup(CCollision_Manager::COLLISION_BUILDING);
+
+    for (auto obj : buildingGroup)
+    {
+        if (obj == pTarget)
+            return true;
+    }
+
+    // 3) 플레이어(내 챔피언) 그룹
+    auto& champGroup =
+        pColMgr->Get_CollisionGroup(CCollision_Manager::COLLISION_PLAYER);
+
+    for (auto obj : champGroup)
+    {
+        if (obj == pTarget)
+            return true;
+    }
+
+    // 4) 적 챔피언(Vayne 등) 그룹 ?? 추가
+    auto& enemyGroup =
+        pColMgr->Get_CollisionGroup(CCollision_Manager::COLLISION_ENEMY);
+
+    for (auto obj : enemyGroup)
+    {
+        if (obj == pTarget)
+            return true;
+    }
+
+    return false;
 }
 
 void CMinion::Follow_Target(_float fTimeDelta)
 {
-    if (!m_pTarget || !m_bMove)
+    // 1) 타겟 유효성 검사
+    CActor* pTarget = Check_FiledTarget();
+    if (!pTarget || !m_bMove)
         return;
 
+    // 2) 기본 방향(타겟 방향)
     _vector pos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-    _vector tpos = m_pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+    _vector tpos = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-    _vector desired = XMVectorSetY(tpos - pos, 0);
-    float dist = XMVectorGetX(XMVector3Length(desired));
+    _vector desired = XMVectorSetY(tpos - pos, 0.f);
+    float   dist = XMVectorGetX(XMVector3Length(desired));
     if (dist < 0.001f)
         return;
 
     desired = XMVector3Normalize(desired);
 
-    // 2) Separation (Apply_Separation에서 계산된 방향)
+    // 3) Separation(군집 회피)
     _vector sep = m_vAvoidDir;
 
-    // 3) Lane Offset 방향 ? ★ 여기가 네게 없던 부분
-    const vector<_float3>& path =
-        CMinionManager::GetInstance()->GetLanePath(m_eLane);
+    // 4) Lane offset (인덱스가 정상일 때만 사용)
+    _vector laneOffsetDir = XMVectorZero();
 
-    if (m_iLaneNodeIndex < 0 || m_iLaneNodeIndex >= (int)path.size() - 1)
-        return;
+    CMinionManager* pMgr = CMinionManager::GetInstance();
+    if (pMgr)
+    {
+        const auto& path = pMgr->GetLanePath(m_eLane);
+        if (!path.empty() &&
+            m_iLaneNodeIndex >= 0 &&
+            m_iLaneNodeIndex < (int)path.size() - 1)
+        {
+            _vector curNode = XMLoadFloat3(&path[m_iLaneNodeIndex]);
+            _vector nextNode = XMLoadFloat3(
+                &path[m_iLaneNodeIndex + pMgr->GetLaneStep(m_eTeam)]);
 
-    _vector curNode = XMLoadFloat3(&path[m_iLaneNodeIndex]);
-    _vector nextNode = XMLoadFloat3(&path[m_iLaneNodeIndex +
-        CMinionManager::GetInstance()->GetLaneStep(m_eTeam)]);
+            _vector laneForward = XMVector3Normalize(nextNode - curNode);
+            _vector laneRight = XMVector3Normalize(XMVector3Cross(
+                XMVectorSet(0, 1, 0, 0), laneForward));
 
-    _vector laneForward = XMVector3Normalize(nextNode - curNode);
+            laneOffsetDir = laneRight * (m_fLaneOffset * 0.22f);
+        }
+    }
 
-    // lane perpendicular vector (좌/우 폭 유지)
-    _vector laneRight = XMVector3Normalize(XMVector3Cross(
-        XMVectorSet(0, 1, 0, 0), laneForward));
-
-    _vector laneOffsetDir = laneRight * (m_fLaneOffset * 0.22f);
-    // 0.2 세팅이 가장 자연스러움
-
+    // 5) 최종 이동 방향 (타겟 + 회피 + 라인 오프셋)
     _vector finalDir = desired + sep + laneOffsetDir;
     if (XMVectorGetX(XMVector3Length(finalDir)) > 0.001f)
         finalDir = XMVector3Normalize(finalDir);
 
     m_vMoveDir = finalDir;
 
-    // ★ 여기서도 같은 기준 사용
-    float stopDist = Get_DesiredAttackDist(m_pTarget);
+    float stopDist = Get_DesiredAttackDist(pTarget);
 
+    // 6) 아직 공격 거리 바깥이면 전진
     if (dist > stopDist)
     {
         pos += m_vMoveDir * (m_tStats.m_fWalkSpeed * fTimeDelta);
         m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, pos);
     }
 
+    // 7) 네비 + 바라보기
     Check_Navigation();
     Face_Target();
 }
@@ -680,19 +795,19 @@ void CMinion::Create_HpBar()
 
 void CMinion::Face_Target()
 {
-    if (!m_pTarget || !m_pTransformCom)
+    // ★ 먼저 타겟 유효성 검사
+    CActor* pTarget = Check_FiledTarget();
+    if (!pTarget || !m_pTransformCom)
         return;
 
     CTransform* pMyTr = m_pTransformCom;
-    CTransform* pTargetTr = m_pTarget->Get_Transform();
+    CTransform* pTargetTr = pTarget->Get_Transform();
     if (!pTargetTr)
         return;
 
     _vector vMyPos = pMyTr->Get_State(CTransform::STATE_TRANSLATION);
     _vector vTargetPos = pTargetTr->Get_State(CTransform::STATE_TRANSLATION);
 
-    // ?? 엔진 기준으로 타겟을 "보게" 하려면 이게 맞음
-    // (LOOK이 모델의 뒤쪽을 향하고 있어서 부호 반전)
     _vector vLook = XMVectorSetY(vMyPos - vTargetPos, 0.f);
 
     if (XMVectorGetX(XMVector3LengthSq(vLook)) < 0.0001f)

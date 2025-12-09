@@ -3,28 +3,33 @@
 #include "Client_Defines.h"
 
 NS_BEGIN(Client)
-class CAlistar final : public CEnemy
+class CLeona final : public CEnemy
 {
 public:
 	enum ANIM {
-		ATTACK1, ATTACK2, CHANNEL, CHANNEL_WIND, CRIT, DANCE, DEATH, IDLE1, IDLE2, IDLE3, IDLE4,
-		JOKE, LAUGH, RUN, Q, E, TAUNT, Q_ATTACK, Q_IDLE, Q_RUN, R_ATTACK, RQ_IDLE, R_RUN,
-		R_THREE_ATTACK, R_IDLE, IDLE
+		IDLE, ATTACK1, ATTACK2, ATTACK3, CHANNEL, CHANNEL_WIND, CRIT, DANCE, DEATH, IDLE2, IDLE3, JOKE, LAUGH,
+		RUN, Q, W, W_ATTACK, W_IDLE, W_RUN, E, R, TAUNT, ANIM_END
+	};
+
+	enum LINE_TYPE
+	{
+		TOP, MID, BOTTOM,
 	};
 
 public:
 	CModel* Get_Model() { return m_pModelCom; }
 	CTransform* Get_Transform() { return m_pTransformCom; }
 	CShader* Get_Shader() { return m_pShaderCom; }
-	class CAlistarState* Get_State() { return m_pState; }
+	class CLeonaState* Get_State() { return m_pState; }
 public:
 	virtual _bool Is_AnimationLoop(_uint eAnimId) override;
+	virtual void Ready_Animation_Event() override;
 	virtual HRESULT SetUp_ShaderID() override;
 
 private:
-	CAlistar(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CAlistar(const CAlistar& rhs);
-	virtual ~CAlistar() = default;
+	CLeona(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CLeona(const CLeona& rhs);
+	virtual ~CLeona() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype();
@@ -46,11 +51,12 @@ private:
 	virtual HRESULT Ready_Components(void* pArg) override;
 
 private:
-	class CAlistarState* m_pState = nullptr;
+	class CLeonaState* m_pState = nullptr;
+	LINE_TYPE m_eLineType = LINE_TYPE::BOTTOM;
 
 
 public:
-	static CAlistar* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CLeona* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr);
 	virtual void Free() override;
 

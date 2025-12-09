@@ -77,6 +77,7 @@ public:
 	{
 		if (!m_pAttackRange) return;
 		m_pAttackRange->Set_Visible(!m_pAttackRange->Is_Visible());
+		m_pAttackRange->Set_Alpha(1.f); // 플레이어 사거리는 항상 풀 알파
 	}
 	void Hide_AttackRange()
 	{

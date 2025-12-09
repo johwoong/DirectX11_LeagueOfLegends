@@ -101,8 +101,9 @@ public:
     }
 
 public: // Target check
-    _bool Is_TargetInAttackRange() const;
-    _bool Is_TargetInAggroRange() const;
+    _bool Is_TargetInAttackRange();      
+    _bool Is_TargetInAggroRange();     
+    _bool Is_TargetStillExist(CActor * pTarget) const;
 
 public: // AI
     virtual void AI_Behaviour(_float fTimeDelta) {}

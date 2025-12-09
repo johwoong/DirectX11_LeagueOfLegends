@@ -55,11 +55,18 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	}
 
+
 	CAttackRange* pRange = dynamic_cast<CAttackRange*>(pObj);
 	if (pRange)
 	{
 		pRange->Set_Owner(pActiveChampion);
 		pActiveChampion->Set_AttackRangeObj(pRange);
+
+		const float fWorldRange = pActiveChampion->Get_WorldAttackRange();
+		pRange->Set_RadiusWorld(fWorldRange);
+		pRange->Set_Alpha(1.f);
+		// 처음엔 안 보이게
+		pRange->Set_Visible(false);
 	}
 
 
@@ -216,8 +223,39 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player(const _tchar* pLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Enemy(const _tchar* pLayerTag)
 {
-	if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Vayne"), LEVEL_GAMEPLAY, pLayerTag, nullptr)))
+	HANDLE hFile = 0;
+	_ulong dwByte = 0;
+	NONANIMDESC ModelDesc;
+	_uint iNum = 0;
+	hFile = CreateFile(TEXT("../../../Bin/Data/PositionData/EnemySpawnPos.dat"), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (0 == hFile)
 		return E_FAIL;
+
+	ReadFile(hFile, &(iNum), sizeof(_uint), &dwByte, nullptr);
+
+	for (_uint i = 0; i < iNum; ++i)
+	{
+		ReadFile(hFile, &(ModelDesc), sizeof(NONANIMDESC), &dwByte, nullptr);
+		_tchar pModeltag[MAX_PATH];
+		MultiByteToWideChar(CP_ACP, 0, ModelDesc.pModeltag, MAX_PATH, pModeltag, MAX_PATH);
+
+		if (!wcscmp(pModeltag, TEXT("Vayne_NonAnim")))
+		{
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Vayne"), LEVEL_STATIC, TEXT("Layer_Enemy"), &ModelDesc)))
+				return E_FAIL;
+		}
+		if (!wcscmp(pModeltag, TEXT("Renekton_NonAnim")))
+		{
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Renekton"), LEVEL_STATIC, TEXT("Layer_Enemy"), &ModelDesc)))
+				return E_FAIL;
+		}
+		if (!wcscmp(pModeltag, TEXT("Leona_NonAnim")))
+		{
+			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Leona"), LEVEL_STATIC, TEXT("Layer_Enemy"), &ModelDesc)))
+				return E_FAIL;
+		}
+	}
+
 	return S_OK;
 }
 

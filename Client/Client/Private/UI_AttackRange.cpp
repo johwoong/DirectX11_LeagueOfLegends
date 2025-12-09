@@ -26,34 +26,41 @@ HRESULT CAttackRange::Initialize_Prototype()
 HRESULT CAttackRange::Initialize(void* pArg)
 {
     if (pArg)
-        m_pOwner = static_cast<CChampion*>(pArg);
+        m_pOwner = static_cast<CActor*>(pArg);   // Champion도, Turret도 CActor
 
     if (FAILED(Ready_Components(pArg)))
         return E_FAIL;
 
-    // 평면을 위로 향하게 (정확한 회전)
-    m_pTransformCom->Set_RotationX(XMConvertToRadians(90.f)); // XY → XZ
-
-    // 기본 스케일 (나중에 Update에서 다시 적용됨)
+    m_pTransformCom->Set_RotationX(XMConvertToRadians(90.f));
     Set_Scale(_float3(1.f, 1.f, 1.f));
+
     m_bVisible = false;
+    m_fRadiusWorld = 0.f;
+    m_fAlpha = 1.f;
+    m_vColor = _float4(0.f, 1.f, 1.f, 1.f); // 기본 색
     return S_OK;
 }
 
 int CAttackRange::Update(_float fTimeDelta)
 {
-    if (!m_pOwner || !m_bVisible)
+    if (!m_bVisible)
+        return OBJ_NOEVENT;
+
+    if (!Is_OwnerStillExist())
+    {
+        m_bVisible = false;
+        m_pOwner = nullptr;
+        return OBJ_NOEVENT;
+    }
+
+    if (!m_pOwner)
         return OBJ_NOEVENT;
 
     _vector vPos = m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
     vPos = XMVectorSetY(vPos, XMVectorGetY(vPos) + 0.1f);
     m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
 
-    float fRange = m_pOwner->Get_AttackRange(); // 550 같은 값
-
-    // *** 월드 변환용 스케일 팩터 (직접 튜닝) ***
-    const float fWorldScale = 0.02f;   // 일단 0.02로 시작, 크면 줄이고 작으면 키우기
-    float fWorldRange = fRange * fWorldScale;
+    float fWorldRange = m_fRadiusWorld;    
 
     m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, fWorldRange * 2.f);
     m_pTransformCom->Set_Scale(CTransform::STATE_LOOK, fWorldRange * 2.f);
@@ -132,9 +139,25 @@ HRESULT CAttackRange::SetUp_ShaderResources()
     m_pShaderCom->Set_RawValue("g_ViewMatrix", &View, sizeof(_float4x4));
     m_pShaderCom->Set_RawValue("g_ProjMatrix", &Proj, sizeof(_float4x4));
 
-    m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture", m_pTextureCom->Get_SRV(0));
+    m_pShaderCom->Set_RawValue("g_Color", &m_vColor, sizeof(_float4)); // 색
+    m_pShaderCom->Set_RawValue("g_fAlpha", &m_fAlpha, sizeof(float));   // 투명도
+
+    m_pShaderCom->Set_ShaderResourceView("g_DiffuseTexture",
+        m_pTextureCom->Get_SRV(0));
 
     return S_OK;
+}
+
+_bool CAttackRange::Is_OwnerStillExist() const
+{
+    if (!m_pOwner)
+        return false;
+
+    // 오너가 이미 죽었다면 UI 끄기
+    if (m_pOwner->Get_Dead())
+        return false;
+
+    return true;
 }
 
 CAttackRange* CAttackRange::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

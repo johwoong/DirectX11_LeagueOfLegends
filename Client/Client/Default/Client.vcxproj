@@ -159,8 +159,8 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Public\Alistar.h" />
-    <ClInclude Include="..\Public\AlistarIdleState.h" />
+    <ClInclude Include="..\Public\Leona.h" />
+    <ClInclude Include="..\Public\LeonaIdleState.h" />
     <ClInclude Include="..\Public\Building.h" />
     <ClInclude Include="..\Public\CCamera_Dynamic.h" />
     <ClInclude Include="..\Public\Cursor_UI.h" />
@@ -170,8 +170,10 @@
     <ClInclude Include="..\Public\Enemy.h" />
     <ClInclude Include="..\Public\EzrealSkillStateE.h" />
     <ClInclude Include="..\Public\EzrealSkillStateW.h" />
+    <ClInclude Include="..\Public\LeonaMoveState.h" />
     <ClInclude Include="..\Public\Projectile.h" />
     <ClInclude Include="..\Public\RenektonIdleState.h" />
+    <ClInclude Include="..\Public\RenektonMoveState.h" />
     <ClInclude Include="..\Public\RenektonState.h" />
     <ClInclude Include="..\Public\StoreNpc.h" />
     <ClInclude Include="..\Public\UI_AttackRange.h" />
@@ -233,10 +235,12 @@
     <ClInclude Include="..\Public\UI_LoadingBar.h" />
     <ClInclude Include="..\Public\UI_Manager.h" />
     <ClInclude Include="..\Public\Vayne.h" />
+    <ClInclude Include="..\Public\VayneAttackState.h" />
     <ClInclude Include="..\Public\VayneIdleState.h" />
     <ClInclude Include="..\Public\VayneMoveState.h" />
+    <ClInclude Include="..\Public\VayneReturnState.h" />
     <ClInclude Include="..\Public\VayneState.h" />
-    <ClInclude Include="AlistarState.h" />
+    <ClInclude Include="LeonaState.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Vi.h" />
     <ClInclude Include="framework.h" />
@@ -246,8 +250,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Private\Alistar.cpp" />
-    <ClCompile Include="..\Private\AlistarIdleState.cpp" />
+    <ClCompile Include="..\Private\Leona.cpp" />
+    <ClCompile Include="..\Private\LeonaIdleState.cpp" />
     <ClCompile Include="..\Private\Building.cpp" />
     <ClCompile Include="..\Private\CCamera_Dynamic.cpp" />
     <ClCompile Include="..\Private\Cursor_UI.cpp" />
@@ -257,8 +261,10 @@
     <ClCompile Include="..\Private\Enemy.cpp" />
     <ClCompile Include="..\Private\EzrealSkillStateE.cpp" />
     <ClCompile Include="..\Private\EzrealSkillStateW.cpp" />
+    <ClCompile Include="..\Private\LeonaMoveState.cpp" />
     <ClCompile Include="..\Private\Projectile.cpp" />
     <ClCompile Include="..\Private\RenektonIdleState.cpp" />
+    <ClCompile Include="..\Private\RenektonMoveState.cpp" />
     <ClCompile Include="..\Private\StoreNpc.cpp" />
     <ClCompile Include="..\Private\UI_AttackRange.cpp" />
     <ClCompile Include="..\Private\EzrealAttackState.cpp" />
@@ -317,8 +323,10 @@
     <ClCompile Include="..\Private\UI_LoadingBar.cpp" />
     <ClCompile Include="..\Private\UI_Manager.cpp" />
     <ClCompile Include="..\Private\Vayne.cpp" />
+    <ClCompile Include="..\Private\VayneAttackState.cpp" />
     <ClCompile Include="..\Private\VayneIdleState.cpp" />
     <ClCompile Include="..\Private\VayneMoveState.cpp" />
+    <ClCompile Include="..\Private\VayneReturnState.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Vi.cpp" />
     <ClCompile Include="stdafx.cpp" />

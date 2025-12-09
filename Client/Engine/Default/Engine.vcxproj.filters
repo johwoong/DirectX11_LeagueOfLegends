@@ -49,9 +49,6 @@
     <Filter Include="01.Utility\03. Components\04. Transform">
       <UniqueIdentifier>{2ed3d55e-bdff-4f43-aa94-c03e45e2a66d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utility\03. Components\05. Texture">
-      <UniqueIdentifier>{701a9258-c42a-4618-bfe2-875bef08f8d1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utility\03. Components\02. VIBuffer\00. Rect">
       <UniqueIdentifier>{97313640-1d6a-49be-b3c0-8705daf8a0ac}</UniqueIdentifier>
     </Filter>
@@ -147,6 +144,9 @@
     </Filter>
     <Filter Include="01.Utility\09. Lights\Manager">
       <UniqueIdentifier>{c1f0f170-f29b-40d9-aa49-7408487d957c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03. Components\05. Texture">
+      <UniqueIdentifier>{701a9258-c42a-4618-bfe2-875bef08f8d1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@
 #include "Transform.h"
 #include "Navigation.h"
 #include "Minion_ChaseState.h"
+#include "Minion_IdleState.h"
 
 using namespace Minion;
 
@@ -37,7 +38,7 @@ CMinionState* CMoveState::Update(_float fTimeDelta)
     if (!m_pOwner)
         return nullptr;
 
-    // 1) 애니 업데이트
+    // 1) 애니메이션 업데이트
     m_bIsAnimationFinished =
         m_pOwner->Get_Model()->Play_Animation(
             fTimeDelta,
@@ -50,6 +51,7 @@ CMinionState* CMoveState::Update(_float fTimeDelta)
     if (!pTr || !pNavi)
         return nullptr;
 
+    // 2) 네비 경로 따라 이동
     if (!pTr->Move_ByPath(fTimeDelta, pNavi))
     {
         CMinionManager* pMgr = CMinionManager::GetInstance();
@@ -64,11 +66,26 @@ CMinionState* CMoveState::Update(_float fTimeDelta)
         _int step = pMgr->GetLaneStep(m_pOwner->Get_Team());
         _int nextIdx = idx + step;
 
+        // ★ 여기: 더 이상 앞으로 갈 노드가 없을 때
         if (nextIdx < 0 || nextIdx >= (_int)path.size())
         {
-            return nullptr;
+            // 먼저 타겟이 있는지 확인
+            CActor* pTarget = m_pOwner->Get_Target();
+            if (!pTarget)
+            {
+                m_pOwner->Find_Target(fTimeDelta);
+                pTarget = m_pOwner->Get_Target();
+            }
+
+            // 타겟이 있으면 추적 상태로 전환 (타워/억제기 쫓아가게)
+            if (pTarget)
+                return new CChaseState(m_pOwner);
+
+            // 타겟도 없으면 그냥 그 자리에서 멈추도록 Idle
+            return new CIdleState(m_pOwner);
         }
 
+        // 아직 경로가 남았으면 다음 노드로 진행
         m_pOwner->Set_LaneNodeIndex(nextIdx);
 
         _float3 vTarget = path[nextIdx];
@@ -110,17 +127,21 @@ void CMoveState::Enter()
     if (path.empty())
         return;
 
-    // ★ 현재 위치 기준으로 "앞으로 가야 할" 노드 다시 선택
-    _int nodeIdx = m_pOwner->Find_ForwardLaneNodeIndex();
-    if (nodeIdx < 0 || nodeIdx >= (_int)path.size())
-        return;
+    // 우선 기존 LaneNodeIndex 사용
+    _int nodeIdx = m_pOwner->Get_LaneNodeIndex();
 
-    m_pOwner->Set_LaneNodeIndex(nodeIdx);
+    // 만약 초기값이 잘못 들어와 있으면 그때만 보정
+    if (nodeIdx < 0 || nodeIdx >= (_int)path.size())
+    {
+        nodeIdx = m_pOwner->Find_ForwardLaneNodeIndex();
+        if (nodeIdx < 0 || nodeIdx >= (_int)path.size())
+            return;
+        m_pOwner->Set_LaneNodeIndex(nodeIdx);
+    }
 
     _float3 vTarget = path[nodeIdx];
     _vector vTargetV = XMLoadFloat3(&vTarget);
 
-    // ★ 이제는 "현재 위치 → 앞으로 가야 할 노드"로 바로 이동
     pTr->Set_Destination(vTargetV, pNavi);
 }
 

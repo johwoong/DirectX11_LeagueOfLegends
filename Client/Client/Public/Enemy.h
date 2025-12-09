@@ -52,6 +52,13 @@ public:
 		float MpRegenPerLevel; // 초당 마나 재생 증가량
 	}STATS;
 
+	// ?? Enemy 공통 라인 타입
+	enum LINE_TYPE
+	{
+		LINE_TOP,
+		LINE_MID,
+		LINE_BOTTOM,
+	};
 
 protected:
 	CEnemy(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -73,12 +80,22 @@ public:
 	virtual void PickingTrue();
 	virtual void Set_Picked();
 
+
 public:
 	ENEMY_TYPE Get_EnemyType(void) { return m_eEnemyType; }
 	STATS Get_Stats() { return m_tStats; }
 	CNavigation* Get_Navigation(void) { return m_pNavigationCom; }
 	void Set_HpBar(class CEnemy_HpBar* pBar) { m_pHpBar = pBar; }
 	class CEnemy_HpBar* Get_HpBar() { return m_pHpBar; }
+	// ?? 타겟 Get/Set
+	CActor* Get_Target() const { return m_pTarget; }
+	void    Set_Target(CActor* pT) { m_pTarget = pT; }
+
+	// ?? XZ 거리 계산 (Minion이랑 비슷)
+	_float  Target_Distance(CActor* pTarget) const;
+
+	// ?? 공격 사거리 (필요하면 월드 스케일 반영해서 튜닝)
+	_float  Get_AttackRangeWorld() const { return m_tStats.AttackRange; }
 
 public:
 	virtual void AI_Behaviour(_float fTimeDelta) {};
@@ -88,7 +105,7 @@ public:
 
 public:
 	virtual void Compute_CurrentIndex();
-
+	static _float3 Get_EnemyLaneDest(LINE_TYPE eLine);
 protected:
 	virtual HRESULT SetUp_ShaderResources();
 	virtual HRESULT SetUp_ShaderID();
@@ -100,10 +117,11 @@ protected:
 	virtual HRESULT Ready_Components(void* pArg = nullptr)	PURE;
 	virtual _bool Is_AnimationLoop(_uint eAnimId)			PURE;
 	virtual void Check_Navigation()							PURE;
-
+	virtual void Ready_Animation_Event() PURE;
 protected:
 	STATS m_tStats;
 	ENEMY_TYPE	m_eEnemyType = ENEMY_END;
+	LINE_TYPE m_eLineType = {};
 	_float m_fTimeDeltaAcc = 0.f;
 	CEnemy_HpBar* m_pHpBar = nullptr; // Hp Bar
 protected: /* For.Components */
@@ -112,6 +130,9 @@ protected: /* For.Components */
 	CActor* m_pTarget = nullptr;
 
 
+protected:
+	float m_fAggroBonus = {};
+	float m_fAggroReleaseMul = {};
 public:
 	virtual void Free() override;
 

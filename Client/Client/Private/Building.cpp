@@ -66,29 +66,29 @@ HRESULT CBuilding::Initialize(void* pArg)
 
 _int CBuilding::Update(_float fTimeDelta)
 {
-	if (m_bDead)
-		return OBJ_DEAD;
-
 	__super::Update(fTimeDelta);
-	Update_Collider();
 
-	CPickingManager::GetInstance()->Out_PickingGroup(this);
+	// 죽은 뒤에는 콜라이더/픽킹 업데이트 안 함
+	if (!m_bDead)
+	{
+		Update_Collider();
+		CPickingManager::GetInstance()->Out_PickingGroup(this);
+	}
+
 	return OBJ_NOEVENT;
 }
 
 void CBuilding::Late_Update(_float fTimeDelta)
 {
-	if (m_bDead)
-		return;
-
 	__super::Late_Update(fTimeDelta);
 
+	// ★ 죽어도 모델은 계속 렌더링 (시체/부서진 포즈 유지)
 	if (m_pRendererCom)
-	{
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
-	}
 
-	CPickingManager::GetInstance()->Add_PickingGroup(this);
+	// ★ 죽은 뒤에는 더 이상 픽킹 대상 아님
+	if (!m_bDead)
+		CPickingManager::GetInstance()->Add_PickingGroup(this);
 }
 
 HRESULT CBuilding::Render()
@@ -130,6 +130,9 @@ HRESULT CBuilding::Render_EdgeDetection()
 
 _bool CBuilding::Picking(_float3* PickingPoint)
 {
+	if (m_BuildDesc.eTeamType != TEAM_RED)   // 또는 TEAMTYPE::TEAM_RED
+		return false;
+
 	CColider* pCollider = Get_Collider();
 	if (pCollider == nullptr)
 		return false;
@@ -184,15 +187,20 @@ _int CBuilding::Take_Damage(int iDamage, CActor* DamageCauser)
 
 void CBuilding::Mark_Dead()
 {
-
 	if (m_bDead)
 		return;
 
 	m_bDead = true;
 
+	// 더 이상 선택/타겟팅 안 되도록 제거
 	CPickingManager::GetInstance()->Out_PickingGroup(this);
+	CCollision_Manager::GetInstance()->Out_CollisionGroup(
+		CCollision_Manager::COLLISION_BUILDING, this);
 
-	CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_BUILDING, this);
+	if (m_pHpBar)
+	{
+		m_pHpBar = nullptr;
+	}
 
 }
 

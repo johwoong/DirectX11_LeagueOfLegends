@@ -82,9 +82,6 @@
     <ClInclude Include="..\Public\Nexus.h">
       <Filter>02. GameObjects\00. Actor\01. Building\03. Nexus</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Turret.h">
-      <Filter>02. GameObjects\00. Actor\01. Building\01. Turret</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Inhibitor.h">
       <Filter>02. GameObjects\00. Actor\01. Building\02. Inhibitor</Filter>
     </ClInclude>
@@ -223,14 +220,14 @@
     <ClInclude Include="..\Public\RenektonIdleState.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton\State</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Alistar.h">
-      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar</Filter>
+    <ClInclude Include="..\Public\Leona.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Leona</Filter>
     </ClInclude>
-    <ClInclude Include="AlistarState.h">
-      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
+    <ClInclude Include="LeonaState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Leona\State</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\AlistarIdleState.h">
-      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
+    <ClInclude Include="..\Public\LeonaIdleState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Leona\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\VayneIdleState.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
@@ -246,6 +243,21 @@
     </ClInclude>
     <ClInclude Include="..\Public\StoreNpc.h">
       <Filter>02. GameObjects\00. Actor\05. Npc\00. StoreNpc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Turret.h">
+      <Filter>02. GameObjects\00. Actor\01. Building\01. Turret</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\RenektonMoveState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\LeonaMoveState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Leona\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VayneAttackState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VayneReturnState.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -383,12 +395,6 @@
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Renekton\State">
       <UniqueIdentifier>{e5b8c47a-f45c-4dda-8909-632b111761fb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Alistar">
-      <UniqueIdentifier>{603dfc1e-6e9a-484c-9386-197a855c03db}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Alistar\State">
-      <UniqueIdentifier>{8daff700-06fd-4231-8238-e67750ce4e75}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects\00. Actor\04. Projectile">
       <UniqueIdentifier>{d9aedf97-4d23-478c-8be0-f54d1f0201b4}</UniqueIdentifier>
     </Filter>
@@ -466,6 +472,12 @@
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\05. Npc\00. StoreNpc">
       <UniqueIdentifier>{7152d795-814e-446c-8bb9-ee3ee5ccf634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Leona">
+      <UniqueIdentifier>{603dfc1e-6e9a-484c-9386-197a855c03db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Leona\State">
+      <UniqueIdentifier>{8daff700-06fd-4231-8238-e67750ce4e75}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -610,9 +622,6 @@
     <ClCompile Include="..\Private\Minion_ChaseState.cpp">
       <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Minion_AttackState.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Minion_DeadState.cpp">
       <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
     </ClCompile>
@@ -670,11 +679,11 @@
     <ClCompile Include="..\Private\RenektonIdleState.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton\State</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Alistar.cpp">
-      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar</Filter>
+    <ClCompile Include="..\Private\Leona.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Leona</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\AlistarIdleState.cpp">
-      <Filter>02. GameObjects\00. Actor\03. Enemy\Alistar\State</Filter>
+    <ClCompile Include="..\Private\LeonaIdleState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Leona\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\VayneMoveState.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
@@ -687,6 +696,21 @@
     </ClCompile>
     <ClCompile Include="..\Private\StoreNpc.cpp">
       <Filter>02. GameObjects\00. Actor\05. Npc\00. StoreNpc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\RenektonMoveState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Renekton\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\LeonaMoveState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Leona\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Minion_AttackState.cpp">
+      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VayneAttackState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VayneReturnState.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

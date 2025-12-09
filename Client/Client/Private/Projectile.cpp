@@ -186,13 +186,37 @@ void CProjectile::Move_Target(_float dt)
         return;
     }
 
-    _vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-    _vector vTar = ((CActor*)m_Desc.pTarget)->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+    CActor* pTargetActor = dynamic_cast<CActor*>(m_Desc.pTarget);
+    if (!pTargetActor || pTargetActor->Get_Dead())
+    {
+        m_bDead = true;
+        return;
+    }
 
+    _vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    _vector vTar = pTargetActor->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+
+    // 수평만 따라가고 싶으면 Y를 고정
     vTar = XMVectorSetY(vTar, XMVectorGetY(vMy));
 
-    _vector vDir = XMVector3Normalize(vTar - vMy);
-    m_pTransformCom->Move_PosDir(dt, vDir, nullptr);
+    _vector vToTar = vTar - vMy;
+    float   fDist = XMVectorGetX(XMVector3Length(vToTar));
+    if (fDist < 0.0001f)
+        return;
+
+    _vector vDir = XMVector3Normalize(vToTar);
+    float   fStep = m_Desc.fSpeed * dt;
+
+    // 한 프레임에 타겟을 넘어가려 하면 정확히 타겟 위치까지 이동
+    if (fStep >= fDist)
+    {
+        m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vTar);
+    }
+    else
+    {
+        m_pTransformCom->Move_PosDir(dt, vDir, nullptr);
+    }
+
     m_pTransformCom->LookDir(vDir);
 }
 
@@ -212,32 +236,36 @@ void CProjectile::Check_Hit()
     if (!pOwnerActor)
         return;
 
-    // ================== 1) 타겟 추적형 평타 ==================
+    // ================== 1) 타워/미니언 평타용 추적 투사체 ==================
     if (m_Desc.eType == PROJ_TARGET)
     {
-        if (!m_pSphereCom)
-            return;
-
         CActor* pTargetActor = dynamic_cast<CActor*>(m_Desc.pTarget);
-        if (!pTargetActor)
-            return;
-
-        if (pTargetActor->Get_Dead())
+        if (!pTargetActor || pTargetActor->Get_Dead())
         {
             m_bDead = true;
             return;
         }
 
-        CColider* pTargetCol = pTargetActor->Get_Collider();
-        if (!pTargetCol)
-            return;
+        // 1) 위치 가져오기
+        _vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+        _vector vTar = pTargetActor->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-        if (m_pSphereCom->Collision(pTargetCol))
+        // Y 높이 차이 때문에 못 맞는 경우 방지 → XZ 평면 기준 거리만 사용
+        vMy = XMVectorSetY(vMy, 0.f);
+        vTar = XMVectorSetY(vTar, 0.f);
+
+        float fDist = XMVectorGetX(XMVector3Length(vTar - vMy));
+
+        // 2) 히트 거리(튜닝용 상수) ? 유닛 스케일에 맞게 살짝 넉넉하게
+        const float fHitRadius = 0.5f; // 필요하면 0.4~0.7 사이로 조정
+
+        if (fDist <= fHitRadius)
         {
             pTargetActor->Take_Damage(static_cast<int>(m_Desc.fDamage), pOwnerActor);
             m_bDead = true;
         }
 
+        // PROJ_TARGET 은 여기서 끝
         return;
     }
 

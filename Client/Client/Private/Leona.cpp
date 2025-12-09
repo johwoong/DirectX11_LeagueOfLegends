@@ -1,59 +1,58 @@
-#include "Alistar.h"
-#include "AlistarState.h"
-#include "AlistarIdleState.h"
+#include "Leona.h"
+#include "LeonaState.h"
+#include "LeonaIdleState.h"
 
-using namespace Alistar;
+using namespace Leona;
 
-_bool CAlistar::Is_AnimationLoop(_uint eAnimId)
+_bool CLeona::Is_AnimationLoop(_uint eAnimId)
 {
 	switch ((ANIM)eAnimId)
 	{
 	case IDLE:
-	case IDLE1:
 	case IDLE2:
 	case IDLE3:
-	case IDLE4:
+	case RUN:
 		return true;
 	}
 
 	return false;
 }
 
+void CLeona::Ready_Animation_Event()
+{
+}
 
 
-CAlistar::CAlistar(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+
+CLeona::CLeona(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CEnemy(pDevice, pContext)
 {
 }
 
-CAlistar::CAlistar(const CAlistar& rhs)
+CLeona::CLeona(const CLeona& rhs)
 	: CEnemy(rhs)
 {
 }
 
-HRESULT CAlistar::Initialize_Prototype()
+HRESULT CLeona::Initialize_Prototype()
 {
 	return S_OK;
 }
 
-HRESULT CAlistar::Initialize(void* pArg)
+HRESULT CLeona::Initialize(void* pArg)
 {
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	CAlistarState* pState = new CIdleState(this);
+	CLeonaState* pState = new CIdleState(this);
 	m_pState = m_pState->ChangeState(m_pState, pState);
-	m_eEnemyType = VAYNE;
-	_vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-	vPos = XMVectorSetZ(vPos, XMVectorGetZ(vPos) - 20.f);
-	vPos = XMVectorSetX(vPos, XMVectorGetX(vPos) - 10.f);
-	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
+	m_eEnemyType = LEONA;
 	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
 	m_tStats.Hp = 100;
 	return S_OK;
 }
 
-int CAlistar::Update(_float fTimeDelta)
+int CLeona::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
 
@@ -66,7 +65,7 @@ int CAlistar::Update(_float fTimeDelta)
 	return OBJ_NOEVENT;
 }
 
-void CAlistar::Late_Update(_float fTimeDelta)
+void CLeona::Late_Update(_float fTimeDelta)
 {
 
 	//if (!Is_Frustum(2.f))
@@ -78,39 +77,39 @@ void CAlistar::Late_Update(_float fTimeDelta)
 	LateUpdate_State(fTimeDelta);
 }
 
-HRESULT CAlistar::Render()
+HRESULT CLeona::Render()
 {
 	__super::Render();
 	return S_OK;
 }
 
-HRESULT CAlistar::Render_Glow()
+HRESULT CLeona::Render_Glow()
 {
 	return S_OK;
 }
 
-void CAlistar::AI_Behavior(_float fTimeDelta)
+void CLeona::AI_Behavior(_float fTimeDelta)
 {
-	CAlistarState* pNewState = m_pState->AI_Behaviour(fTimeDelta);
+	CLeonaState* pNewState = m_pState->AI_Behaviour(fTimeDelta);
 	if (pNewState)
 		m_pState = m_pState->ChangeState(m_pState, pNewState);
 }
 
-void CAlistar::Update_State(_float fTimeDelta)
+void CLeona::Update_State(_float fTimeDelta)
 {
-	CAlistarState* pNewState = m_pState->Update(fTimeDelta);
+	CLeonaState* pNewState = m_pState->Update(fTimeDelta);
 	if (pNewState)
 		m_pState = m_pState->ChangeState(m_pState, pNewState);
 }
 
-void CAlistar::LateUpdate_State(_float fTimeDelta)
+void CLeona::LateUpdate_State(_float fTimeDelta)
 {
-	CAlistarState* pNewState = m_pState->LateUpdate(fTimeDelta);
+	CLeonaState* pNewState = m_pState->LateUpdate(fTimeDelta);
 	if (pNewState)
 		m_pState = m_pState->ChangeState(m_pState, pNewState);
 }
 
-void CAlistar::Check_Navigation()
+void CLeona::Check_Navigation()
 {
 	_vector vPosition = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
 	_float m_fWalkingHeight = m_pNavigationCom->Compute_Height(vPosition, 0.f);
@@ -119,7 +118,7 @@ void CAlistar::Check_Navigation()
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
 }
 
-HRESULT CAlistar::Ready_Components(void* pArg)
+HRESULT CLeona::Ready_Components(void* pArg)
 {
 	/* For.Com_Renderer */
 	if (FAILED(__super::Add_Components(TEXT("Com_Renderer"), LEVEL_STATIC, TEXT("Prototype_Component_Renderer"), (CComponent**)&m_pRendererCom)))
@@ -138,7 +137,7 @@ HRESULT CAlistar::Ready_Components(void* pArg)
 		return E_FAIL;
 
 	/* For.Com_Model*/
-	if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Vayne"), (CComponent**)&m_pModelCom)))
+	if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Leona"), (CComponent**)&m_pModelCom)))
 		return E_FAIL;
 
 	CNavigation::NAVDESC NaviDesc;
@@ -157,16 +156,16 @@ HRESULT CAlistar::Ready_Components(void* pArg)
 	return S_OK;
 }
 
-HRESULT CAlistar::SetUp_ShaderID()
+HRESULT CLeona::SetUp_ShaderID()
 {
 	m_eShaderID = SHADER_ANIMDEFAULT;
 
 	return S_OK;
 }
 
-CAlistar* CAlistar::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CLeona* CLeona::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-	CAlistar* pInstance = new CAlistar(pDevice, pContext);
+	CLeona* pInstance = new CLeona(pDevice, pContext);
 
 	if (FAILED(pInstance->Initialize_Prototype()))
 	{
@@ -177,9 +176,9 @@ CAlistar* CAlistar::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	return pInstance;
 }
 
-CGameObject* CAlistar::Clone(void* pArg)
+CGameObject* CLeona::Clone(void* pArg)
 {
-	CAlistar* pInstance = new CAlistar(*this);
+	CLeona* pInstance = new CLeona(*this);
 
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
@@ -190,7 +189,7 @@ CGameObject* CAlistar::Clone(void* pArg)
 	return pInstance;
 }
 
-void CAlistar::Free()
+void CLeona::Free()
 {
 	__super::Free();
 

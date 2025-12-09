@@ -28,6 +28,8 @@
 
 // Enemy
 #include "Vayne.h"
+#include "Renekton.h"
+#include "Leona.h"
 
 // Projectile
 #include "Projectile.h"
@@ -179,6 +181,14 @@ HRESULT CLoader::Loading_For_Prtotype()
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Vayne"),
 		CVayne::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	/*For.Prototype_GameObject_Champion*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Renekton"),
+		CRenekton::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	/*For.Prototype_GameObject_Champion*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Leona"),
+		CLeona::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 #pragma endregion
 
 #pragma region Projectile
@@ -285,6 +295,16 @@ HRESULT CLoader::Loading_For_GamePlay()
 	// 베인
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vayne"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vayne/Vayne.dat"))))
+		return E_FAIL;
+
+	// 레넥톤
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Renekton"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Renekton/Renekton.dat"))))
+		return E_FAIL;
+
+	// 레오나
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Leona"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Leona/Leona.dat"))))
 		return E_FAIL;
 
 	// 근거리 미니언
