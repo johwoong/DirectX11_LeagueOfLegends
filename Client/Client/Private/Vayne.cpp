@@ -7,76 +7,6 @@
 
 using namespace Vayne;
 
-namespace
-{
-	bool g_bEnemyLanePathLoaded = false;
-	std::vector<_float3> g_EnemyLanePoints[3];
-
-	void Load_EnemyLanePaths()
-	{
-		if (g_bEnemyLanePathLoaded)
-			return;
-
-		const _tchar* files[3] =
-		{
-			TEXT("../../../Bin/Data/PositionData/EnemyTopDestnation.dat"),
-			TEXT("../../../Bin/Data/PositionData/EnemyMidDestnation.dat"),
-			TEXT("../../../Bin/Data/PositionData/EnemyBottomDestnation.dat"),
-		};
-
-		for (int i = 0; i < 3; ++i)
-		{
-			HANDLE hFile = CreateFile(
-				files[i],
-				GENERIC_READ, 0, nullptr,
-				OPEN_EXISTING,
-				FILE_ATTRIBUTE_NORMAL, 0);
-
-			if (hFile == INVALID_HANDLE_VALUE)
-				continue;
-
-			_ulong      bytes = 0;
-			_uint       count = 0;
-			NONANIMDESC d{};
-
-			ReadFile(hFile, &count, sizeof(_uint), &bytes, nullptr);
-			if (bytes == 0 || count == 0)
-			{
-				CloseHandle(hFile);
-				continue;
-			}
-
-			g_EnemyLanePoints[i].clear();
-			g_EnemyLanePoints[i].reserve(count);
-
-			for (_uint j = 0; j < count; ++j)
-			{
-				ReadFile(hFile, &d, sizeof(NONANIMDESC), &bytes, nullptr);
-				if (bytes == 0)
-					break;
-
-				g_EnemyLanePoints[i].push_back(d.vPosition);
-			}
-
-			CloseHandle(hFile);
-		}
-
-		g_bEnemyLanePathLoaded = true;
-	}
-}
-const std::vector<_float3>& CVayne::Get_EnemyLanePath(LINE_TYPE eLine)
-{
-	Load_EnemyLanePaths();
-
-	switch (eLine)
-	{
-	case LINE_TOP:    return g_EnemyLanePoints[0];
-	case LINE_MID:    return g_EnemyLanePoints[1];
-	case LINE_BOTTOM: return g_EnemyLanePoints[2];
-	}
-	static std::vector<_float3> dummy;
-	return dummy;
-}
 
 _bool CVayne::Is_AnimationLoop(_uint eAnimId)
 {
@@ -145,25 +75,28 @@ HRESULT CVayne::Initialize(void* pArg)
 
 	CVayneState* pState = new CIdleState(this);
 	m_pState = m_pState->ChangeState(m_pState, pState);
+
 	m_eEnemyType = VAYNE;
-	m_fAggroBonus = 4.f;   // 공격 사거리보다 살짝 넓게
-	m_fAggroReleaseMul = 1.4f;  // 물고 난 뒤 조금만 더 쫓아감
+	m_fAggroBonus = 4.f;
+	m_fAggroReleaseMul = 1.4f;
+
 	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
 	m_tStats.MaxHp = 5000.f;
 	m_tStats.Hp = m_tStats.MaxHp;
 	m_tStats.MoveSpeed = 4.f;
-	m_tStats.AttackRange = 8.f;     
+	m_tStats.AttackRange = 8.f;
 	m_tStats.AttackDamage = 60.f;
 	m_tStats.AttackSpeed = 0.4f;
-	// 라인 타입 (일단 MID)
-	m_eLineType = LINE_MID;
+
+	// 라인 타입 (이 Enemy가 어느 라인 담당인지)
+	m_eLineType = LINE_MID;   // 탑/바텀 Enemy는 LINE_TOP / LINE_BOTTOM 설정
 
 	// 한 점 목적지는 그대로
-	_float3 vDest = Get_EnemyLaneDest(m_eLineType);
+	_float3 vDest = CEnemy::Get_EnemyLaneDest(m_eLineType);
 	Set_LaneTarget(vDest);
 
 	// ★ 경로 시작 인덱스: 내 현재 위치에서 가장 가까운 노드
-	const auto& lane = CVayne::Get_EnemyLanePath(m_eLineType);
+	const auto& lane = Get_EnemyLanePath(m_eLineType);
 	m_iLaneNodeIndex = 0;
 	if (!lane.empty() && m_pTransformCom)
 	{
@@ -188,6 +121,31 @@ HRESULT CVayne::Initialize(void* pArg)
 
 		m_iLaneNodeIndex = bestIdx;
 	}
+
+	// ★ 베인 전용 스킬 AI 값 설정
+	// Q
+	m_tSkill[SKILL_Q].fCooldown = 8.f;
+	m_tSkill[SKILL_Q].fTimer = 0.f;
+	m_tSkill[SKILL_Q].fRange = 7.f;
+	m_tSkill[SKILL_Q].fUseProb = 0.25f;  // 25%
+
+	// W
+	m_tSkill[SKILL_W].fCooldown = 12.f;
+	m_tSkill[SKILL_W].fTimer = 0.f;
+	m_tSkill[SKILL_W].fRange = 7.f;
+	m_tSkill[SKILL_W].fUseProb = 0.15f;
+
+	// E
+	m_tSkill[SKILL_E].fCooldown = 10.f;
+	m_tSkill[SKILL_E].fTimer = 0.f;
+	m_tSkill[SKILL_E].fRange = 5.f;
+	m_tSkill[SKILL_E].fUseProb = 0.1f;
+
+	// R
+	m_tSkill[SKILL_R].fCooldown = 60.f;
+	m_tSkill[SKILL_R].fTimer = 0.f;
+	m_tSkill[SKILL_R].fRange = 8.f;
+	m_tSkill[SKILL_R].fUseProb = 0.05f;
 
 	return S_OK;
 }
@@ -292,106 +250,6 @@ void CVayne::Check_Navigation()
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
 }
 
-void CVayne::Follow_Lane(_float fTimeDelta)
-{
-	// =======================
-// 0) 우선 타겟 찾기 / 유지
-// =======================
-// Enemy 공통 함수
-	Find_Target();                 // 근처에 적(블루 미니언/챔프/건물)이 있으면 m_pTarget 세팅
-	CActor* pTarget = Check_FiledTarget(); // 너무 멀어지면 nullptr로 해제
-
-	// =======================
-	// 1) 타겟이 있으면 → 타겟 추적 (미니언처럼)
-	// =======================
-	if (pTarget && m_pTransformCom)
-	{
-		CTransform* pTr = m_pTransformCom;
-
-		_vector myPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
-		_vector tPos = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
-
-		// XZ 평면에서 방향 벡터
-		_vector vDir = XMVectorSetY(tPos - myPos, 0.f);
-		float   dist = XMVectorGetX(XMVector3Length(vDir));
-		if (dist > 0.001f)
-		{
-			vDir = XMVector3Normalize(vDir);
-
-			// 멈출 거리 = 공격 사거리
-			float stopDist = Get_AttackRangeWorld();     // m_tStats.AttackRange 사용
-
-			// 아직 사거리 밖이면 계속 전진
-			if (dist > stopDist)
-			{
-				myPos += vDir * (m_tStats.MoveSpeed * fTimeDelta);
-				pTr->Set_State(CTransform::STATE_TRANSLATION, myPos);
-			}
-
-			// 타겟 바라보게 회전 (대충 미니언 Face_Target 과 비슷하게)
-			_vector vLook = XMVector3Normalize(XMVectorSetY(myPos - tPos, 0.f)); // ★ 여기만 변경
-			_vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-			_vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
-
-			float fScale = XMVectorGetX(XMVector3Length(pTr->Get_State(CTransform::STATE_RIGHT)));
-			if (fScale < 0.0001f) fScale = 1.f;
-
-			vRight *= fScale;
-			vLook *= fScale;
-			vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight)) * fScale;
-
-			vRight = XMVectorSetW(vRight, 0.f);
-			vUp = XMVectorSetW(vUp, 0.f);
-			vLook = XMVectorSetW(vLook, 0.f);
-
-			pTr->Set_State(CTransform::STATE_RIGHT, vRight);
-			pTr->Set_State(CTransform::STATE_UP, vUp);
-			pTr->Set_State(CTransform::STATE_LOOK, vLook);
-		}
-
-		// 네비 높이 보정
-		Check_Navigation();
-		return;    // ★ 타겟 추적 중이면 여기서 끝
-	}
-
-	// =======================
-	// 2) 타겟 없으면 → 기존 라인 이동
-	// =======================
-	CTransform* pTr = m_pTransformCom;
-	CNavigation* pNavi = m_pNavigationCom;
-	if (!pTr || !pNavi)
-		return;
-
-	// 1) 현재 목적지까지 Move_ByPath 시도
-	if (!pTr->Move_ByPath(fTimeDelta, pNavi))
-	{
-		// 2) 도착했으면 다음 노드로
-		const auto& path = CVayne::Get_EnemyLanePath(m_eLineType);
-		if (path.empty())
-			return;
-
-		const int pathSize = (int)path.size();
-		if (pathSize == 0)
-			return;
-
-		// BLUE → RED 방향 기준
-		_int nextIdx = m_iLaneNodeIndex + 1;
-
-		// 끝에 도달했으면 그냥 멈춤
-		if (nextIdx < 0 || nextIdx >= pathSize)
-			return;
-
-		m_iLaneNodeIndex = nextIdx;
-
-		_float3 vTarget = path[nextIdx];
-		_vector vTargetV = XMLoadFloat3(&vTarget);
-
-		pTr->Set_Destination(vTargetV, pNavi);
-	}
-
-	// 3) 높이 보정
-	Check_Navigation();
-}
 
 HRESULT CVayne::Ready_Components(void* pArg)
 {

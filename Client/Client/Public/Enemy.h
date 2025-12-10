@@ -60,6 +60,25 @@ public:
 		LINE_BOTTOM,
 	};
 
+	struct AISKILLINFO
+	{
+		float fCooldown = 0.f;   // 쿨타임
+		float fTimer = 0.f;   // 경과 시간
+		float fRange = 0.f;   // 사용 가능 사거리
+		float fUseProb = 0.f;   // 사용 확률 (0.0 ~ 1.0)
+	};
+
+	enum AISKILLTYPE
+	{
+		SKILL_NONE = 0,
+		SKILL_Q,
+		SKILL_W,
+		SKILL_E,
+		SKILL_R,
+		SKILL_END
+	};
+
+
 protected:
 	CEnemy(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CEnemy(const CEnemy& rhs);
@@ -102,10 +121,23 @@ public:
 	virtual void Find_Target();
 	virtual CActor* Find_MinDistance_Target();
 	virtual CActor* Check_FiledTarget();
+	void Follow_Lane(_float fTimeDelta);
+
+public:
+	void         Tick_SkillTimers(float fDeltaTime);
+	bool         CanUseSkill(AISKILLTYPE eType, float fDist) const;
+	void         ConsumeSkill(AISKILLTYPE eType);
+	AISKILLTYPE  DecideRandomSkill(float fDistToTarget);
+
+	AISKILLTYPE  Get_NextSkill() const { return m_eNextSkill; }
+	void         Clear_NextSkill() { m_eNextSkill = SKILL_NONE; }
 
 public:
 	virtual void Compute_CurrentIndex();
 	static _float3 Get_EnemyLaneDest(LINE_TYPE eLine);
+	static const vector<_float3>& Get_EnemyLanePath(LINE_TYPE eLine);
+	void RefreshLaneNodeByPosition();
+
 protected:
 	virtual HRESULT SetUp_ShaderResources();
 	virtual HRESULT SetUp_ShaderID();
@@ -129,10 +161,17 @@ protected: /* For.Components */
 	CNavigation* m_pNavigationCom = nullptr;
 	CActor* m_pTarget = nullptr;
 
-
 protected:
+	// 어그로 관련
 	float m_fAggroBonus = {};
 	float m_fAggroReleaseMul = {};
+	_float3 m_vLaneTarget = { 0.f, 0.f, 0.f };
+	_int    m_iLaneNodeIndex = 0;
+	// ★ 스킬 AI 공통
+	AISKILLINFO m_tSkill[SKILL_END];      // [SKILL_Q..SKILL_R]
+	AISKILLTYPE m_eNextSkill = SKILL_NONE;
+	bool m_bWasChasing = false;   // 직전에 타겟을 쫓고 있었는지 여부
+
 public:
 	virtual void Free() override;
 

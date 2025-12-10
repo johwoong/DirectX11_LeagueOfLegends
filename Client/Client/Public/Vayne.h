@@ -22,13 +22,10 @@ public:
 	// 🔹 MoveState에서 사용할 목적지
 	void Set_LaneTarget(const _float3& v) { m_vLaneTarget = v; }
 	const _float3& Get_LaneTarget() const { return m_vLaneTarget; }
-	// ★ 추가
 	_int        Get_LaneNodeIndex() const { return m_iLaneNodeIndex; }
 	void        Set_LaneNodeIndex(_int i) { m_iLaneNodeIndex = i; }
 	LINE_TYPE   Get_LineType()     const { return m_eLineType; }
 	CNavigation* Get_Navigation() { return m_pNavigationCom; }
-	// ★ LanePath 얻기용 정적 함수 (MoveState에서 쓰게)
-	static const vector<_float3>& Get_EnemyLanePath(LINE_TYPE eLine);
 public:
 	virtual _bool Is_AnimationLoop(_uint eAnimId) override;
 	virtual void Ready_Animation_Event() override;
@@ -55,17 +52,12 @@ public: /*For.State*/
 public:	/*For Navigation*/
 	virtual void Check_Navigation() override;
 	// 🔹 미니언처럼 경로 따라 이동
-	void Follow_Lane(_float fTimeDelta);
 
 private:
 	virtual HRESULT Ready_Components(void* pArg) override;
 
 private:
 	class CVayneState* m_pState = nullptr;
-	// 🔹 이 베인이 향할 최종 목적지 (적 타워 근처)
-	_float3 m_vLaneTarget = { 0.f, 0.f, 0.f };
-	// ★ 현재 경로 인덱스
-	_int    m_iLaneNodeIndex = 0;
 public:
 	static CVayne* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr);

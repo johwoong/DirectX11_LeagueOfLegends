@@ -239,6 +239,9 @@
     <ClInclude Include="..\Public\VayneIdleState.h" />
     <ClInclude Include="..\Public\VayneMoveState.h" />
     <ClInclude Include="..\Public\VayneReturnState.h" />
+    <ClInclude Include="..\Public\VayneSkillStateE.h" />
+    <ClInclude Include="..\Public\VayneSkillStateQ.h" />
+    <ClInclude Include="..\Public\VayneSkillStateR.h" />
     <ClInclude Include="..\Public\VayneState.h" />
     <ClInclude Include="LeonaState.h" />
     <ClInclude Include="Client.h" />
@@ -327,6 +330,9 @@
     <ClCompile Include="..\Private\VayneIdleState.cpp" />
     <ClCompile Include="..\Private\VayneMoveState.cpp" />
     <ClCompile Include="..\Private\VayneReturnState.cpp" />
+    <ClCompile Include="..\Private\VayneSkillStateE.cpp" />
+    <ClCompile Include="..\Private\VayneSkillStateQ.cpp" />
+    <ClCompile Include="..\Private\VayneSkillStateR.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Vi.cpp" />
     <ClCompile Include="stdafx.cpp" />

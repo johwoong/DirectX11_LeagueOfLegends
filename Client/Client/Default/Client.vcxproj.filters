@@ -259,6 +259,15 @@
     <ClInclude Include="..\Public\VayneReturnState.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\VayneSkillStateQ.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VayneSkillStateE.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VayneSkillStateR.h">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -478,6 +487,9 @@
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Leona\State">
       <UniqueIdentifier>{8daff700-06fd-4231-8238-e67750ce4e75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill">
+      <UniqueIdentifier>{84626c09-c00b-49d4-b68e-a2a654cef050}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -711,6 +723,15 @@
     </ClCompile>
     <ClCompile Include="..\Private\VayneReturnState.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VayneSkillStateQ.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VayneSkillStateE.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VayneSkillStateR.cpp">
+      <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
