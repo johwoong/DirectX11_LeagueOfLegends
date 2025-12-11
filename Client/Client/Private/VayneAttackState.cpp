@@ -146,10 +146,6 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
 
         if (dist2 > range2 * 1.1f)
             return new CMoveState(m_pOwner);
-
-        // ================================
-        // ?? 10% È®·ü·Î "µµ¸Á°¡±â(ReturnState)" ÀüÈ¯
-        // ================================
         {
             int retreatRoll = rand() % 100;   // 0~99
             if (retreatRoll < 10)             // 10% È®·ü
