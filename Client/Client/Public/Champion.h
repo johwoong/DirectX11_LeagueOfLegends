@@ -12,6 +12,7 @@ class CChampion abstract : public CPlayer
 		int iLevel; // 현재 레벨
 
 		// 기본 능력치
+		float MaxHp;
 		float Hp; // 체력
 		float HpPerLevel; // 레벨당 체력 증가량
 
@@ -71,6 +72,12 @@ public:
 	float Get_WorldAttackRange() const
 	{
 		return m_tStat.AttackRange * 0.02f;   // ★ 단위 변환 필수
+	}
+	float Get_HpPercent() const
+	{
+		if (m_tStat.Hp <= 0.f)
+			return 0.f;
+		return m_tStat.Hp / m_tStat.MaxHp;
 	}
 
 	void Toggle_AttackRange()

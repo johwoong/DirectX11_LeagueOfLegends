@@ -5,6 +5,7 @@
 #include "Vayne.h"
 #include "Transform.h"
 #include "Navigation.h"
+#include "Minion.h"
 
 using namespace Vayne;
 
@@ -49,22 +50,88 @@ CVayneState* CMoveState::Update(_float fTimeDelta)
     if (!m_pOwner)
         return nullptr;
 
-    // ?? 1) 라인 따라 이동
-    m_pOwner->Follow_Lane(fTimeDelta);
+    CTransform* pTr = m_pOwner->Get_Transform();
+    CNavigation* pNavi = m_pOwner->Get_Navigation();
+    if (!pTr || !pNavi)
+        return nullptr;
 
-    // ?? 2) RUN 애니메이션 진행
-    CModel* pModel = m_pOwner->Get_Model();
-    if (pModel)
+    if (!m_pOwner->HasReachedFirstTower())
+    {
+        m_pOwner->Follow_Lane(fTimeDelta);
+
+        _float3 vWaitPos = m_pOwner->Get_FirstTowerWaitPos();
+
+        _vector vMy = pTr->Get_State(CTransform::STATE_TRANSLATION);
+        _vector vDst = XMLoadFloat3(&vWaitPos);
+
+        vMy = XMVectorSetY(vMy, 0.f);
+        vDst = XMVectorSetY(vDst, 0.f);
+
+        float fDist = XMVectorGetX(XMVector3Length(vDst - vMy));
+        if (fDist <= 2.f)
+        {
+            m_pOwner->SetReachedFirstTower(true);
+            return new CIdleState(m_pOwner);
+        }
+    }
+    else
+    {
+        // ? 첫 포탑 이후 구간
+        CMinion* pFront = m_pOwner->Get_FrontAllyMinion(100.f);
+
+        if (pFront)
+        {
+            _vector vMinionPos = pFront->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+            _vector vMyPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
+
+            vMinionPos = XMVectorSetY(vMinionPos, XMVectorGetY(vMyPos));
+
+            const auto& path = CVayne::Get_EnemyLanePath(m_pOwner->Get_LineType());
+            _vector vFollowPos = vMinionPos;
+
+            if (path.size() >= 2)
+            {
+                _vector vStart = XMLoadFloat3(&path.front());
+                _vector vEnd = XMLoadFloat3(&path.back());
+                _vector vDir = XMVector3Normalize(XMVectorSetY(vEnd - vStart, 0.f));
+
+                vFollowPos = vMinionPos - vDir * 2.5f; // 미니언 뒤에 붙기
+            }
+
+            _float3 newFollow{};
+            XMStoreFloat3(&newFollow, vFollowPos);
+
+            if (!m_bHasFollowPos ||
+                XMVectorGetX(
+                    XMVector3Length(
+                        XMLoadFloat3(&m_vLastFollowPos) - vFollowPos)) > 1.f)
+            {
+                m_vLastFollowPos = newFollow;
+                m_bHasFollowPos = true;
+                pTr->Set_Destination(vFollowPos, pNavi);
+            }
+
+            pTr->Move_ByPath(fTimeDelta, pNavi);
+            m_pOwner->Check_Navigation();
+        }
+        else
+        {
+            // 앞에 우리 미니언이 아예 없으면 그냥 라인 따라 이동 (원래 로직)
+            m_pOwner->Follow_Lane(fTimeDelta);
+        }
+    }
+
+    // RUN 애니
+    if (CModel* pModel = m_pOwner->Get_Model())
     {
         m_bIsAnimationFinished =
             pModel->Play_Animation(
                 fTimeDelta,
                 m_pOwner->Is_AnimationLoop(
-                    pModel->Get_CurrentAnimIndex())
-            );
+                    pModel->Get_CurrentAnimIndex()));
     }
 
-    return nullptr;  // 상태 유지
+    return nullptr;
 }
 
 CVayneState* CMoveState::LateUpdate(_float fTimeDelta)

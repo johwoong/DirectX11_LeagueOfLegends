@@ -19,6 +19,8 @@ public:
 private:
     _float m_fMoveTimeAcc = 0.f;
     _float m_fMoveTime = 0.f;
+    _float3 m_vLastFollowPos = { 0.f, 0.f, 0.f };
+    bool    m_bHasFollowPos = false;
 };
 NS_END
 NS_END

@@ -105,16 +105,6 @@ int CMinion::Update(_float fTimeDelta)
 
     m_fAttackTimer += fTimeDelta;
 
-    if (m_tStats.m_fCurrentHp <= 0.f && m_eState != STATE_DIE)
-    {
-        m_tStats.m_fCurrentHp = 0.f;
-        m_bDying = true;
-        m_eState = STATE_DIE;
-        On_Death();
-    }
-
-    // ★ 현재 타겟이 있으면, 매 프레임 유효성 검사를 해서
-    //    죽었거나 사거리 벗어나면 nullptr 로 만들어줌
     if (m_pTarget)
         Check_FiledTarget();
 
@@ -133,9 +123,11 @@ void CMinion::Late_Update(_float fTimeDelta)
     if (m_pRendererCom && Is_Frustum(Check_CullingRadius()))
         m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 
-    CPickingManager::GetInstance()->Add_PickingGroup(this);
+    // ?? 죽는 중 / 죽음 상태면 픽킹 그룹에 다시 안 넣기
+    if (!m_bDead && !m_bDying)
+        CPickingManager::GetInstance()->Add_PickingGroup(this);
 
-    Apply_Separation(fTimeDelta);  
+    Apply_Separation(fTimeDelta);
 }
 
 
@@ -292,9 +284,9 @@ void CMinion::Find_Target(_float fTimeDelta)
         }
     }
 
-    // ================= 4) 적 챔피언(Enemy, Vayne 등) 탐색 ?? 추가 =================
+    // ================= 4) 적 챔피언(Enemy, Vayne 등) 탐색 =================
+    if (m_eTeam == TEAM_BLUE)
     {
-        // Enemy(Vayne)는 COLLISION_ENEMY 그룹에 들어있으니까 여기서 스캔
         auto& enemyGroup =
             CCollision_Manager::GetInstance()->Get_CollisionGroup(
                 CCollision_Manager::COLLISION_ENEMY);
@@ -307,9 +299,6 @@ void CMinion::Find_Target(_float fTimeDelta)
             if (!pA || pA->Get_Dead())
                 continue;
 
-            // 여기선 일단 "전부 적" 취급
-            // (나중에 Enemy 쪽에도 팀이 생기면 팀 비교해서 같은 팀이면 continue 추가)
-
             float d = Target_Distance(pA);
             if (d < bestDist)
             {
@@ -318,7 +307,6 @@ void CMinion::Find_Target(_float fTimeDelta)
             }
         }
     }
-
     // ========== 5) 최종 타겟 설정 ==========
     if (best)
         m_pTarget = best;
@@ -351,10 +339,17 @@ CActor* CMinion::Check_FiledTarget()
             return nullptr;
         }
     }
-    // 2) 타겟이 빌딩(포탑/넥서스)인 경우
     else if (CBuilding* pBuild = dynamic_cast<CBuilding*>(m_pTarget))
     {
+        // 1) 죽었으면 해제
         if (pBuild->Get_Dead())
+        {
+            m_pTarget = nullptr;
+            return nullptr;
+        }
+
+        // 2) 아군 빌딩이면 타겟 자격 없음
+        if (pBuild->Get_TeamType() == m_eTeam)
         {
             m_pTarget = nullptr;
             return nullptr;
@@ -517,6 +512,39 @@ void CMinion::Follow_Target(_float fTimeDelta)
     Face_Target();
 }
 
+void CMinion::On_Death()
+{
+    // 이미 죽는 중이거나 완전히 죽은 상태면 다시 실행 X
+    if (m_bDead || m_bDying || m_eState == STATE_DIE)
+        return;
+
+    m_bDying = true;
+    m_eState = STATE_DIE;
+
+    // 1) 충돌 그룹에서 제거 → 더 이상 CollisionwithGroup에서 안 잡힘
+    CCollision_Manager::GetInstance()->Out_CollisionGroup(
+        CCollision_Manager::COLLISION_MINION, this);
+
+    // 2) 픽킹 그룹에서도 제거 → 마우스로도 안 찍힘
+    CPickingManager::GetInstance()->Out_PickingGroup(this);
+
+    // 3) 콜라이더 전부 삭제
+    if (m_pSphereCom)
+    {
+        Safe_Release(m_pSphereCom);
+        m_pSphereCom = nullptr;
+    }
+    if (m_pOBBCom)
+    {
+        Safe_Release(m_pOBBCom);
+        m_pOBBCom = nullptr;
+    }
+    // 혹시 다른 콜라이더 더 있으면 여기서 전부 Safe_Release + nullptr
+
+    // 이동/AI 중지
+    m_bMove = false;
+}
+
 void CMinion::Apply_Separation(_float fTimeDelta)
 {
     auto& group =
@@ -573,7 +601,8 @@ void CMinion::Apply_Separation(_float fTimeDelta)
 
 _int CMinion::Take_Damage(int dmg, CActor* causer)
 {
-    if (m_eState == STATE_DIE)
+    // 이미 죽었거나 죽는 중이거나, HP가 0 이하이면 절대 맞지 않음
+    if (m_bDead || m_bDying || m_eState == STATE_DIE || m_tStats.m_fCurrentHp <= 0.f)
         return 0;
 
     m_pOrginDamageCauser = causer;
@@ -582,19 +611,26 @@ _int CMinion::Take_Damage(int dmg, CActor* causer)
     if (m_tStats.m_fCurrentHp <= 0.f)
     {
         m_tStats.m_fCurrentHp = 0.f;
-        m_bDying = true;
-        return 1;
+
+        // ?? 여기서 즉시 죽음 처리 실행
+        On_Death();        // ← 이거 반드시 호출
+
+        return 1;          // DeadState 전환용으로 그대로 리턴
     }
 
-    // ===== 타겟 변경 로직 수정 =====
-    // 1) 이미 타겟이 있으면 절대로 바꾸지 않음
+    // ===== 타겟 변경 로직 =====
     if (m_pTarget != nullptr)
         return 0;
 
-    // 2) 타겟이 없을 때만, 나를 때린 애를 새 타겟으로 설정
     if (causer)
     {
-        m_pTarget = causer; // 지금은 단순히 causer를 타겟으로
+        if (auto pBuild = dynamic_cast<CBuilding*>(causer))
+        {
+            if (pBuild->Get_TeamType() == m_eTeam)
+                return 0;
+        }
+
+        m_pTarget = causer;
     }
 
     return 0;
@@ -697,9 +733,13 @@ void CMinion::Mark_Dead()
     if (m_bDead)
         return;
 
+    // ?? 충돌 그룹에서 제거
+    CCollision_Manager::GetInstance()->Out_CollisionGroup(
+        CCollision_Manager::COLLISION_MINION, this);
+
     if (m_pHpBar)
     {
-        m_pHpBar->ReturnToPool();   // ★ 바로 풀로
+        m_pHpBar->ReturnToPool();
         m_pHpBar = nullptr;
     }
 

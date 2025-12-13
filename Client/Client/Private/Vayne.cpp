@@ -213,31 +213,32 @@ void CVayne::LateUpdate_State(_float fTimeDelta)
 
 _int CVayne::Take_Damage(int iDamage, CActor* DamageCauser)
 {
-	// 1) 기본 Enemy 데미지 처리 (HP 감소 + 죽으면 Mark_Dead)
 	_int iHp = __super::Take_Damage(iDamage, DamageCauser);
-
-	// 이미 죽었으면 더 할 것 없음
 	if (iHp <= 0)
 		return iHp;
 
-	// 상태가 없거나 이미 ReturnState라면 또 바꿀 필요 X
 	if (!m_pState || dynamic_cast<CReturnState*>(m_pState))
 		return iHp;
 
-	// 2) 공격자가 Player(Champion) 이거나 Building 인지 체크
-	bool bFromPlayerOrBuilding =
-		(nullptr != dynamic_cast<CChampion*>(DamageCauser)) ||
-		(nullptr != dynamic_cast<CBuilding*>(DamageCauser));
+	// 1) 포탑(혹은 건물)에게 맞은 경우 → 무조건 도망
+	if (auto pBuilding = dynamic_cast<CBuilding*>(DamageCauser))
+	{
+		CVayneState* pNew = new CReturnState(this);
+		m_pState = m_pState->ChangeState(m_pState, pNew);
+		return iHp;
+	}
 
-	if (bFromPlayerOrBuilding)
+	// 2) 플레이어나 기타 경우 → 확률로 도망
+	if (auto pChamp = dynamic_cast<CChampion*>(DamageCauser))
 	{
 		int roll = rand() % 100;
-		if (roll < 40)   // 0~19 → 20%
+		if (roll < 40)
 		{
 			CVayneState* pNew = new CReturnState(this);
 			m_pState = m_pState->ChangeState(m_pState, pNew);
 		}
 	}
+
 	return iHp;
 }
 

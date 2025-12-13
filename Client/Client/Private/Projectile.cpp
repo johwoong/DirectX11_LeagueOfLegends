@@ -284,7 +284,23 @@ void CProjectile::Check_Hit()
                 m_pOBBCom,
                 &pTargetActor))
             {
-                bHit = true;
+                // ?? 죽었거나 죽는 중이면 히트 취소
+                if (auto pMin = dynamic_cast<CMinion*>(pTargetActor))
+                {
+                    if (pMin->IsDeadOrDying())
+                    {
+                        bHit = false;
+                        pTargetActor = nullptr;
+                    }
+                    else
+                        bHit = true;
+                }
+                else
+                {
+                    // 미니언이 아닌 애(Enemy 챔피언 등)은 일단 bHit = true
+                    if (!pTargetActor->Get_Dead())
+                        bHit = true;
+                }
             }
 
             // 2) 아직 안 맞았으면 Minion 그룹도 체크
@@ -293,10 +309,24 @@ void CProjectile::Check_Hit()
                 m_pOBBCom,
                 &pTargetActor))
             {
-                if (dynamic_cast<CMinion*>(pTargetActor)->Get_Team() == TEAM_BLUE)
+                auto pMin = dynamic_cast<CMinion*>(pTargetActor);
+                if (!pMin)
+                    return; // 이상한 타입이면 무시
+
+                // 우리 팀이면 무시
+                if (pMin->Get_Team() == TEAM_BLUE)
                     return;
 
-                bHit = true;
+                // ?? 여기서도 죽었거나 죽는 중이면 "충돌 없던 것"으로 처리
+                if (pMin->IsDeadOrDying())
+                {
+                    bHit = false;
+                    pTargetActor = nullptr;
+                }
+                else
+                {
+                    bHit = true;
+                }
             }
 
             if (bHit && pTargetActor)

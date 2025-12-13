@@ -115,7 +115,7 @@ public: // AI
 
     virtual void Follow_Target(_float fTimeDelta);
     virtual void Attack_Target(_float fTimeDelta) {}
-    virtual void On_Death() {}
+    virtual void On_Death();
     void Apply_Separation(_float fTimeDelta);
 public: // Navigation logic
     virtual void Check_Navigation() = 0;

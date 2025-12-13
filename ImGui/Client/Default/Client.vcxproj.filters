@@ -76,6 +76,9 @@
     <Filter Include="01. Levels\00. Loader\01. Logo">
       <UniqueIdentifier>{27aae03c-2db9-4dcd-8d80-ee767bd5d3bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03. ToolManager\04. EffectManager">
+      <UniqueIdentifier>{1b5d2ef4-6d7e-4755-9d81-a5760984dc2b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -174,6 +177,7 @@
     <ClInclude Include="..\Public\Navigation_Manager.h">
       <Filter>03. ToolManager\03. NavigationManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\EffectManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -270,6 +274,7 @@
     <ClCompile Include="..\Private\Navigation_Manager.cpp">
       <Filter>03. ToolManager\03. NavigationManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\EffectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">

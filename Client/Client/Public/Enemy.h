@@ -11,6 +11,8 @@ class CNavigation;
 NS_END
 
 NS_BEGIN(Client)
+class CMinion;
+class CBuilding;
 class CEnemy abstract : public CActor
 {
 public:
@@ -109,6 +111,12 @@ public:
 	// ?? 타겟 Get/Set
 	CActor* Get_Target() const { return m_pTarget; }
 	void    Set_Target(CActor* pT) { m_pTarget = pT; }
+	float Get_HpPercent() const
+	{
+		if (m_tStats.MaxHp <= 0.f)
+			return 0.f;
+		return m_tStats.Hp / m_tStats.MaxHp;
+	}
 
 	// ?? XZ 거리 계산 (Minion이랑 비슷)
 	_float  Target_Distance(CActor* pTarget) const;
@@ -137,6 +145,13 @@ public:
 	static _float3 Get_EnemyLaneDest(LINE_TYPE eLine);
 	static const vector<_float3>& Get_EnemyLanePath(LINE_TYPE eLine);
 	void RefreshLaneNodeByPosition();
+	bool Has_AllyWaveNearby(float fRadius = 15.f) const;
+	CMinion* Get_FrontAllyMinion(float fMaxDistance = 200.f) const;
+	bool Has_AllyMinionUnderEnemyTower(CBuilding* pTower, float fRadius = 8.f) const;
+	bool Has_AllyMinionNearBuilding(CBuilding* pBuilding, float fRadius);
+	bool    HasReachedFirstTower() const { return m_bReachedFirstTower; }
+	void    SetReachedFirstTower(bool b) { m_bReachedFirstTower = b; }
+	_float3 Get_FirstTowerWaitPos() const;
 
 protected:
 	virtual HRESULT SetUp_ShaderResources();
@@ -167,10 +182,12 @@ protected:
 	float m_fAggroReleaseMul = {};
 	_float3 m_vLaneTarget = { 0.f, 0.f, 0.f };
 	_int    m_iLaneNodeIndex = 0;
+
 	// ★ 스킬 AI 공통
 	AISKILLINFO m_tSkill[SKILL_END];      // [SKILL_Q..SKILL_R]
 	AISKILLTYPE m_eNextSkill = SKILL_NONE;
 	bool m_bWasChasing = false;   // 직전에 타겟을 쫓고 있었는지 여부
+	bool    m_bReachedFirstTower = false;   // ← 추가: 미드 1차 포탑(8번째 노드)까지 갔는지
 
 public:
 	virtual void Free() override;

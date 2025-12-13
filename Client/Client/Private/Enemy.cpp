@@ -121,12 +121,20 @@ namespace
 // ?? Enemy 입장에서 "공격 가능한 타겟인가?" 필터
 static bool IsEnemyValidTargetForAI(CActor* pA)
 {
-	if (!pA || pA->Get_Dead())
+	if (!pA)
+		return false;
+
+	// 기본적으로 Actor의 m_bDead 체크
+	if (pA->Get_Dead())
 		return false;
 
 	// 블루팀 미니언만
 	if (auto pMinion = dynamic_cast<CMinion*>(pA))
 	{
+		// ?? 이미 죽었거나 죽는 중인 미니언은 타겟 아님
+		if (pMinion->IsDeadOrDying())
+			return false;
+
 		if (pMinion->Get_Team() != TEAM_BLUE)
 			return false;
 
@@ -136,6 +144,9 @@ static bool IsEnemyValidTargetForAI(CActor* pA)
 	// 블루팀 건물만
 	if (auto pBuilding = dynamic_cast<CBuilding*>(pA))
 	{
+		if (pBuilding->Get_Dead())
+			return false;
+
 		if (pBuilding->Get_TeamType() != TEAM_BLUE)
 			return false;
 
@@ -144,6 +155,8 @@ static bool IsEnemyValidTargetForAI(CActor* pA)
 
 	if (auto pChamp = dynamic_cast<CChampion*>(pA))
 	{
+		if (pChamp->Get_Dead())
+			return false;
 		return true;
 	}
 
@@ -320,51 +333,107 @@ void CEnemy::Set_Picked()
 
 void CEnemy::Find_Target()
 {
+	// 이미 타겟이 있고, 여전히 유효하면 유지
 	if (m_pTarget)
 	{
-		Check_FiledTarget();
-		return;
+		CActor* pValid = Check_FiledTarget();
+		if (pValid)
+			return;
 	}
-
-	CActor* best = nullptr;
-
-	// ?? 어그로 범위: 공격 사거리 + 추가 어그로 범위
-	float aggroRange = m_tStats.AttackRange + m_fAggroBonus;  // ★ 여기
-	float bestDist = aggroRange;;
 
 	CCollision_Manager* pCM = CCollision_Manager::GetInstance();
 	if (!pCM || !m_pTransformCom)
 		return;
 
-	auto scanGroup = [&](CCollision_Manager::COLLISION_GROUP eGroup)
-		{
-			auto& group = pCM->Get_CollisionGroup(eGroup);
-			for (auto obj : group)
-			{
-				CActor* pA = dynamic_cast<CActor*>(obj);
-				if (!IsEnemyValidTargetForAI(pA))
-					continue;   // ?? 여기서 아군(레드) 미니언/건물 다 걸러짐
+	// ? 최소 시야를 강제로 키워줌 (30 이상)
+	float aggroRange = max(m_tStats.AttackRange + m_fAggroBonus, 30.f);
 
-				float d = Target_Distance(pA);
-				if (d < bestDist)
+	CActor* bestChampion = nullptr;
+	float     bestChampDist = aggroRange;
+
+	CMinion* bestMinion = nullptr;
+	float     bestMinionDist = aggroRange;
+
+	CBuilding* bestBuilding = nullptr;
+	float      bestBuildingDist = aggroRange;
+
+	_vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	vMy = XMVectorSetY(vMy, 0.f);
+
+	auto evalActor = [&](CActor* pA)
+		{
+			if (!pA || pA->Get_Dead())
+				return;
+
+			if (!IsEnemyValidTargetForAI(pA))
+				return;
+
+			_vector vPos = pA->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+			vPos = XMVectorSetY(vPos, 0.f);
+
+			float dist = XMVectorGetX(XMVector3Length(vPos - vMy));
+			if (dist > aggroRange)
+				return;
+
+			// 1) 챔피언 우선
+			if (auto pChamp = dynamic_cast<CChampion*>(pA))
+			{
+				if (dist < bestChampDist)
 				{
-					bestDist = d;
-					best = pA;
+					bestChampDist = dist;
+					bestChampion = pChamp;
 				}
+				return;
+			}
+
+			// 2) 미니언 ? 이제 체력 상관 없이 그냥 가까운 놈
+			if (auto pMinion = dynamic_cast<CMinion*>(pA))
+			{
+				if (dist < bestMinionDist)
+				{
+					bestMinionDist = dist;
+					bestMinion = pMinion;
+				}
+				return;
+			}
+
+			// 3) 건물(타워 포함) ? 아군 웨이브 있을 때만
+			if (auto pBuilding = dynamic_cast<CBuilding*>(pA))
+			{
+				if (!Has_AllyMinionNearBuilding(pBuilding, 15.f))
+					return;
+
+				if (dist < bestBuildingDist)
+				{
+					bestBuildingDist = dist;
+					bestBuilding = pBuilding;
+				}
+				return;
 			}
 		};
 
-	// 1) 미니언 전체 중에서 "블루팀 미니언만" 필터됨
-	scanGroup(CCollision_Manager::COLLISION_MINION);
+	// === 그룹 스캔 ===
+	auto& minions = pCM->Get_CollisionGroup(CCollision_Manager::COLLISION_MINION);
+	for (auto obj : minions)
+		evalActor(dynamic_cast<CActor*>(obj));
 
-	// 2) 건물 전체 중에서 "블루팀 건물만" 필터됨
-	scanGroup(CCollision_Manager::COLLISION_BUILDING);
+	auto& buildings = pCM->Get_CollisionGroup(CCollision_Manager::COLLISION_BUILDING);
+	for (auto obj : buildings)
+		evalActor(dynamic_cast<CActor*>(obj));
 
-	// 3) 플레이어 챔피언 (블루 플레이어)
-	scanGroup(CCollision_Manager::COLLISION_PLAYER);
+	auto& players = pCM->Get_CollisionGroup(CCollision_Manager::COLLISION_PLAYER);
+	for (auto obj : players)
+		evalActor(dynamic_cast<CActor*>(obj));
 
-	if (best)
-		m_pTarget = best;
+	// === 우선순위 적용 ===
+	if (bestChampion)
+		m_pTarget = bestChampion;      // 1순위: 챔피언
+	else if (bestMinion)
+		m_pTarget = bestMinion;        // 2순위: 미니언
+	else if (bestBuilding)
+		m_pTarget = bestBuilding;      // 3순위: 건물
+	else
+		m_pTarget = nullptr;
 }
 
 CActor* CEnemy::Find_MinDistance_Target()
@@ -415,13 +484,12 @@ CActor* CEnemy::Check_FiledTarget()
 
 
 	// Check_FiledTarget
-	float aggroRange = m_tStats.AttackRange + m_fAggroBonus;
+	float aggroRange = max(m_tStats.AttackRange + m_fAggroBonus, 30.f);
 	if (Target_Distance(m_pTarget) > aggroRange * m_fAggroReleaseMul)
 	{
 		m_pTarget = nullptr;
 		return nullptr;
 	}
-
 	return m_pTarget;
 }
 
@@ -459,24 +527,31 @@ void CEnemy::Follow_Lane(_float fTimeDelta)
 				pTr->Set_State(CTransform::STATE_TRANSLATION, myPos);
 			}
 
-			_vector vLook = XMVector3Normalize(XMVectorSetY(myPos - tPos, 0.f));
-			_vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-			_vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+			// ★ 여기부터 방향 맞추기 - 미니언과 동일 컨벤션
+			_vector vLook = XMVectorSetY(myPos - tPos, 0.f);  // 내 위치 - 타겟 위치
+			if (XMVectorGetX(XMVector3LengthSq(vLook)) > 0.0001f)
+			{
+				vLook = XMVector3Normalize(vLook);
 
-			float fScale = XMVectorGetX(XMVector3Length(pTr->Get_State(CTransform::STATE_RIGHT)));
-			if (fScale < 0.0001f) fScale = 1.f;
+				_vector vOldRight = pTr->Get_State(CTransform::STATE_RIGHT);
+				float   fScale = XMVectorGetX(XMVector3Length(vOldRight));
+				if (fScale < 0.0001f) fScale = 1.f;
 
-			vRight *= fScale;
-			vLook *= fScale;
-			vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight)) * fScale;
+				_vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+				_vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
 
-			vRight = XMVectorSetW(vRight, 0.f);
-			vUp = XMVectorSetW(vUp, 0.f);
-			vLook = XMVectorSetW(vLook, 0.f);
+				vRight *= fScale;
+				vLook *= fScale;
+				vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight)) * fScale;
 
-			pTr->Set_State(CTransform::STATE_RIGHT, vRight);
-			pTr->Set_State(CTransform::STATE_UP, vUp);
-			pTr->Set_State(CTransform::STATE_LOOK, vLook);
+				vRight = XMVectorSetW(vRight, 0.f);
+				vUp = XMVectorSetW(vUp, 0.f);
+				vLook = XMVectorSetW(vLook, 0.f);
+
+				pTr->Set_State(CTransform::STATE_RIGHT, vRight);
+				pTr->Set_State(CTransform::STATE_UP, vUp);
+				pTr->Set_State(CTransform::STATE_LOOK, vLook);
+			}
 		}
 
 		Check_Navigation();
@@ -617,6 +692,173 @@ void CEnemy::RefreshLaneNodeByPosition()
 	_vector vDst = XMLoadFloat3(&dst);
 	m_pTransformCom->Set_Destination(vDst, m_pNavigationCom);
 }
+
+bool CEnemy::Has_AllyMinionNearBuilding(CBuilding* pBuilding, float fRadius)
+{
+	if (!pBuilding)
+		return false;
+
+	CCollision_Manager* pCM = CCollision_Manager::GetInstance();
+	if (!pCM)
+		return false;
+
+	_vector vB = pBuilding->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	vB = XMVectorSetY(vB, 0.f);
+
+	auto& minions = pCM->Get_CollisionGroup(CCollision_Manager::COLLISION_MINION);
+
+	for (auto obj : minions)
+	{
+		CMinion* pMinion = dynamic_cast<CMinion*>(obj);
+		if (!pMinion || pMinion->Get_Dead())
+			continue;
+
+		if (pMinion->Get_Team() == pBuilding->Get_TeamType())
+			continue;
+
+		_vector vM = pMinion->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vM = XMVectorSetY(vM, 0.f);
+
+		float dist = XMVectorGetX(XMVector3Length(vM - vB));
+		if (dist <= fRadius)
+			return true;
+	}
+
+	return false;
+}
+
+_float3 CEnemy::Get_FirstTowerWaitPos() const
+{
+	// EnemyMidDestnation.dat 안의 8번째 포인트를 "미드 1차 포탑 대기 위치"로 사용
+	const auto& path = Get_EnemyLanePath(m_eLineType);
+
+	if (path.size() > 8)
+		return path[7];          // 0 기반 인덱스: 8번째 노드
+	else if (!path.empty())
+		return path.back();      // 혹시 포인트가 적으면 마지막 포인트라도 사용
+	else
+		return m_vLaneTarget;    // 데이터가 정말 없다면 기존 목적지 사용
+}
+
+bool CEnemy::Has_AllyWaveNearby(float fRadius) const
+{
+	CCollision_Manager* pCM = CCollision_Manager::GetInstance();
+	if (!pCM || !m_pTransformCom)
+		return false;
+
+	_vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	vMy = XMVectorSetY(vMy, 0.f);
+
+	auto& group = pCM->Get_CollisionGroup(CCollision_Manager::COLLISION_MINION);
+	for (auto obj : group)
+	{
+		CMinion* pM = dynamic_cast<CMinion*>(obj);
+		if (!pM) continue;
+
+		// Vayne는 RED 팀이라고 가정 (플레이어는 BLUE)
+		if (pM->Get_Team() != TEAM_RED)
+			continue;
+
+		_vector vPos = pM->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos = XMVectorSetY(vPos, 0.f);
+
+		float dist = XMVectorGetX(XMVector3Length(vPos - vMy));
+		if (dist <= fRadius)
+			return true;
+	}
+
+	return false;
+}
+
+CMinion* CEnemy::Get_FrontAllyMinion(float fMaxDistance) const
+{
+	CCollision_Manager* pCM = CCollision_Manager::GetInstance();
+	if (!pCM || !m_pTransformCom)
+		return nullptr;
+
+	_vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	vMy = XMVectorSetY(vMy, 0.f);
+
+	const auto& path = Get_EnemyLanePath(m_eLineType);
+	if (path.size() < 2)
+		return nullptr;
+
+	_vector vStart = XMLoadFloat3(&path.front());
+	_vector vEnd = XMLoadFloat3(&path.back());
+	_vector vDir = XMVector3Normalize(XMVectorSetY(vEnd - vStart, 0.f));
+
+	auto& group = pCM->Get_CollisionGroup(CCollision_Manager::COLLISION_MINION);
+
+	CMinion* pBest = nullptr;
+	float bestProj = -FLT_MAX;
+
+	for (auto obj : group)
+	{
+		CMinion* pM = dynamic_cast<CMinion*>(obj);
+		if (!pM) continue;
+
+		if (pM->Get_Team() != TEAM_RED)
+			continue;
+
+		// ? 여기 추가: 같은 라인만 따라간다
+		if (pM->Get_Lane() != m_eLineType)
+			continue;
+
+		_vector vPos = pM->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos = XMVectorSetY(vPos, 0.f);
+
+		float dist = XMVectorGetX(XMVector3Length(vPos - vMy));
+		if (dist > fMaxDistance)
+			continue;
+
+		float proj = XMVectorGetX(XMVector3Dot(vPos, vDir));
+		float myProj = XMVectorGetX(XMVector3Dot(vMy, vDir));
+
+		if (proj <= myProj) // 나보다 앞에 있는 애만
+			continue;
+
+		if (proj > bestProj)
+		{
+			bestProj = proj;
+			pBest = pM;
+		}
+	}
+
+	return pBest;
+}
+
+// 특정 포탑 근처에 아군 미니언이 있는지 (포탑 타격 허용 조건)
+bool CEnemy::Has_AllyMinionUnderEnemyTower(CBuilding* pTower, float fRadius) const
+{
+	if (!pTower) return false;
+
+	CCollision_Manager* pCM = CCollision_Manager::GetInstance();
+	if (!pCM)
+		return false;
+
+	_vector vTower = pTower->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	vTower = XMVectorSetY(vTower, 0.f);
+
+	auto& group = pCM->Get_CollisionGroup(CCollision_Manager::COLLISION_MINION);
+	for (auto obj : group)
+	{
+		CMinion* pM = dynamic_cast<CMinion*>(obj);
+		if (!pM) continue;
+		if (pM->Get_Team() != TEAM_RED) // 아군 미니언
+			continue;
+
+		_vector vPos = pM->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos = XMVectorSetY(vPos, 0.f);
+
+		float dist = XMVectorGetX(XMVector3Length(vPos - vTower));
+		if (dist <= fRadius)
+			return true;
+	}
+
+	return false;
+}
+
+
 
 _float CEnemy::Target_Distance(CActor* pTarget) const
 {

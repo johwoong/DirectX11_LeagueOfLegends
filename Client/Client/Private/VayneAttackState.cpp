@@ -19,27 +19,8 @@ CAttackState::CAttackState(CVayne* pVayne)
 
 CVayneState* CAttackState::AI_Behaviour(_float fTimeDelta)
 {
-    if (!m_pOwner)
-        return nullptr;
-
-    // 1) 타겟 유효성 검사
-    CActor* pTarget = m_pOwner->Check_FiledTarget();
-    if (!pTarget)
-    {
-        // 타겟 없으면 라인 다시 타도록 MoveState로
-        return new CMoveState(m_pOwner);
-    }
-
-    float dist = m_pOwner->Target_Distance(pTarget);
-    float range = m_pOwner->Get_AttackRangeWorld();
-
-    // 2) 사거리 완전히 벗어나면 다시 이동 (추격)
-    if (dist > range * 1.1f)
-    {
-        return new CMoveState(m_pOwner);
-    }
-
-    return nullptr; // 계속 공격 상태 유지
+    UNREFERENCED_PARAMETER(fTimeDelta);
+    return nullptr;
 }
 
 CVayneState* CAttackState::Update(_float fTimeDelta)
@@ -47,34 +28,56 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
     if (!m_pOwner)
         return nullptr;
 
-    // 1) 타겟 다시 확인
     CActor* pTarget = m_pOwner->Check_FiledTarget();
     if (!pTarget)
-        return new CMoveState(m_pOwner);   // ?? Idle 말고 Move
+        return new CMoveState(m_pOwner);
 
-    // 2) 거리 체크 (안전)
     float dist = m_pOwner->Target_Distance(pTarget);
     float range = m_pOwner->Get_AttackRangeWorld();
 
-    if (dist > range * 1.1f)
+    // ?? 타겟이 포탑/건물인데, 내 앞에 우리 미니언이 없다 → 바로 도망
+    if (auto pTower = dynamic_cast<CBuilding*>(pTarget))
     {
-        return new CMoveState(m_pOwner);
+        if (!m_pOwner->Has_AllyMinionUnderEnemyTower(pTower, 15.f))
+        {
+            return new CReturnState(m_pOwner);
+        }
     }
 
-    // 3) 타겟 바라보기
+    if (dist > range * 1.1f)
+        return new CMoveState(m_pOwner);
+
     CTransform* pTr = m_pOwner->Get_Transform();
     if (pTr)
     {
         _vector myPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
         _vector tarPos = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-        _vector lookDir = tarPos - myPos;
-        lookDir = XMVectorSetY(lookDir, 0.f);
-        if (XMVectorGetX(XMVector3LengthSq(lookDir)) > 0.0001f)
+        // ★ 미니언과 동일 컨벤션: Look = 내 위치 - 타겟 위치
+        _vector vLook = XMVectorSetY(myPos - tarPos, 0.f);
+
+        if (XMVectorGetX(XMVector3LengthSq(vLook)) > 0.0001f)
         {
-            lookDir = XMVector3Normalize(lookDir);
-            // 베인이 타겟을 바라보도록
-            pTr->SmoothLookAt(-lookDir, fTimeDelta, 8.f);
+            vLook = XMVector3Normalize(vLook);
+
+            _vector vOldRight = pTr->Get_State(CTransform::STATE_RIGHT);
+            float   fScale = XMVectorGetX(XMVector3Length(vOldRight));
+            if (fScale < 0.0001f) fScale = 1.f;
+
+            _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+            _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+
+            vRight *= fScale;
+            vLook *= fScale;
+            vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight)) * fScale;
+
+            vRight = XMVectorSetW(vRight, 0.f);
+            vUp = XMVectorSetW(vUp, 0.f);
+            vLook = XMVectorSetW(vLook, 0.f);
+
+            pTr->Set_State(CTransform::STATE_RIGHT, vRight);
+            pTr->Set_State(CTransform::STATE_UP, vUp);
+            pTr->Set_State(CTransform::STATE_LOOK, vLook);
         }
     }
 
@@ -136,7 +139,6 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
         m_bProjectileSpawned = false;
         m_bIsAnimFinished = false;
 
-        // 아직 타겟 유효 + 사거리 안이면 계속 공격 루프
         pTarget = m_pOwner->Check_FiledTarget();
         if (!pTarget)
             return new CMoveState(m_pOwner);
@@ -144,17 +146,56 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
         float dist2 = m_pOwner->Target_Distance(pTarget);
         float range2 = m_pOwner->Get_AttackRangeWorld();
 
+        // 사거리 완전 벗어나면 그냥 추격
         if (dist2 > range2 * 1.1f)
             return new CMoveState(m_pOwner);
+
+        // ---------------------------
+        // 여기부터 "도망 판단" 로직 강화
+        // ---------------------------
+        float myHpRate = m_pOwner->Get_HpPercent();
+
+        // 타겟이 챔피언인지 체크
+        CChampion* pChampTarget = dynamic_cast<CChampion*>(pTarget);
+        if (pChampTarget)
         {
-            int retreatRoll = rand() % 100;   // 0~99
-            if (retreatRoll < 10)             // 10% 확률
+            float tarHpRate = pChampTarget->Get_HpPercent(); // 있으면 사용, 없으면 스킵
+
+            int retreatRoll = rand() % 100;
+
+            // 내가 피가 40% 이하 & 적은 60% 이상이면 → 많이 불리하니까 도망 우선
+            if (myHpRate < 0.4f && tarHpRate > 0.6f)
             {
-                return new CReturnState(m_pOwner);
+                if (retreatRoll < 70)     // 70% 확률로 뒤로 빼기
+                    return new CReturnState(m_pOwner);
+            }
+            else if (dist2 < range2 * 0.7f)
+            {
+                // 너무 붙어있으면 → 기존보다 살짝 높은 확률로 회피
+                if (retreatRoll < 50)
+                    return new CReturnState(m_pOwner);
+            }
+            else
+            {
+                // 그 외 상황: 살짝만 빼주는 정도
+                if (retreatRoll < 15)
+                    return new CReturnState(m_pOwner);
+            }
+        }
+        else
+        {
+            // 타겟이 미니언/건물인 경우: 이전 로직 그대로 (너무 붙었으면 조금 도망)
+            if (dist2 < range2 * 0.7f)
+            {
+                int retreatRoll = rand() % 100;
+                if (retreatRoll < 30)
+                    return new CReturnState(m_pOwner);
             }
         }
 
-        // ?? 같은 AttackState 안에서 새 평타 애니 다시 세팅 (연속 공격)
+        // ---------------------------
+        // 안 도망치면 평타 애니 다시 설정
+        // ---------------------------
         const int AttackAnims[] =
         {
             CVayne::ANIM::ATTACK1,
@@ -164,13 +205,12 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
 
         int r = rand() % 10;
         int animIdx = 0;
-        if (r < 4)      animIdx = AttackAnims[0];   // ATTACK1
-        else if (r < 8) animIdx = AttackAnims[1];   // ATTACK2
-        else            animIdx = AttackAnims[2];   // CRIT (10% 정도)
+        if (r < 4)      animIdx = AttackAnims[0];
+        else if (r < 8) animIdx = AttackAnims[1];
+        else            animIdx = AttackAnims[2];
 
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(animIdx);
     }
-
     return nullptr;
 }
 

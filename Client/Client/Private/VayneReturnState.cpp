@@ -44,6 +44,7 @@ CVayneState* CReturnState::Update(_float fTimeDelta)
     m_fReturnTimeAcc += fTimeDelta;
     if (m_fReturnTimeAcc >= m_fReturnTime)
     {
+        m_pOwner->RefreshLaneNodeByPosition();  // Enemy 쪽 함수 재사용
         return new CMoveState(m_pOwner);
     }
     return nullptr;
@@ -63,11 +64,10 @@ void CReturnState::Enter()
     if (!m_pOwner)
         return;
 
-    // 1) 도망치는 시간: 0.4 ~ 0.8초 정도 (짧게 깔짝)
-    //    rand() % 401 -> 0~400 / 1000.f -> 0.0 ~ 0.4  + 0.4 -> 0.4 ~ 0.8
-    m_fReturnTime = 0.4f + (rand() % 401) / 1000.f;
+    // 1) 도망치는 시간: 0.5 ~ 1.0초 정도
+    m_fReturnTime = 0.5f + (rand() % 501) / 1000.f; // 0.5 ~ 1.0
 
-    // 2) RUN 애니메이션 설정
+    // 2) RUN 애니메이션
     if (CModel* pModel = m_pOwner->Get_Model())
         pModel->Set_CurrentAnimIndex(CVayne::ANIM::RUN);
 
@@ -76,31 +76,37 @@ void CReturnState::Enter()
     if (!pTr || !pNavi)
         return;
 
-    // 3) 현재 바라보는 방향 기준으로 "뒤쪽"으로 살짝 빠지기
     _vector vMyPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
     _vector vLook = pTr->Get_State(CTransform::STATE_LOOK);
+    _vector vRight = pTr->Get_State(CTransform::STATE_RIGHT);
 
-    // XZ 평면만 사용
+    // XZ 평면만
     vLook = XMVectorSetY(vLook, 0.f);
+    vRight = XMVectorSetY(vRight, 0.f);
 
-    // 혹시 길이 0이면 기본 방향 하나 세팅
     if (XMVectorGetX(XMVector3LengthSq(vLook)) < 0.0001f)
-        vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f);   // 임의 Z+
+        vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f);
 
     vLook = XMVector3Normalize(vLook);
+    vRight = XMVector3Normalize(vRight);
 
-    // ?? 뒤로 빠질 방향 = -Look
-    _vector vBackDir = -vLook;
+    // 기본은 뒤로
+    _vector vBackDir = vLook;    // <-- 여기 중요: 원래는 -vLook 이었음
 
-    // ?? 얼마나 빠질지(거리): 3.0f 정도 (원하면 2~4로 조정)
-    const float fRetreatDist = 3.0f;
+    // 3) 옆으로 살짝 섞어서 "대각선 도망"
+    float sideSign = (rand() % 2 == 0) ? 1.f : -1.f; // 왼/오 랜덤
+    float sideWeight = 0.5f;                            // 옆으로 섞는 비율
+    vBackDir = XMVector3Normalize(vBackDir + vRight * (sideWeight * sideSign));
+
+    // 4) 도망 거리: 4.0 ~ 7.0 정도
+    float fRetreatDist = 4.0f + (rand() % 300) / 100.f; // 4.0 ~ 7.0
 
     _vector vTargetPos = vMyPos + vBackDir * fRetreatDist;
 
-    // 목적지 Y는 네비에서 처리하게 XZ만 맞춰도 됨
+    // Y는 네비게이션에서 맞추게 두고, 기본은 현재 높이 유지
     vTargetPos = XMVectorSetY(vTargetPos, XMVectorGetY(vMyPos));
 
-    // 4) 네비게이션 목적지 설정 (여기로 살짝 도망)
+    // 네비에 목적지 등록
     pTr->Set_Destination(vTargetPos, pNavi);
 }
 

@@ -21,22 +21,16 @@ CMinionState* CDeadState::AI_Behaviour(_float fTimeDelta)
 
 CMinionState* CDeadState::Update(_float fTimeDelta)
 {
-    if (!m_pOwner)
-        return nullptr;
+    CModel* pModel = m_pOwner->Get_Model();
+    _bool bEnd = pModel->Play_Animation(
+        fTimeDelta,
+        false);   // 죽는 애니는 루프 X
 
-
-    m_bIsAnimationFinished =
-        m_pOwner->Get_Model()->Play_Animation(
-            fTimeDelta * 2.f,
-            false,    
-            nullptr,
-            0.1f);
-
-    if (m_bIsAnimationFinished)
+    if (bEnd)
     {
-        m_pOwner->Mark_Dead();   
+        m_pOwner->Mark_Dead();   // 여기서는 풀로 돌려 보내기만
+        return nullptr;
     }
-
     return nullptr;
 }
 
@@ -56,13 +50,9 @@ void CDeadState::Enter()
     _uint iAnim = 0;
 
     if (type == MINION_MELEE)
-    {
-        iAnim = CMinion_Melee::ANIM::DEATH;  
-    }
+        iAnim = CMinion_Melee::ANIM::DEATH;
     else
-    {
-        iAnim = CMinion_Range::ANIM::DEATH1; 
-    }
+        iAnim = CMinion_Range::ANIM::DEATH1;
 
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(iAnim);
 }
