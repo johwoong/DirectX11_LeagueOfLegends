@@ -5,9 +5,12 @@
 #include "Level_Manager.h"
 #include "ModelManager.h"
 #include "TerrianManager.h"
+#include "EffectManager.h"
 #include "Navigation_Manager.h"
 #include "NonAnim.h"
-#include "SpawnBox.h"
+#include "EffectTexture.h"
+#include "EffectMesh.h"
+#include "ParticleSystem.h"
 
 
 NS_BEGIN(Engine)
@@ -48,6 +51,28 @@ public:
 	void Save_Terrian();
 	void Load_Terrian();
 
+	/* For Effect Tool */
+	void Draw_EffectModals();
+
+	void Read_EffectsData();
+	void Read_Textures(_tchar* pFolderPath);
+	void Read_Meshes(_tchar* pFolderPath);
+
+	void Set_Effect();
+	_bool Save_Effect();
+	_bool Load_Effect(_bool bUpgrade = false);
+	_bool Upgrade_Effects();
+
+	/* Used to be able to Load Effect Data after changing the Data Structure.
+	(You will constantly need to take care of this function every time there is a change in the Data Structure).*/
+	CEffectMesh::MESHEFFECTDESC UpgradeMeshStruct(CEffectMesh::MESHEFFECTDESC_OLD tMeshEffectDescOld);
+
+	void Show_TextureCustomization();
+	void Show_MeshCustomization();
+	void Show_ParticleCustomization();
+
+	void Set_Play(_bool bPlay) { m_bIsPlaying = bPlay; }
+
 
 	/* For Model Tool */
 	void Set_Object_Map();
@@ -62,8 +87,6 @@ public:
 	void Load_Navigation();
 	_bool Get_ShowOnlyNavi() { return m_bShowOnlyNavi; }
 	_bool Get_ShowMap() { return m_bShowMap; }
-
-	void Set_Play(_bool bPlay) { m_bIsPlaying = bPlay; }
 
 	/* For Animation*/
 	void Set_Animation();
@@ -104,7 +127,6 @@ private:
 	_float									m_fDist = 1.f;
 	_float3									m_vfOffset = _float3(0.f, 0.f, 0.f);
 
-
 	/* For Picking */
 	_float3									m_vPickedObjPos = _float3(1.f, 1.f, 1.f);
 	_float3									m_vPickedObjScale = _float3(1.f, 1.f, 1.f);
@@ -120,6 +142,43 @@ private:
 	_bool									m_bShowOnlyNavi = false;
 	_bool									m_bShowMap = false;
 
+	// Effect
+	CEffectManager*			m_pEffectManager = nullptr;
+	vector<string>			m_SavedEffects;
+	_int					m_iSavedEffect;
+	string					m_sCurrentEffect;
+
+	/* Customize */
+	_bool m_bIsPlaying = false;
+
+	vector<string> m_SpawnTypes = { "LOOP", "BURST" };
+	string m_sCurrentSpawnType = "LOOP";
+
+	CEffectTexture::TEXTUREEFFECTDESC m_tTextureEffectDesc;
+	CEffectMesh::MESHEFFECTDESC m_tMeshEffectDesc;
+	PARTICLEDESC m_tParticleDesc;
+
+	string m_sSelectedMaskTexture = "";
+	string m_sSelectedNoiseTexture = "";
+
+	_float m_fCurveValue = 1.f, m_fCurveStart = 1.f, m_fCurveEnd = 1.f;
+	_float m_fCurveRed = 1.f, m_fCurveGreen = 1.f, m_fCurveBlue = 1.f;
+	_float m_fCurveScaleX = 1.f, m_fCurveScaleY = 1.f, m_fCurveScaleZ = 1.f;
+	_uint m_iSelectedColorCurve = 0, m_iSelectedVelocityCurve = 0, m_iSelectedSizeCurve = 0, m_iSelectedScaleCurve = 0, m_iSelectedAlphaCurve = 0,
+		m_iSelectedTurnVelocityCurve = 0, m_iSelectedNoisePowerCurve = 0, m_iSelectedDistortPowerCurve = 0;
+	_float m_fEditorAlpha = 0.9f;
+
+	// Add
+	list<string> m_TextureNames;
+	list<string> m_MeshNames;
+	string m_sSelectedResource;
+
+	string m_sSelectedEffect;
+	class CEffect* m_pSelectedEffect = nullptr;
+	class CTransform* m_pSelectedEffectTransform = nullptr;
+	enum EFFECT_TRANSFORM { TRANS_SCALE, TRANS_ROTATION, TRANS_TRANSLATION, TRANS_END };
+	EFFECT_TRANSFORM m_eCurrentTransformation = TRANS_END;
+	_float m_fX = 1.f, m_fY = 1.f, m_fZ = 1.f;
 
 	/* For. Animation */
 public:
@@ -169,22 +228,6 @@ public:
 
 	_float m_SecondPosition[3] = { 0.f, 0.f, 0.f };
 	_float m_SecondRotation[3] = { 0.f, 0.f, 0.f };
-
-	// Custom
-	_bool m_bIsPlaying = false;
-	vector<string> m_SpawnTypes = { "LOOP", "BURST" };
-	string m_sCurrentSpawnType = "LOOP";
-
-	string m_sSelectedMaskTexture = "";
-	string m_sSelectedNoiseTexture = "";
-
-	_float m_fCurveValue = 1.f, m_fCurveStart = 1.f, m_fCurveEnd = 1.f;
-	_float m_fCurveRed = 1.f, m_fCurveGreen = 1.f, m_fCurveBlue = 1.f;
-	_float m_fCurveScaleX = 1.f, m_fCurveScaleY = 1.f, m_fCurveScaleZ = 1.f;
-	_uint m_iSelectedColorCurve = 0, m_iSelectedVelocityCurve = 0, m_iSelectedSizeCurve = 0, m_iSelectedScaleCurve = 0, m_iSelectedAlphaCurve = 0,
-		m_iSelectedTurnVelocityCurve = 0, m_iSelectedNoisePowerCurve = 0, m_iSelectedDistortPowerCurve = 0;
-	_float m_fEditorAlpha = 0.9f;
-
 
 public:
 	virtual void Free() override;

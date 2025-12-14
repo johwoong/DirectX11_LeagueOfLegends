@@ -83,7 +83,6 @@ _vector CActor::Get_TransformState(CTransform::STATE eState)
 	return m_pTransformCom->Get_State(eState);
 }
 
-
 void CActor::Free()
 {
 	__super::Free();

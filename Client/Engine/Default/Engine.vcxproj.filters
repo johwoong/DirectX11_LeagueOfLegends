@@ -148,6 +148,21 @@
     <Filter Include="01.Utility\03. Components\05. Texture">
       <UniqueIdentifier>{701a9258-c42a-4618-bfe2-875bef08f8d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03. Components\02. VIBuffer\01. Instancing\VIBuffer_Point_Instance">
+      <UniqueIdentifier>{2ea0b2cc-3a40-4fef-95fe-2699c3b4fb04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03. Components\02. VIBuffer\01. Instancing\VIBuffer_Rect_Instance">
+      <UniqueIdentifier>{a875ba6b-1b4b-4a19-8067-a9433cbda555}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03. Components\02. VIBuffer\06. Point">
+      <UniqueIdentifier>{2ecad5d8-49fe-4753-9350-6d90f8d290ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03. Components\02. VIBuffer\07. Trail">
+      <UniqueIdentifier>{6c1b4bb6-9293-494d-b50a-ff62dc4b83b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03. Components\01. Renderer\Shader">
+      <UniqueIdentifier>{febc7f83-9a07-4f9e-93c4-654d255d3e63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -300,6 +315,18 @@
     <ClInclude Include="..\Public\LightManager.h">
       <Filter>01.Utility\09. Lights\Manager</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Point_Instance.h">
+      <Filter>01.Utility\03. Components\02. VIBuffer\01. Instancing\VIBuffer_Point_Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Rect_Instance.h">
+      <Filter>01.Utility\03. Components\02. VIBuffer\01. Instancing\VIBuffer_Rect_Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Point.h">
+      <Filter>01.Utility\03. Components\02. VIBuffer\06. Point</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Trail.h">
+      <Filter>01.Utility\03. Components\02. VIBuffer\07. Trail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -437,10 +464,25 @@
     <ClCompile Include="..\Private\LightManager.cpp">
       <Filter>01.Utility\09. Lights\Manager</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Point_Instance.cpp">
+      <Filter>01.Utility\03. Components\02. VIBuffer\01. Instancing\VIBuffer_Point_Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Rect_Instance.cpp">
+      <Filter>01.Utility\03. Components\02. VIBuffer\01. Instancing\VIBuffer_Rect_Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Point.cpp">
+      <Filter>01.Utility\03. Components\02. VIBuffer\06. Point</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Trail.cpp">
+      <Filter>01.Utility\03. Components\02. VIBuffer\07. Trail</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_Nav.hlsl">
       <Filter>01.Utility\03. Components\02. VIBuffer\02. Navigation\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_Deferred.hlsl">
+      <Filter>01.Utility\03. Components\01. Renderer\Shader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

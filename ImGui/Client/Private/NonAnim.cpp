@@ -38,7 +38,6 @@ HRESULT CNonAnim::Initialize(void* pArg)
 
 	if (pArg != nullptr)
 	{
-
 		m_pTransformCom->Set_WorldMatrix(XMLoadFloat4x4(&m_ModelDesc.WorldMatrix));
 		_vector vPosition = XMLoadFloat3(&m_ModelDesc.vPosition);
 		vPosition = XMVectorSetW(vPosition, 1.f);
@@ -50,7 +49,6 @@ HRESULT CNonAnim::Initialize(void* pArg)
 			m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(m_ModelDesc.m_fAngle));
 	}
 
-	
 	CModelManager::GetInstance()->Add_CreatedModel(this);
 
 	return S_OK;
@@ -85,7 +83,6 @@ HRESULT CNonAnim::Render()
 	if (FAILED(SetUp_ShaderID()))
 		return E_FAIL;
 
-
 	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
@@ -103,7 +100,7 @@ HRESULT CNonAnim::Render()
 				m_eShaderID = SHADER_SYMBOL;
 
 				_float4 color;
-				XMStoreFloat4(&color, XMVectorSet(1.f, 1.f, 0.f, 1.f));  
+				XMStoreFloat4(&color, XMVectorSet(1.f, 1.f, 0.f, 1.f));
 				if (FAILED(m_pShaderCom->Set_RawValue("g_vColor", &color, sizeof(_float4))))
 					return E_FAIL;
 			}
@@ -116,14 +113,12 @@ HRESULT CNonAnim::Render()
 				if (FAILED(m_pShaderCom->Set_RawValue("g_vColor", &color, sizeof(_float4))))
 					return E_FAIL;
 			}
-
 		}
 		else
 		{
 			if (FAILED(m_pModelCom->SetUp_Material(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE)))
 				return E_FAIL;
 		}
-
 
 		if (FAILED(m_pModelCom->SetUp_Material(m_pShaderCom, "g_NormalTexture", i, aiTextureType_NORMALS)))
 			return E_FAIL;
@@ -176,9 +171,8 @@ void CNonAnim::Set_Picked()
 			CModelManager::GetInstance()->Set_AllPickedFalse();
 			CPickingMgr::GetInstance()->Set_PickedObj(this);
 		}
-
 	}
-	
+
 	pGameInstance->Release();
 }
 
@@ -244,7 +238,6 @@ HRESULT CNonAnim::SetUp_ShaderResources()
 
 HRESULT CNonAnim::SetUp_ShaderID()
 {
-	
 	if (m_bPicked)
 		m_eShaderID = SHADER_PICKED;
 	else

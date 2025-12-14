@@ -25,7 +25,6 @@ void CAnim::PlayAnimation(void)
 		m_pModelCom->Play_Animation(0.f);
 }
 
-
 HRESULT CAnim::Initialize_Prototype(void)
 {
 	return S_OK;
@@ -53,8 +52,6 @@ HRESULT CAnim::Initialize(void* pArg)
 		scaleFactor = 0.001F;
 	}
 
-
-
 	// 스케일 적용
 	m_pTransformCom->Set_Scale(CTransform::STATE_RIGHT, m_ModelDesc.vScale.x * scaleFactor);
 	m_pTransformCom->Set_Scale(CTransform::STATE_UP, m_ModelDesc.vScale.y * scaleFactor);
@@ -62,11 +59,11 @@ HRESULT CAnim::Initialize(void* pArg)
 
 	m_pTransformCom->Set_Rotation(m_ModelDesc.vRotation);
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, XMVectorSetW(XMLoadFloat3(&m_ModelDesc.vPosition), 1.f));
-	
+
 	m_pModelCom->Set_CurrentAnimIndex(0);
 	m_eShaderID = 0;
 	m_pModelCom->Play_Animation(0.1f);
-	
+
 	return S_OK;
 }
 
@@ -301,7 +298,6 @@ HRESULT CAnim::SetUp_ShaderID(void)
 		m_eShaderID = SHADER_PICKED;
 	else
 		m_eShaderID = SHADER_DEFAULT;
-
 
 	return S_OK;
 }

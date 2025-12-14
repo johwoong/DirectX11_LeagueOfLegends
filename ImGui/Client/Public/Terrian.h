@@ -7,12 +7,12 @@ class CTexture;
 NS_END
 
 NS_BEGIN(Client)
-class CTerrian final  : public CActor
+class CTerrian final : public CActor
 {
 public:
-	enum SHADERID {DEFAULLT, WIRE, PICKED};
-	enum TERRIAN_DEBUG_TYPE {DEBUG_SOLID, DEBUG_WIRE, DEBUG_NONE};
-	enum TEXTURE {TYPE_DIFFUSE, TYPE_END};
+	enum SHADERID { DEFAULLT, WIRE, PICKED };
+	enum TERRIAN_DEBUG_TYPE { DEBUG_SOLID, DEBUG_WIRE, DEBUG_NONE };
+	enum TEXTURE { TYPE_DIFFUSE, TYPE_END };
 
 private:
 	CTerrian(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -55,7 +55,7 @@ private:
 	_bool	m_bWireFrame = false;
 	_bool	m_bDebugShow = true;
 	TERRIAN_DEBUG_TYPE m_eDebugtype = DEBUG_NONE;
-	
+
 public:
 	static CTerrian* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr) override;

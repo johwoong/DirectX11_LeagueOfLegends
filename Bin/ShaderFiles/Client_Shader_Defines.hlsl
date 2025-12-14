@@ -1,96 +1,102 @@
 // ======================= States (¸Ç À§) =======================
 
-sampler LinearSampler = sampler_state
+SamplerState LinearSampler
 {
     Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = wrap;
-    AddressV = wrap;
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
-sampler PointSampler = sampler_state
+SamplerState PointSampler
 {
     Filter = MIN_MAG_MIP_POINT;
-    AddressU = wrap;
-    AddressV = wrap;
+    AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 RasterizerState RS_Default
 {
-    FillMode = solid;
-    CullMode = back;
-    FrontCounterClockwise = false;
+    FillMode = SOLID;
+    CullMode = BACK;
+    FrontCounterClockwise = FALSE;
 };
 
 RasterizerState RS_Default_NoCull
 {
-    FillMode = solid;
-    CullMode = none;
-    FrontCounterClockwise = false;
+    FillMode = SOLID;
+    CullMode = NONE;
+    FrontCounterClockwise = FALSE;
 };
 
 RasterizerState RS_Wireframe
 {
-    FillMode = wireframe;
-    CullMode = back;
-    FrontCounterClockwise = false;
+    FillMode = WIREFRAME;
+    CullMode = BACK;
+    FrontCounterClockwise = FALSE;
 };
 
 RasterizerState RS_SkyBox
 {
-    FillMode = solid;
-    CullMode = front;
-    FrontCounterClockwise = false;
+    FillMode = SOLID;
+    CullMode = FRONT;
+    FrontCounterClockwise = FALSE;
 };
-
-
 
 BlendState BS_Default
 {
-    BlendEnable[0] = false;
+    BlendEnable[0] = FALSE;
 };
 
 BlendState BS_AlphaBlending
 {
-    BlendEnable[0] = true;
-	
-    SrcBlend = src_alpha;
-    DestBlend = inv_Src_Alpha;
-    BlendOp = add;
+    BlendEnable[0] = TRUE;
+
+    SrcBlend = SRC_ALPHA;
+    DestBlend = INV_SRC_ALPHA;
+    BlendOp = ADD;
+
+    SrcBlendAlpha = ONE;
+    DestBlendAlpha = ZERO;
+    BlendOpAlpha = ADD;
+    RenderTargetWriteMask[0] = 0x0F;
 };
 
 BlendState BS_AddBlending
 {
-    BlendEnable[0] = true;
+    BlendEnable[0] = TRUE;
 
-    SrcBlend = one;
-    DestBlend = one;
-    BlendOp = add;
+    SrcBlend = ONE;
+    DestBlend = ONE;
+    BlendOp = ADD;
+
+    SrcBlendAlpha = ONE;
+    DestBlendAlpha = ONE;
+    BlendOpAlpha = ADD;
+    RenderTargetWriteMask[0] = 0x0F;
 };
-
-
 
 DepthStencilState DSS_Default
 {
-    DepthEnable = true;
-    DepthWriteMask = all;
-    DepthFunc = less_equal;
+    DepthEnable = TRUE;
+    DepthWriteMask = ALL;
+    DepthFunc = LESS_EQUAL;
 };
 
 DepthStencilState DSS_NoWrite
 {
-    DepthEnable = true;
-    DepthWriteMask = zero;
-    DepthFunc = less_equal;
+    DepthEnable = TRUE;
+    DepthWriteMask = ZERO;
+    DepthFunc = LESS_EQUAL;
 };
 
 DepthStencilState DSS_Disabled
 {
-    DepthEnable = false;
-    DepthWriteMask = all;
+    DepthEnable = FALSE;
+    DepthWriteMask = ALL;
 };
 
 DepthStencilState DSS_Priority
 {
-    DepthEnable = false;
-    DepthWriteMask = zero;
+    DepthEnable = FALSE;
+    DepthWriteMask = ZERO;
 };

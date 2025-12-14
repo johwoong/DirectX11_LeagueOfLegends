@@ -18,7 +18,6 @@ public:
 		_bool isOriginalLoad = false;
 	}MODELDESC;
 
-
 private:
 	CAnim(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CAnim(const CAnim& rhs);

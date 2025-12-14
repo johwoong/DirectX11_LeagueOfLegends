@@ -45,6 +45,7 @@ using namespace DirectX;
 #include <list>
 #include <queue>
 #include <map>
+#include <array>
 #include <algorithm>
 #include <functional>
 #include <string>

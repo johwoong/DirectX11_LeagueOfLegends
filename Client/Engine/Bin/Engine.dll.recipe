@@ -7,6 +7,9 @@
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
+      <FullPath>C:\DirectX11_LeagueOfLegends\Client\Engine\Bin\Shader_Deferred.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>C:\DirectX11_LeagueOfLegends\Client\Engine\Bin\Shader_Nav.cso</FullPath>
     </ContentFile>
   </ContentFiles>

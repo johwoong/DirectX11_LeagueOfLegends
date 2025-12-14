@@ -171,6 +171,8 @@
     <ClInclude Include="..\Public\DebugDraw.h" />
     <ClInclude Include="..\Public\Light.h" />
     <ClInclude Include="..\Public\LightManager.h" />
+    <ClInclude Include="..\Public\VIBuffer_Point.h" />
+    <ClInclude Include="..\Public\VIBuffer_Point_Instance.h" />
     <ClInclude Include="..\Public\VIBuffer_Quad.h" />
     <ClInclude Include="..\Public\Font.h" />
     <ClInclude Include="..\Public\Font_Manager.h" />
@@ -208,7 +210,9 @@
     <ClInclude Include="..\Public\VIBuffer_Instance.h" />
     <ClInclude Include="..\Public\VIBuffer_Nav.h" />
     <ClInclude Include="..\Public\VIBuffer_Rect.h" />
+    <ClInclude Include="..\Public\VIBuffer_Rect_Instance.h" />
     <ClInclude Include="..\Public\VIBuffer_Terrian.h" />
+    <ClInclude Include="..\Public\VIBuffer_Trail.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp" />
@@ -223,6 +227,8 @@
     <ClCompile Include="..\Private\DebugDraw.cpp" />
     <ClCompile Include="..\Private\Light.cpp" />
     <ClCompile Include="..\Private\LightManager.cpp" />
+    <ClCompile Include="..\Private\VIBuffer_Point.cpp" />
+    <ClCompile Include="..\Private\VIBuffer_Point_Instance.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Quad.cpp" />
     <ClCompile Include="..\Private\Font.cpp" />
     <ClCompile Include="..\Private\Font_Manager.cpp" />
@@ -254,10 +260,13 @@
     <ClCompile Include="..\Private\VIBuffer_Instance.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Nav.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Rect.cpp" />
+    <ClCompile Include="..\Private\VIBuffer_Rect_Instance.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Terrian.cpp" />
+    <ClCompile Include="..\Private\VIBuffer_Trail.cpp" />
     <ClCompile Include="..\Public\Engine_Struct.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_Deferred.hlsl" />
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_Nav.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

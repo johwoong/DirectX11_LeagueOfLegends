@@ -43,9 +43,6 @@
     <Filter Include="02. GameObjects\01. BackGround">
       <UniqueIdentifier>{a9b3601b-1e97-47a3-a3fc-ea932578ac37}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\02. NonAnimModel">
-      <UniqueIdentifier>{4ba85a4a-9b21-40cf-9a38-d9d6ef55a76d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="04. PickingMgr">
       <UniqueIdentifier>{56215c90-503d-4a44-bef6-1fa93ae90124}</UniqueIdentifier>
     </Filter>
@@ -78,6 +75,24 @@
     </Filter>
     <Filter Include="03. ToolManager\04. EffectManager">
       <UniqueIdentifier>{1b5d2ef4-6d7e-4755-9d81-a5760984dc2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect">
+      <UniqueIdentifier>{7795a7a6-ee2d-4e27-a46c-3b0ec4204e79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\EffectMesh">
+      <UniqueIdentifier>{fb13d2e9-fcfa-4d9f-a79a-11185760a61a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\EffectTexture">
+      <UniqueIdentifier>{8ee0ca3c-e894-478c-b954-f2e3995ed31f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\Trail">
+      <UniqueIdentifier>{e07b7a3e-9739-4236-bba5-2558f8c5f517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\ParticleSystem">
+      <UniqueIdentifier>{334dfdca-04f3-4876-94d9-5f525df31965}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\03. AnimModel\02. NonAnimModel">
+      <UniqueIdentifier>{4ba85a4a-9b21-40cf-9a38-d9d6ef55a76d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -172,12 +187,29 @@
       <Filter>100. IMGUI\Default</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\NonAnim.h">
-      <Filter>02. GameObjects\02. NonAnimModel</Filter>
+      <Filter>02. GameObjects\03. AnimModel\02. NonAnimModel</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Navigation_Manager.h">
       <Filter>03. ToolManager\03. NavigationManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\EffectManager.h" />
+    <ClInclude Include="..\Public\Effect.h">
+      <Filter>02. GameObjects\05. Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EffectManager.h">
+      <Filter>03. ToolManager\04. EffectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ParticleSystem.h">
+      <Filter>02. GameObjects\05. Effect\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EffectTexture.h">
+      <Filter>02. GameObjects\05. Effect\EffectTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EffectMesh.h">
+      <Filter>02. GameObjects\05. Effect\EffectMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Trail.h">
+      <Filter>02. GameObjects\05. Effect\Trail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -257,7 +289,7 @@
       <Filter>03. ToolManager\01. ModelManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\NonAnim.cpp">
-      <Filter>02. GameObjects\02. NonAnimModel</Filter>
+      <Filter>02. GameObjects\03. AnimModel\02. NonAnimModel</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Anim.cpp">
       <Filter>02. GameObjects\03. AnimModel</Filter>
@@ -274,7 +306,24 @@
     <ClCompile Include="..\Private\Navigation_Manager.cpp">
       <Filter>03. ToolManager\03. NavigationManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\EffectManager.cpp" />
+    <ClCompile Include="..\Private\Effect.cpp">
+      <Filter>02. GameObjects\05. Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EffectManager.cpp">
+      <Filter>03. ToolManager\04. EffectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ParticleSystem.cpp">
+      <Filter>02. GameObjects\05. Effect\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EffectTexture.cpp">
+      <Filter>02. GameObjects\05. Effect\EffectTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EffectMesh.cpp">
+      <Filter>02. GameObjects\05. Effect\EffectMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Trail.cpp">
+      <Filter>02. GameObjects\05. Effect\Trail</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl">
@@ -290,6 +339,12 @@
       <Filter>96. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxCubeTexture.hlsl">
+      <Filter>96. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_Effect.hlsl">
+      <Filter>96. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxPointInstance.hlsl">
       <Filter>96. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

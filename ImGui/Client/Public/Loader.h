@@ -33,7 +33,8 @@ public:
     HRESULT Loading_ForGamePlayLevel();
 
     HRESULT Loading_ForActor();
- 
+    HRESULT Loading_ForEffect();
+    HRESULT Loading_ForEffectTexture();
 
 private:
     LEVEL           m_eNextLevel = LEVEL_END;

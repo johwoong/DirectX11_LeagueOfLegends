@@ -48,7 +48,7 @@ protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderID() { return S_OK; }
 	virtual HRESULT SetUp_ShaderResources() = 0;
-	 
+
 protected:
 	_uint m_eShaderID = SHADER_DEFAULT;
 	OBJID m_eObjectID = OBJ_END;
@@ -58,8 +58,6 @@ protected:
 
 public:
 	virtual void Free() override;
-
 };
 
 NS_END
-

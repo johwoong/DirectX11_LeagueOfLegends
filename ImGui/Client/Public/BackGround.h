@@ -27,11 +27,11 @@ public:
 	virtual HRESULT Render();
 
 private:
-	CShader*				m_pShaderCom = { nullptr };
-	CTexture*				m_pTextureCom = { nullptr };
-	CRenderer*				m_pRendererCom = { nullptr };
-	CVIBuffer_Rect*			m_pVIBufferCom = { nullptr };
-	CTransform*				m_pTransformCom = { nullptr };
+	CShader* m_pShaderCom = { nullptr };
+	CTexture* m_pTextureCom = { nullptr };
+	CRenderer* m_pRendererCom = { nullptr };
+	CVIBuffer_Rect* m_pVIBufferCom = { nullptr };
+	CTransform* m_pTransformCom = { nullptr };
 	_float2					m_fPosition, m_fSize;
 
 private:
@@ -44,4 +44,3 @@ public:
 	virtual void Free() override;
 };
 NS_END
-

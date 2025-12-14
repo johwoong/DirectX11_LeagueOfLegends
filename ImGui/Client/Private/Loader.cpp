@@ -11,6 +11,9 @@
 #include "Model.h"
 #include "Anim.h"
 #include "Terrian.h"
+#include "EffectTexture.h"
+#include "EffectMesh.h"
+#include "ParticleSystem.h"
 
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: m_pDevice(pDevice)
@@ -125,6 +128,21 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 		CCamera_Dynamic::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	/*For.Prototype_GameObject_EffectTexture*/
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_EffectTexture"),
+		CEffectTexture::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/*For.Prototype_GameObject_EffectMesh*/
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_EffectMesh"),
+		CEffectMesh::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/*For.GameObject_ParticleSystem*/
+	if (FAILED(pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_ParticleSystem"),
+		CParticleSystem::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	if (FAILED(pGameInstance->Add_Prototype(
 		LEVEL_GAMEPLAY,
 		TEXT("Map"),
@@ -138,6 +156,9 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 
 
 	if (FAILED(Loading_ForActor()))
+		return E_FAIL;
+
+	if (FAILED(Loading_ForEffectTexture()))
 		return E_FAIL;
 
 	m_isFinished = true;
@@ -455,9 +476,201 @@ HRESULT CLoader::Loading_ForActor()
 #pragma endregion 
 
 
-
 	m_isFinished = true;
 	Safe_Release(pGameInstance);
+	return S_OK;
+}
+
+HRESULT CLoader::Loading_ForEffect()
+{
+	return S_OK;
+}
+
+HRESULT CLoader::Loading_ForEffectTexture()
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	pGameInstance->AddRef();
+
+#pragma region Ezreal Effect
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("common_color-hold"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/common_color-hold.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("common_crystal-flash"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/common_crystal-flash.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("common_flare-rainbow_blue_green_02"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/common_flare-rainbow_blue_green_02.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("common_glow-soft"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/common_glow-soft.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_ashe_base_ground_cracknoise_mult"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_ashe_base_ground_cracknoise_mult.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_ba_glow"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_ba_glow.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_ba_mis"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_ba_mis.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_ba_whisps"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_ba_whisps.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_q_erode"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_q_erode.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_q_hit_spark"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_q_hit_spark.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_q_mis_trail"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_q_mis_trail.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_r_bow_arrow"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_r_bow_arrow.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_r_bow_solid_texutre"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_r_bow_solid_texutre.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_r_bow_tex"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_r_bow_tex.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_r_mis_glow"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_r_mis_glow.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_r_tail_tex"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_r_tail_tex.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_r_trail"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_r_trail.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_w_cas_tex"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_w_cas_tex.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_w_meshlines"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_w_meshlines.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_w_orb"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_w_orb.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_w_ringglow"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_w_ringglow.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_w_spintex"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_w_spintex.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_ball01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_ball01.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_color-beacontrail"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_color-beacontrail.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_color-hold"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_color-hold.png"), 1))))
+		return E_FAIL;
+
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_flare-sun"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_flare-sun.png"), 1))))
+		return E_FAIL;
+
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_glow"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_glow.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_glowflare"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_glowflare.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_ring"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_ring.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_sliver"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_sliver.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_base_z_solar_tag"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_base_z_solar_tag.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezreal_r_cas_pulse"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezreal_r_cas_pulse.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezvgu_tristana_skin12_ba_rings"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezvgu_tristana_skin12_ba_rings.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezvgu_tristana_skin12_z_glow"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezvgu_tristana_skin12_z_glow.png"), 1))))
+		return E_FAIL;
+
+	/* Effect Textures */
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("ezvgu_tristana_skin12_z_praxiswave"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Ezreal/ezvgu_tristana_skin12_z_praxiswave.png"), 1))))
+		return E_FAIL;
+
+#pragma endregion 
+
 	return S_OK;
 }
 
