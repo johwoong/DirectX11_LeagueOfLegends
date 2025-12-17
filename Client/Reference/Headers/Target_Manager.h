@@ -19,7 +19,7 @@ public:
 	HRESULT Ready_ShadowDepthStencilRenderTargetView(ID3D11Device* pDevice, _uint iWinCX, _uint iWinCY);
 	HRESULT Ready_BackBufferCopyTexture(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, _uint iWinCX, _uint iWinCY);
 
-	HRESULT Add_RenderTarget(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pTargetTag, _uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4* pColor);
+	HRESULT Add_RenderTarget(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pTargetTag, _uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4& pColor);
 	HRESULT Add_MRT(const _tchar* pMRTTag, const _tchar* pTargetTag);
 	HRESULT Begin_MRT(ID3D11DeviceContext* pContext, const _tchar* pMRTTag);
 	HRESULT Begin_ShadowMRT(ID3D11DeviceContext* pContext, const _tchar* pMRTTag);

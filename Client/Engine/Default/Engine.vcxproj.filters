@@ -484,5 +484,8 @@
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_Deferred.hlsl">
       <Filter>01.Utility\03. Components\01. Renderer\Shader</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_PostProcessing.hlsl">
+      <Filter>01.Utility\03. Components\01. Renderer\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

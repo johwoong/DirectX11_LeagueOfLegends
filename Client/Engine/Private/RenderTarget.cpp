@@ -10,9 +10,9 @@ CRenderTarget::CRenderTarget(ID3D11Device* pDevice, ID3D11DeviceContext* pContex
     Safe_AddRef(m_pContext);
 }
 
-HRESULT CRenderTarget::Initialize(_uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4* pColor)
+HRESULT CRenderTarget::Initialize(_uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4& pColor)
 {
-    m_vClearColor = *pColor;
+    m_vClearColor = pColor;
 
 	D3D11_TEXTURE2D_DESC TextureDesc;
 	ZeroMemory(&TextureDesc, sizeof(D3D11_TEXTURE2D_DESC));
@@ -94,7 +94,7 @@ HRESULT CRenderTarget::Render_Debug(CShader* pShader, CVIBuffer_Rect* pVIBuffer)
 	return S_OK;
 }
 
-CRenderTarget* CRenderTarget::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, _uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4* pColor)
+CRenderTarget* CRenderTarget::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, _uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4& pColor)
 {
 	CRenderTarget* pInstance = new CRenderTarget(pDevice, pContext);
 

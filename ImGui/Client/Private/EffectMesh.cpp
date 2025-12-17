@@ -2,32 +2,32 @@
 #include "GameInstance.h"
 #include "Imgui_Manager.h"
 CEffectMesh::CEffectMesh(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-    : CEffect(pDevice, pContext)
+	: CEffect(pDevice, pContext)
 {
 }
 
 CEffectMesh::CEffectMesh(const CEffectMesh& rhs)
-    : CEffect(rhs)
+	: CEffect(rhs)
 {
 }
 
 HRESULT CEffectMesh::Initialize_Prototype()
 {
-    return S_OK;
+	return S_OK;
 }
 
 HRESULT CEffectMesh::Initialize(void* pArg)
 {
-    if (FAILED(Ready_Components(pArg)))
-        return E_FAIL;
+	if (FAILED(Ready_Components(pArg)))
+		return E_FAIL;
 
-    m_pTransformCom->Set_Scale(CTransform::STATE::STATE_RIGHT, m_tMeshEffectDesc.vScale.x);
-    m_pTransformCom->Set_Scale(CTransform::STATE::STATE_UP, m_tMeshEffectDesc.vScale.y);
-    m_pTransformCom->Set_Scale(CTransform::STATE::STATE_LOOK, m_tMeshEffectDesc.vScale.z);
-    m_pTransformCom->Set_Rotation(m_tMeshEffectDesc.vRotation);
-    m_pTransformCom->Set_State(CTransform::STATE::STATE_TRANSLATION, XMVectorSetW(XMLoadFloat3(&m_tMeshEffectDesc.vPosition), 1.f));
+	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_RIGHT, m_tMeshEffectDesc.vScale.x);
+	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_UP, m_tMeshEffectDesc.vScale.y);
+	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_LOOK, m_tMeshEffectDesc.vScale.z);
+	m_pTransformCom->Set_Rotation(m_tMeshEffectDesc.vRotation);
+	m_pTransformCom->Set_State(CTransform::STATE::STATE_TRANSLATION, XMVectorSetW(XMLoadFloat3(&m_tMeshEffectDesc.vPosition), 1.f));
 
-    return S_OK;
+	return S_OK;
 }
 
 int CEffectMesh::Update(_float fTimeDelta)
@@ -106,8 +106,8 @@ void CEffectMesh::Late_Update(_float fTimeDelta)
 		if (m_tMeshEffectDesc.bGlow)
 			m_pRenderCom->Add_RenderGroup(CRenderer::RENDER_GLOW, this);
 
-		//if (m_tMeshEffectDesc.bDistort)
-		//	m_pRenderCom->Add_RenderGroup(CRenderer::RENDER_S, this);
+		if (m_tMeshEffectDesc.bDistort)
+			m_pRenderCom->Add_RenderGroup(CRenderer::RENDER_DISTORTION, this);
 	}
 }
 
@@ -199,7 +199,7 @@ HRESULT CEffectMesh::Render_Distort()
 
 		//if (FAILED(m_pRenderCom->Get_ShaderPostProcessing()->Set_RawValue("g_fDistortionSpeed", &m_tMeshEffectDesc.fDistortSpeed, sizeof(_float))))
 		//	return E_FAIL;
-		//if (FAILED(m_pRenderCom->Get_ShaderPostProcessing()->Set_RawValue("g_fDistortionStrength", &m_tMeshEffectDesc.fDistortPower, sizeof(_float))))
+		//if (FAILED(m_pRenderCom->()->Set_RawValue("g_fDistortionStrength", &m_tMeshEffectDesc.fDistortPower, sizeof(_float))))
 		//	return E_FAIL;
 
 		if (FAILED(m_pModelCom->Render(m_pShaderCom, i, 6)))
@@ -245,31 +245,71 @@ void CEffectMesh::ColorLerp()
 	if (m_ColorCurves.empty())
 		return;
 
-	const float life = (m_tMeshEffectDesc.fLifetime > 0.f) ? m_tMeshEffectDesc.fLifetime : 1.f;
-	const float fCurrentLifeNormalized = m_fTimer / life;
+	/* 0 ~ 1 */
+	_float fCurrentLifeNormalized = m_fTimer / m_tMeshEffectDesc.fLifetime;
 
-	for (std::array<_float, 5>&fColorCurve : m_ColorCurves)
+	for (array<_float, 5>&fColorCurve : m_ColorCurves)
 	{
+		/* Break cause Curve should not start yet ('Y' is the Curve Start Time). */
 		if (fCurrentLifeNormalized < fColorCurve[3])
 			break;
 
+		/* Skip cause Curve has already been lerped through ('Z' is the Curve End Time). */
 		if (fCurrentLifeNormalized > fColorCurve[4])
 		{
 			m_tMeshEffectDesc.vColorInitial = _float3(fColorCurve[0], fColorCurve[1], fColorCurve[2]);
 			continue;
 		}
 
-		const float fFactorDividend = (m_fTimer - (life * fColorCurve[3]));
-		const float fFactorDivisor = ((life * fColorCurve[4]) - (life * fColorCurve[3]));
-		const float fInterpFactor = (fFactorDivisor != 0.f) ? (fFactorDividend / fFactorDivisor) : 0.f;
+		_float fFactorDividend = (m_fTimer - (m_tMeshEffectDesc.fLifetime * fColorCurve[3]));
+		_float fFactorDivisor = ((m_tMeshEffectDesc.fLifetime * fColorCurve[4]) - (m_tMeshEffectDesc.fLifetime * fColorCurve[3]));
 
-		_float3 vTargetColor(fColorCurve[0], fColorCurve[1], fColorCurve[2]);
+		_float fInterpFactor = fFactorDividend / fFactorDivisor;
 
+		_float3 vCurveColor = _float3(fColorCurve[0], fColorCurve[1], fColorCurve[2]);
 		_vector fLerpColor =
 			XMLoadFloat3(&m_tMeshEffectDesc.vColorInitial) +
-			fInterpFactor * (XMLoadFloat3(&vTargetColor) - XMLoadFloat3(&m_tMeshEffectDesc.vColorInitial));
+			fInterpFactor * (XMLoadFloat3(&vCurveColor) - XMLoadFloat3(&m_tMeshEffectDesc.vColorInitial));
 
 		XMStoreFloat3(&m_tMeshEffectDesc.vColor, fLerpColor);
+
+		break;
+	}
+}
+
+void CEffectMesh::ScaleLerp()
+{
+	if (m_ScaleCurves.empty())
+		return;
+
+	/* 0 ~ 1 */
+	_float fCurrentLifeNormalized = m_fTimer / m_tMeshEffectDesc.fLifetime;
+
+	for (array<_float, 5>&fScaleCurve : m_ScaleCurves)
+	{
+		/* Break cause Curve should not start yet ('Y' is the Curve Start Time). */
+		if (fCurrentLifeNormalized < fScaleCurve[3])
+			break;
+
+		/* Skip cause Curve has already been lerped through ('Z' is the Curve End Time). */
+		if (fCurrentLifeNormalized > fScaleCurve[4])
+		{
+			m_tMeshEffectDesc.vScaleInitial = _float3(fScaleCurve[0], fScaleCurve[1], fScaleCurve[2]);
+			continue;
+		}
+
+		_float fFactorDividend = (m_fTimer - (m_tMeshEffectDesc.fLifetime * fScaleCurve[3]));
+		_float fFactorDivisor = ((m_tMeshEffectDesc.fLifetime * fScaleCurve[4]) - (m_tMeshEffectDesc.fLifetime * fScaleCurve[3]));
+
+		_float fInterpFactor = fFactorDividend / fFactorDivisor;
+
+		_float3 vCurveScale = _float3(fScaleCurve[0], fScaleCurve[1], fScaleCurve[2]);
+
+		XMVECTOR vInit = XMLoadFloat3(&m_tMeshEffectDesc.vScaleInitial);
+		XMVECTOR vTarget = XMLoadFloat3(&vCurveScale);
+
+		XMVECTOR vLerpScale = vInit + (vTarget - vInit) * fInterpFactor; // ¶Ç´Â XMVectorLerp
+		XMStoreFloat3(&m_tMeshEffectDesc.vScale, vLerpScale);
 
 		break;
 	}
@@ -285,9 +325,11 @@ void CEffectMesh::AlphaLerp()
 
 	for (_float3& fAlphaCurve : m_AlphaCurves)
 	{
+		/* Break cause Curve should not start yet ('Y' is the Curve Start Time). */
 		if (fCurrentLifeNormalized < fAlphaCurve.y)
 			break;
 
+		/* Skip cause Curve has already been lerped through ('Z' is the Curve End Time). */
 		if (fCurrentLifeNormalized > fAlphaCurve.z)
 		{
 			m_tMeshEffectDesc.fAlphaInitial = fAlphaCurve.x;
@@ -305,41 +347,6 @@ void CEffectMesh::AlphaLerp()
 	}
 }
 
-void CEffectMesh::ScaleLerp()
-{
-	if (m_ScaleCurves.empty())
-		return;
-
-	const float life = (m_tMeshEffectDesc.fLifetime > 0.f) ? m_tMeshEffectDesc.fLifetime : 1.f;
-	const float fCurrentLifeNormalized = m_fTimer / life;
-
-	for (std::array<_float, 5>&fScaleCurve : m_ScaleCurves)
-	{
-		if (fCurrentLifeNormalized < fScaleCurve[3])
-			break;
-
-		if (fCurrentLifeNormalized > fScaleCurve[4])
-		{
-			m_tMeshEffectDesc.vScaleInitial = _float3(fScaleCurve[0], fScaleCurve[1], fScaleCurve[2]);
-			continue;
-		}
-
-		const float fFactorDividend = (m_fTimer - (life * fScaleCurve[3]));
-		const float fFactorDivisor = ((life * fScaleCurve[4]) - (life * fScaleCurve[3]));
-		const float fInterpFactor = (fFactorDivisor != 0.f) ? (fFactorDividend / fFactorDivisor) : 0.f;
-
-		_float3 vTargetScale(fScaleCurve[0], fScaleCurve[1], fScaleCurve[2]); 
-
-		_vector fLerpScale =
-			XMLoadFloat3(&m_tMeshEffectDesc.vScaleInitial) +
-			fInterpFactor * (XMLoadFloat3(&vTargetScale) - XMLoadFloat3(&m_tMeshEffectDesc.vScaleInitial));
-
-		XMStoreFloat3(&m_tMeshEffectDesc.vScale, fLerpScale);
-
-		break;
-	}
-}
-
 void CEffectMesh::TurnVelocityLerp()
 {
 	if (m_TurnVelocityCurves.empty())
@@ -350,9 +357,11 @@ void CEffectMesh::TurnVelocityLerp()
 
 	for (_float3& fTurnVelocityCurve : m_TurnVelocityCurves)
 	{
+		/* Break cause Curve should not start yet ('Y' is the Curve Start Time). */
 		if (fCurrentLifeNormalized < fTurnVelocityCurve.y)
 			break;
 
+		/* Skip cause Curve has already been lerped through ('Z' is the Curve End Time). */
 		if (fCurrentLifeNormalized > fTurnVelocityCurve.z)
 		{
 			m_tMeshEffectDesc.fTurnVelocityInitial = fTurnVelocityCurve.x;
@@ -380,9 +389,11 @@ void CEffectMesh::NoisePowerLerp()
 
 	for (_float3& fNoisePowerCurve : m_NoisePowerCurves)
 	{
+		/* Break cause Curve should not start yet ('Y' is the Curve Start Time). */
 		if (fCurrentLifeNormalized < fNoisePowerCurve.y)
 			break;
 
+		/* Skip cause Curve has already been lerped through ('Z' is the Curve End Time). */
 		if (fCurrentLifeNormalized > fNoisePowerCurve.z)
 		{
 			m_tMeshEffectDesc.fNoisePowerInitial = fNoisePowerCurve.x;
@@ -410,9 +421,11 @@ void CEffectMesh::DistortionPowerLerp()
 
 	for (_float3& fDistortPowerCurve : m_DistortPowerCurves)
 	{
+		/* Break cause Curve should not start yet ('Y' is the Curve Start Time). */
 		if (fCurrentLifeNormalized < fDistortPowerCurve.y)
 			break;
 
+		/* Skip cause Curve has already been lerped through ('Z' is the Curve End Time). */
 		if (fCurrentLifeNormalized > fDistortPowerCurve.z)
 		{
 			m_tMeshEffectDesc.fDistortPowerInitial = fDistortPowerCurve.x;

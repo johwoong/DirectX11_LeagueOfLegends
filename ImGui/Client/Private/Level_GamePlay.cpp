@@ -42,6 +42,25 @@ void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 
 HRESULT CLevel_GamePlay::Ready_Lights()
 {
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	pGameInstance->AddRef();
+	LIGHTDESC			LightDesc;
+
+	/* For.Directional*/
+	ZeroMemory(&LightDesc, sizeof(LIGHTDESC));
+
+	LightDesc.eTYPE = LIGHTDESC::TYPE_DIRECTIONAL;
+	LightDesc.vDirection = _float4(0.1f, -1.f, 0.1f, 0.f);
+	LightDesc.vDiffuse = _float4(1.f, 1.f, 1.f, 1.f);
+	LightDesc.vAmbient = _float4(0.5f, 0.5f, 0.5f, 1.f);
+	LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
+
+	if (FAILED(pGameInstance->Add_Light(m_pDevice, m_pContext, LightDesc)))
+		return E_FAIL;
+
+
+	pGameInstance->Release();
+
 	return S_OK;
 }
 

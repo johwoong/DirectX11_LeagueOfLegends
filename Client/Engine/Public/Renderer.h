@@ -8,13 +8,17 @@ public:
 	enum RENDERGROUP
 	{
 		RENDER_PRIORITY,
+		RENDER_SHADOWDEPTH,
 		RENDER_NOALPHABLEND,
+		RENDER_ALPHABLENDLIGHTS,
 		RENDER_GLOW,
+		RENDER_NOLIGHT,
 		RENDER_ALPHABLEND,
 		RENDER_DISTORTION,
 		RENDER_EDGE_DETECTION,
 		RENDER_UI_FRONT,
 		RENDER_UI_BACK,
+		RENDER_UI_GLOW,
 		RENDER_END
 	};
 
@@ -27,7 +31,10 @@ public:
 	virtual HRESULT Initialize(void* pArg) override;
 
 public:
+	class CShader* Get_ShaderPostProcessing() { return m_pShaderPostProcessing; }
+	void Set_Fog(_bool bFog) { m_bFog = bFog; }
 	void Set_Distort(_bool bDistort) { m_bDistort = bDistort; }
+	void Set_ZoomBlur(_bool bZoomBlur, _float fFocusPower = 3.f, _uint iFocusDetail = 0);
 	void Set_Saturation(_bool bSaturation, _float fSaturationPower = 1.f);
 
 public:
@@ -63,12 +70,20 @@ private:
 
 private:
 	HRESULT Render_Priority();
+	HRESULT Render_ShadowDepth();
 	HRESULT Render_NonAlphaBlend();
+	HRESULT Render_AlphaBlendLights();
+	HRESULT Render_Lights();
 	HRESULT Render_Glow();
+	HRESULT Render_Blend();
+	HRESULT Render_NonLight();
+	HRESULT Render_AlphaBlend();
 	HRESULT Render_Distortion();
 	HRESULT Render_EdgeDetection();
-	HRESULT Render_AlphaBlend();
+	HRESULT Render_PostProcessing();
 	HRESULT Render_UI();
+	HRESULT Render_UI_Glow();
+	HRESULT Render_UI_PostProcessing();
 
 #ifdef _DEBUG
 private:
@@ -82,10 +97,18 @@ private:
 	class CTexture* m_pDistortionNoiseTexture = nullptr;
 	_float m_fDistortionTimer = 0.f;
 
+	// Fog
+	_bool m_bFog = false;
+
 	/* Distortion (Post Processing) */
 	_bool m_bDistort = false;
 	class CTexture* m_pScreenDistortionTexture = nullptr;
 	_float m_fScreenDistortionTimer = 0.f;
+
+	/* Zoom Blur (Post Processing) */
+	_bool m_bZoomBlur = false;
+	_float m_fFocusPower = 3.f;
+	_int m_iFocusDetail = 1;
 
 	/* Saturation */
 	_bool m_bSaturation = true;

@@ -158,6 +158,9 @@ HRESULT CLoader::Loading_ForGamePlayLevel()
 	if (FAILED(Loading_ForActor()))
 		return E_FAIL;
 
+	if (FAILED(Loading_ForEffect()))
+		return E_FAIL;
+
 	if (FAILED(Loading_ForEffectTexture()))
 		return E_FAIL;
 
@@ -471,8 +474,6 @@ HRESULT CLoader::Loading_ForActor()
 
 
 
-
-
 #pragma endregion 
 
 
@@ -483,6 +484,17 @@ HRESULT CLoader::Loading_ForActor()
 
 HRESULT CLoader::Loading_ForEffect()
 {
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Plane"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Plane/Plane.dat"))))
+		return E_FAIL;
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("HalfSphere"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Sphere/HalfSphere.dat"))))
+		return E_FAIL;
+	if (FAILED(pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Sphere"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Sphere/Sphere.dat"))))
+		return E_FAIL;
 	return S_OK;
 }
 

@@ -75,7 +75,7 @@ HRESULT CTarget_Manager::Ready_BackBufferCopyTexture(ID3D11Device* pDevice, ID3D
 	return S_OK;
 }
 
-HRESULT CTarget_Manager::Add_RenderTarget(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pTargetTag, _uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4* pColor)
+HRESULT CTarget_Manager::Add_RenderTarget(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pTargetTag, _uint iSizeX, _uint iSizeY, DXGI_FORMAT eFormat, const _float4& pColor)
 {
 	if (Find_RenderTarget(pTargetTag))
 		return E_FAIL;
