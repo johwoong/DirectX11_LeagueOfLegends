@@ -44,6 +44,10 @@ public:
 	HRESULT Loading_For_GamePlay();
 	HRESULT Loading_For_GameUI();
 
+	HRESULT Loading_ForEffect();
+	HRESULT Loading_ForEffectTexture();
+
+
 private:
 	LEVEL					m_eNextLevel = LEVEL_END;
 	_bool					m_isFinished = false;

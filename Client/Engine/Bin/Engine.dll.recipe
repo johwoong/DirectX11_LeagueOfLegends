@@ -12,6 +12,9 @@
     <ContentFile>
       <FullPath>C:\DirectX11_LeagueOfLegends\Client\Engine\Bin\Shader_Nav.cso</FullPath>
     </ContentFile>
+    <ContentFile>
+      <FullPath>C:\DirectX11_LeagueOfLegends\Client\Engine\Bin\Shader_PostProcessing.cso</FullPath>
+    </ContentFile>
   </ContentFiles>
   <SatelliteDlls />
   <NonRecipeFileRefs />

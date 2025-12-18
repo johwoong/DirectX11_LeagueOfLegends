@@ -42,15 +42,7 @@ static void SpawnRangeProjectile(CMinion* pOwner)
         return;
     pGI->AddRef();
 
-    CProjectile::PROJECTILEDESC desc{};
-    desc.eType = CProjectile::PROJ_TARGET;
-    desc.pOwner = pOwner;
-    desc.pTarget = pTarget;
-
-    desc.fDamage = pOwner->Get_Stats().m_fAttackPower;
-    desc.fSpeed = 20.f;
-    desc.fLifeTime = 3.f;
-
+ 
     // ?? 발사 위치: 무기/손 뼈에서 가져오기
     _float4x4 Pivot = pOwner->Get_Model()->Get_PivotFloat4x4();
     CBone* pBone = pOwner->Get_Model()->Get_BonePtr("Buffbone_Glb_Weapon_1"); 
@@ -67,19 +59,6 @@ static void SpawnRangeProjectile(CMinion* pOwner)
 
     _float3 vStart{};
     XMStoreFloat3(&vStart, BoneWorld.r[3]);
-    desc.vStartPos = XMLoadFloat3(&vStart);
-
-    // 평타 투사체 크기 (원거리 미니언)
-
-    CGameObject* pObj = nullptr;
-    if (FAILED(pGI->Add_GameObject_Out(
-        TEXT("Prototype_GameObject_Projectile"),
-        LEVEL_GAMEPLAY,
-        TEXT("Layer_Projectile_Minion"),
-        pObj,
-        &desc)))
-    {
-    }
 
     Safe_Release(pGI);
 }

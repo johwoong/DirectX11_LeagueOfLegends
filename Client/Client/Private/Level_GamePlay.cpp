@@ -78,9 +78,8 @@ HRESULT CLevel_GamePlay::Initialize()
 		if (FAILED(Ready_Layer_Minion()))
 			return E_FAIL;
 	}
+	CPoolManager::GetInstance()->Reuse_Pooling_Layer(LEVEL_GAMEPLAY, TEXT("Layer_Effects"));
 
-
-	// ★ MinionManager 초기화 (이 레벨에서 운영)
 	if (FAILED(CMinionManager::GetInstance()->Initialize(LEVEL_GAMEPLAY)))
 		return E_FAIL;
 

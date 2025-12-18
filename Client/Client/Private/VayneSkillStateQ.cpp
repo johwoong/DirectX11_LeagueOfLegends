@@ -114,18 +114,7 @@ CVayneState* CVayneSkillStateQ::Update(_float fTimeDelta)
                 HandMatrix.r[2] = XMVector4Normalize(HandMatrix.r[2]);
 
                 _vector vHandVec = HandMatrix.r[3];
-                CProjectile::PROJECTILEDESC desc{};
-                desc.pOwner = m_pOwner;
-                desc.pTarget = m_pOwner->Get_Target();
-                desc.fSpeed = 4.f;
-                desc.vStartPos = vHandVec;
-
-                pGI->Add_GameObject(
-                    TEXT("Prototype_GameObject_Projectile"),
-                    LEVEL_GAMEPLAY,
-                    L"Layer_Projectile",
-                    &desc);
-
+             
                 m_bProjectileSpawned = true;
             }
         }

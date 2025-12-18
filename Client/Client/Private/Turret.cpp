@@ -193,23 +193,6 @@ _int CTurret::Update(_float fTimeDelta)
         if (dist <= m_tStats.fAttackRange && m_fAttackTimer >= m_fAttackCoolTime)
         {
             m_fAttackTimer = 0.f;
-
-            CProjectile::PROJECTILEDESC desc{};
-            desc.eType = CProjectile::PROJ_TARGET;
-            desc.pOwner = this;
-            desc.pTarget = m_pTarget;
-            desc.fSpeed = 15.f;
-            desc.fDamage = m_tStats.fAttackDamage;
-            desc.vStartPos = myPos;          // 포탄 발사 위치 (필요하면 포탑 머리본 사용)
-
-            // 포탑 평타라면 별도 태그
-            desc.eSkillTag = CProjectile::SKILL_NONE;
-
-            CGameInstance::GetInstance()->Add_GameObject(
-                TEXT("Prototype_GameObject_Projectile"),
-                LEVEL_GAMEPLAY,
-                TEXT("Layer_Projectile"),
-                &desc);
         }
     }
 

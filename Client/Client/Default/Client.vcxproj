@@ -159,6 +159,12 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Public\EzrealProjectile.h" />
+    <ClInclude Include="..\Public\EffectObject.h" />
+    <ClInclude Include="..\Public\Particle_Rect.h" />
+    <ClInclude Include="..\Public\Effect.h" />
+    <ClInclude Include="..\Public\EffectMesh.h" />
+    <ClInclude Include="..\Public\EffectTexture.h" />
     <ClInclude Include="..\Public\Leona.h" />
     <ClInclude Include="..\Public\LeonaIdleState.h" />
     <ClInclude Include="..\Public\Building.h" />
@@ -171,6 +177,8 @@
     <ClInclude Include="..\Public\EzrealSkillStateE.h" />
     <ClInclude Include="..\Public\EzrealSkillStateW.h" />
     <ClInclude Include="..\Public\LeonaMoveState.h" />
+    <ClInclude Include="..\Public\ParticleSystem.h" />
+    <ClInclude Include="..\Public\Particle_Point.h" />
     <ClInclude Include="..\Public\Projectile.h" />
     <ClInclude Include="..\Public\RenektonIdleState.h" />
     <ClInclude Include="..\Public\RenektonMoveState.h" />
@@ -253,6 +261,13 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Private\EzrealProjectile.cpp" />
+    <ClCompile Include="..\Private\EffectObject.cpp" />
+    <ClCompile Include="..\Private\Particle_Point.cpp" />
+    <ClCompile Include="..\Private\Particle_Rect.cpp" />
+    <ClCompile Include="..\Private\Effect.cpp" />
+    <ClCompile Include="..\Private\EffectMesh.cpp" />
+    <ClCompile Include="..\Private\EffectTexture.cpp" />
     <ClCompile Include="..\Private\Leona.cpp" />
     <ClCompile Include="..\Private\LeonaIdleState.cpp" />
     <ClCompile Include="..\Private\Building.cpp" />
@@ -265,6 +280,7 @@
     <ClCompile Include="..\Private\EzrealSkillStateE.cpp" />
     <ClCompile Include="..\Private\EzrealSkillStateW.cpp" />
     <ClCompile Include="..\Private\LeonaMoveState.cpp" />
+    <ClCompile Include="..\Private\ParticleSystem.cpp" />
     <ClCompile Include="..\Private\Projectile.cpp" />
     <ClCompile Include="..\Private\RenektonIdleState.cpp" />
     <ClCompile Include="..\Private\RenektonMoveState.cpp" />
@@ -356,6 +372,9 @@
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxAnimModel.hlsl" />
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxCubeTexture.hlsl" />
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxModel.hlsl" />
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxPoint.hlsl" />
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxPointInstance.hlsl" />
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxRectInstance.hlsl" />
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxTex.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,91 +1,73 @@
 #pragma once
 #include "Actor.h"
 #include "GameInstance.h"
+#include "Effect.h"
+#include "ParticleSystem.h"
+#include "Collision_Manager.h"
+#include "Enemy.h"
+#include "Player.h"
+#include "Minion.h"
+#include "Building.h"
 
-class CProjectile final : public CActor
+NS_BEGIN(Engine)
+class CModel;
+NS_END
+
+NS_BEGIN(Client)
+class CProjectile abstract : public CActor
 {
 public:
-    enum PROJ_TYPE
-    {
-        PROJ_TARGET,
-        PROJ_LINEAR,
-        PROJ_AREA,
-    };
+	typedef struct ProjectileTag
+	{
+		OBJECT_ID  eCollisionGroup = PLAYER; //Player or Monster bullet;
+		_uint	   eProjType = 0;
 
-    // ★ 어떤 스킬에서 나온 투사체인지
-    enum SKILL_TAG
-    {
-        SKILL_NONE,
-        SKILL_EZREAL_Q,
-        SKILL_EZREAL_W,
-        SKILL_EZREAL_R,
-    };
+		_vector	   vInitPositon = XMVectorSet(0.f, 0.f, 0.f, 1.f);
 
-    struct PROJECTILEDESC
-    {
-        PROJ_TYPE eType = PROJ_TARGET;
+		_float	   fStartTime = 0.f;
+		_float	   fDeadTime = 10.f;
+		_float	   fVelocity = 5.f;
+		_int	   iDamage = 20;
 
-        _vector vStartPos;
+		_vector	   vTargetDir = XMVectorSet(0.f, 0.f, 0.f, 0.f);
+		_vector	   vTargetPosition = XMVectorSet(0.f, 0.f, 0.f, 0.f);
 
-        // === 공통 ===
-        float fSpeed = 20.f;
-        float fLifeTime = 3.f;
-        float fDamage = 50.f;
+		CActor* pTarget = nullptr;
+		CActor* pOwner = nullptr;
+		_float offsetX = 0.f;
+		_float offsetZ = 0.f;
 
-        // === 타겟추적형 전용 ===
-        CGameObject* pTarget = nullptr;
+	}PROJECTILEDESC;
 
-        // === 직선형 전용 ===
-        _float3 vDir = { 0,0,0 };
-        float   fMaxDistance = 600.f;
-
-        // === 기타 ===
-        CActor* pOwner = nullptr;
-
-        // === 콜라이더 커스텀 설정 ===
-        _bool   bUseCustomCollider = false;
-        _float3 vColliderScale = { 0.f, 0.f, 0.f };
-        float   fColliderRadius = 0.f;
-        _float3 vColliderRotation = { 0.f, 0.f, 0.f };
-        _float3 vColliderOffset = { 0.f, 0.f, 0.f };
-
-        // ★ 추가: 이 투사체가 어떤 스킬에서 나왔는지
-        SKILL_TAG eSkillTag = SKILL_NONE;
-    };
-
-private:
-    CProjectile(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-    CProjectile(const CProjectile& rhs);
-    virtual ~CProjectile() = default;
+protected:
+	CProjectile(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CProjectile(const CProjectile& rhs);
+	virtual ~CProjectile() = default;
 
 public:
-    virtual HRESULT Initialize_Prototype() override;
-    virtual HRESULT Initialize(void* pArg) override;
+	virtual HRESULT Initialize_Prototype() override;
+	virtual HRESULT Initialize(void* pArg) override;
+	virtual int Update(_float fTimeDelta) override;
+	virtual void Late_Update(_float fTimeDelta) override;
+	virtual HRESULT Render() override;
 
-    virtual int Update(_float fDeltaTime) override;
-    virtual void Late_Update(_float fDeltaTime) override;
-    virtual HRESULT Render() override;
+protected:
+	virtual HRESULT Ready_Components(void* pArg = nullptr);
+	virtual HRESULT SetUp_ShaderResources();
+	virtual HRESULT SetUp_ShaderID();
+	virtual void Collision_Check();
 
-private:
-    PROJECTILEDESC  m_Desc;
-    float           m_fAccTime = 0.f;
-    float           m_fTraveled = 0.f;
+protected:
+	PROJECTILEDESC m_ProjectileDesc;
 
-private:
-    vector<CActor*> m_HitActors;   // R 등 관통형 광역 스킬용
-private:
-    HRESULT Ready_Components(void* pArg) override;
-    HRESULT SetUp_ShaderResources() override { return S_OK; }
+	CModel* m_pModelCom = nullptr;
+	vector<CEffect*> m_pEffects;
+	vector<CEffect*> m_pDeadEffects;
 
-    void Move_Target(_float fDeltaTime);
-    void Move_Linear(_float fDeltaTime);
-
-    void Update_Collider_Size_ByType();
-    void Check_Hit();
+	_float	m_fTime = 0;
+	_bool	m_bDeadEffect = false;
 
 public:
-    static CProjectile* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-    virtual CGameObject* Clone(void* pArg) override;
-    virtual void Free() override;
+	virtual void Free() override;
 };
-
+NS_END

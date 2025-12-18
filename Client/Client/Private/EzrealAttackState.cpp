@@ -8,7 +8,8 @@
 
 #include "PlayerIdleState.h"
 #include "PlayerRunState.h"
-#include "Projectile.h"
+
+#include "EzrealProjectile.h"
 
 USING(Client)
 USING(Player)
@@ -139,17 +140,17 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
                     HandMatrix.r[2] = XMVector4Normalize(HandMatrix.r[2]);
 
                     _vector vHandVec = HandMatrix.r[3];
-                    CProjectile::PROJECTILEDESC desc{};
-                    desc.pOwner = m_pOwner;
-                    desc.pTarget = m_pOwner->Get_AttackTarget();
-                    desc.fSpeed = 4.f;
-                    desc.vStartPos = vHandVec;
 
-                    pGI->Add_GameObject(
-                        TEXT("Prototype_GameObject_Projectile"),
-                        LEVEL_GAMEPLAY,
-                        L"Layer_Projectile",
-                        &desc);
+                    CProjectile::PROJECTILEDESC ProjDesc;
+                    ProjDesc.eCollisionGroup = PLAYER;
+                    ProjDesc.fDeadTime = 12.f;
+                    ProjDesc.eProjType = CEzrealProjectile::BASE;
+                    ProjDesc.vInitPositon = vHandVec;
+                    ProjDesc.pOwner = m_pOwner;
+                    ProjDesc.vTargetDir = XMVector3Normalize(ProjDesc.vTargetPosition - m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION));
+
+                    if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &ProjDesc)))
+                        return nullptr;
 
                     m_bProjectileSpawned = true;
                 }

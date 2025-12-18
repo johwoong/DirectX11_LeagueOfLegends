@@ -63,25 +63,7 @@ CPlayerState* CEzrealSkillStateR::Update(_float fDeltaTime)
             vStartPos.y -= fYOffset;
 
 
-            CProjectile::PROJECTILEDESC desc{};
-            desc.eType = CProjectile::PROJ_LINEAR;
-            desc.vStartPos = XMLoadFloat3(&vStartPos);
-            desc.vDir = m_vDir;
-            desc.pOwner = m_pOwner;
-            desc.fSpeed = 50.f;
-            desc.fMaxDistance = 1150.f;
-            desc.fLifeTime = 2.f;
-
-            desc.bUseCustomCollider = true;
-            desc.vColliderScale = _float3(2.f, 0.5f, 1.f);
-            desc.eSkillTag = CProjectile::SKILL_EZREAL_R;
-
-            GI->Add_GameObject(
-                TEXT("Prototype_GameObject_Projectile"),
-                LEVEL_GAMEPLAY,
-                L"Layer_Projectile",
-                &desc
-            );
+           
         }
     }
 

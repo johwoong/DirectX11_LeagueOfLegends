@@ -131,37 +131,37 @@
       <Filter>02. GameObjects\00. Actor\05. Npc</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PoolManager.h">
       <Filter>05. PoolingManager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_State.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_Melee.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Melee</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Minion_Melee</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_IdleState.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_MoveState.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\MinionManager.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\Manager</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Manager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_Range.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Range</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Minion_Range</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_ChaseState.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_AttackState.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Minion_DeadState.h">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PlayerRecallState.h">
       <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
@@ -267,6 +267,30 @@
     </ClInclude>
     <ClInclude Include="..\Public\VayneSkillStateR.h">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Effect.h">
+      <Filter>02. GameObjects\05. Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EffectMesh.h">
+      <Filter>02. GameObjects\05. Effect\00. EffectMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EffectTexture.h">
+      <Filter>02. GameObjects\05. Effect\01. EffectTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ParticleSystem.h">
+      <Filter>02. GameObjects\05. Effect\03. Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Particle_Point.h">
+      <Filter>02. GameObjects\05. Effect\02. Instancing\Point</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Particle_Rect.h">
+      <Filter>02. GameObjects\05. Effect\02. Instancing\Rect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EffectObject.h">
+      <Filter>02. GameObjects\05. Effect\04. EffectObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\EzrealProjectile.h">
+      <Filter>02. GameObjects\00. Actor\04. Projectile\00. Player\Ezreal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -374,21 +398,6 @@
     <Filter Include="02. GameObjects\00. Actor\01. Building\03. Nexus">
       <UniqueIdentifier>{d1ee38a3-ee3f-42ab-a373-48723c28f78f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. GameObjects\00. Actor\02. Minion">
-      <UniqueIdentifier>{f7c77ae0-5301-4127-ba02-333bae55700e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\02. Minion\Minion_Melee">
-      <UniqueIdentifier>{d9bb48e4-5a77-4e62-99f1-bab39ab1b24e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\02. Minion\State">
-      <UniqueIdentifier>{6eb7c75c-0675-4a69-aaa4-ee5e8551dbf4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\02. Minion\Manager">
-      <UniqueIdentifier>{806a9581-99c2-4c8c-a1b8-d23f7de8ebc9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. GameObjects\00. Actor\02. Minion\Minion_Range">
-      <UniqueIdentifier>{222d7195-60c1-4796-9a61-1d798275e6c7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects\00. Actor\03. Enemy">
       <UniqueIdentifier>{ca244f5a-2856-42a9-a00e-3fe8f0d68a09}</UniqueIdentifier>
     </Filter>
@@ -490,6 +499,60 @@
     </Filter>
     <Filter Include="02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill">
       <UniqueIdentifier>{84626c09-c00b-49d4-b68e-a2a654cef050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect">
+      <UniqueIdentifier>{98fa23a8-741f-40a5-93ab-f3b47a94af0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\00. EffectMesh">
+      <UniqueIdentifier>{9b32c70a-2f4e-4c9a-aca1-966cd49c3ef6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\01. EffectTexture">
+      <UniqueIdentifier>{aa2fbf97-4dbf-4302-8c61-e1a22955b5ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\02. Instancing">
+      <UniqueIdentifier>{0533f40f-9481-4005-8c1b-2911bf01f2e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\03. Particle">
+      <UniqueIdentifier>{cb4b5f8f-0754-4fea-80c8-c5b73798e12c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\04. EffectObject">
+      <UniqueIdentifier>{8f431f16-68e9-42ff-aa17-2e2f2305c918}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\02. Instancing\Point">
+      <UniqueIdentifier>{a6bd8daf-f9cd-4d67-9aea-b151f9b52187}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\05. Effect\02. Instancing\Rect">
+      <UniqueIdentifier>{5993b9b3-35f6-419c-8510-f85e00319cf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion">
+      <UniqueIdentifier>{f7c77ae0-5301-4127-ba02-333bae55700e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Minion_Melee">
+      <UniqueIdentifier>{d9bb48e4-5a77-4e62-99f1-bab39ab1b24e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State">
+      <UniqueIdentifier>{6eb7c75c-0675-4a69-aaa4-ee5e8551dbf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Manager">
+      <UniqueIdentifier>{806a9581-99c2-4c8c-a1b8-d23f7de8ebc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Minion_Range">
+      <UniqueIdentifier>{222d7195-60c1-4796-9a61-1d798275e6c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\04. Projectile\01. Enemy">
+      <UniqueIdentifier>{c72230ae-d136-4d27-871c-b79a842a4614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\04. Projectile\00. Player">
+      <UniqueIdentifier>{3e503b59-9159-4166-95c7-11355cc6a6f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\04. Projectile\02. Minion">
+      <UniqueIdentifier>{c5e85d4a-49cb-4816-8d24-d36a5d7bfe98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\04. Projectile\03. Turret">
+      <UniqueIdentifier>{e73a91bc-9f66-4280-bbe2-c33a6c20f66d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\04. Projectile\00. Player\Ezreal">
+      <UniqueIdentifier>{771f62e5-0c21-404f-a941-b54b5a37319a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -611,31 +674,31 @@
       <Filter>02. GameObjects\00. Actor\05. Npc</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PoolManager.cpp">
       <Filter>05. PoolingManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion_Melee.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Melee</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Minion_Melee</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion_IdleState.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion_MoveState.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\MinionManager.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\Manager</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Manager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion_Range.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\Minion_Range</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\Minion_Range</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion_ChaseState.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion_DeadState.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PlayerRecallState.cpp">
       <Filter>02. GameObjects\00. Actor\00. Player\State</Filter>
@@ -716,7 +779,7 @@
       <Filter>02. GameObjects\00. Actor\03. Enemy\Leona\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Minion_AttackState.cpp">
-      <Filter>02. GameObjects\00. Actor\02. Minion\State</Filter>
+      <Filter>02. GameObjects\00. Actor\00. Player\00. Champion\02. Minion\State</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\VayneAttackState.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State</Filter>
@@ -732,6 +795,30 @@
     </ClCompile>
     <ClCompile Include="..\Private\VayneSkillStateR.cpp">
       <Filter>02. GameObjects\00. Actor\03. Enemy\Vayne\State\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Effect.cpp">
+      <Filter>02. GameObjects\05. Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EffectMesh.cpp">
+      <Filter>02. GameObjects\05. Effect\00. EffectMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EffectTexture.cpp">
+      <Filter>02. GameObjects\05. Effect\01. EffectTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ParticleSystem.cpp">
+      <Filter>02. GameObjects\05. Effect\03. Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Particle_Point.cpp">
+      <Filter>02. GameObjects\05. Effect\02. Instancing\Point</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Particle_Rect.cpp">
+      <Filter>02. GameObjects\05. Effect\02. Instancing\Rect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EffectObject.cpp">
+      <Filter>02. GameObjects\05. Effect\04. EffectObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EzrealProjectile.cpp">
+      <Filter>02. GameObjects\00. Actor\04. Projectile\00. Player\Ezreal</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -759,6 +846,15 @@
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxCubeTexture.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxPointInstance.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxRectInstance.hlsl">
+      <Filter>97. ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\Bin\ShaderFiles\Shader_VtxPoint.hlsl">
       <Filter>97. ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>

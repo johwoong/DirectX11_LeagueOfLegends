@@ -2,7 +2,7 @@
 #include "VIBuffer_Instance.h"
 
 NS_BEGIN(Engine)
-class CVIBuffer_Rect_Instance final : public CVIBuffer_Instance
+class ENGINE_DLL CVIBuffer_Rect_Instance final : public CVIBuffer_Instance
 {
 private:
 	CVIBuffer_Rect_Instance(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

@@ -89,26 +89,7 @@ CPlayerState* CEzrealSkillStateW::Update(_float fDeltaTime)
                     _float3 vStartPos;
                     XMStoreFloat3(&vStartPos, HandMatrix.r[3]);
 
-                    CProjectile::PROJECTILEDESC desc{};
-                    desc.eType = CProjectile::PROJ_LINEAR;
-                    desc.vStartPos = XMLoadFloat3(&vStartPos);
-                    desc.vDir = m_vDir;
-                    desc.pOwner = m_pOwner;
-                    desc.fSpeed = 20.f;
-                    desc.fMaxDistance = 100.f;
-                    desc.fLifeTime = 2.f;
-                    desc.fDamage = 80.f;
-
-                    desc.bUseCustomCollider = true;
-                    desc.vColliderScale = _float3(0.4f, 0.5f, 1.f);
-                    desc.eSkillTag = CProjectile::SKILL_EZREAL_W;
-
-                    GI->Add_GameObject(
-                        TEXT("Prototype_GameObject_Projectile"),
-                        LEVEL_GAMEPLAY,
-                        L"Layer_Projectile",
-                        &desc
-                    );
+                   
                 }
             }
 
@@ -181,21 +162,6 @@ CPlayerState* CEzrealSkillStateW::Update(_float fDeltaTime)
             _float3 vStartPos;
             XMStoreFloat3(&vStartPos, HandMatrix.r[3]);
 
-            CProjectile::PROJECTILEDESC desc{};
-            desc.eType = CProjectile::PROJ_LINEAR;
-            desc.vStartPos = XMLoadFloat3(&vStartPos);
-            desc.vDir = m_vDir;
-            desc.pOwner = m_pOwner;
-            desc.fSpeed = 20.f;
-            desc.fMaxDistance = 10.f;
-            desc.fLifeTime = 2.f;
-
-            GI->Add_GameObject(
-                TEXT("Prototype_GameObject_Projectile"),
-                LEVEL_GAMEPLAY,
-                L"Layer_Projectile",
-                &desc
-            );
         }
         // 2) 이동 시작 이벤트
         //   ?? RUNW 클립에 "EVENT_INPUT" 타입 이벤트를 달아둔 위치에서 호출됨
