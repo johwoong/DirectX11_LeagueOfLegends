@@ -197,10 +197,10 @@ HRESULT CEffectMesh::Render_Distort()
 		if (FAILED(m_pModelCom->SetUp_Material(m_pShaderCom, "g_SpecularTexture", i, aiTextureType_SPECULAR)))
 			return E_FAIL;
 
-		//if (FAILED(m_pRenderCom->Get_ShaderPostProcessing()->Set_RawValue("g_fDistortionSpeed", &m_tMeshEffectDesc.fDistortSpeed, sizeof(_float))))
-		//	return E_FAIL;
-		//if (FAILED(m_pRenderCom->()->Set_RawValue("g_fDistortionStrength", &m_tMeshEffectDesc.fDistortPower, sizeof(_float))))
-		//	return E_FAIL;
+		if (FAILED(m_pRenderCom->Get_ShaderPostProcessing()->Set_RawValue("g_fDistortionSpeed", &m_tMeshEffectDesc.fDistortSpeed, sizeof(_float))))
+			return E_FAIL;
+		if (FAILED(m_pRenderCom->Get_ShaderPostProcessing()->Set_RawValue("g_fDistortionStrength", &m_tMeshEffectDesc.fDistortPower, sizeof(_float))))
+			return E_FAIL;
 
 		if (FAILED(m_pModelCom->Render(m_pShaderCom, i, 6)))
 			return E_FAIL;

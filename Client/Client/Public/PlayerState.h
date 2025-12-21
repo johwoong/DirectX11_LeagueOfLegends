@@ -8,7 +8,7 @@
 #include "Renekton.h"
 #include "Vi.h"
 #include "Enemy.h"
-#include "Projectile.h"
+#include "EzrealProjectile.h"
 
 NS_BEGIN(Engine)
 class CModel;

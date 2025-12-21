@@ -66,6 +66,8 @@ HRESULT CTarget_Manager::Ready_BackBufferCopyTexture(ID3D11Device* pDevice, ID3D
 	tBackBufferCopyDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	tBackBufferCopyDesc.CPUAccessFlags = 0;
 	tBackBufferCopyDesc.MiscFlags = 0;
+	m_WinCX = iWinCX;
+	m_WinCY = iWinCY;
 
 	if (FAILED(pDevice->CreateTexture2D(&tBackBufferCopyDesc, nullptr, &m_pBackBufferTextureCopy)))
 		return E_FAIL;
@@ -156,8 +158,8 @@ HRESULT CTarget_Manager::Begin_ShadowMRT(ID3D11DeviceContext* pContext, const _t
 	ZeroMemory(&ViewPortDesc, sizeof(D3D11_VIEWPORT));
 	ViewPortDesc.TopLeftX = 0;
 	ViewPortDesc.TopLeftY = 0;
-	ViewPortDesc.Width = 1920.f * 12.5f;
-	ViewPortDesc.Height = 1080.f * 12.5f;
+	ViewPortDesc.Width = m_WinCX * 12.5f;
+	ViewPortDesc.Height = m_WinCY * 12.5f;
 	ViewPortDesc.MinDepth = 0.f;
 	ViewPortDesc.MaxDepth = 1.f;
 
@@ -177,8 +179,8 @@ HRESULT CTarget_Manager::End_MRT(ID3D11DeviceContext* pContext)
 	ZeroMemory(&ViewPortDesc, sizeof(D3D11_VIEWPORT));
 	ViewPortDesc.TopLeftX = 0;
 	ViewPortDesc.TopLeftY = 0;
-	ViewPortDesc.Width = 1920;
-	ViewPortDesc.Height = 1080;
+	ViewPortDesc.Width = m_WinCX;
+	ViewPortDesc.Height = m_WinCY;
 	ViewPortDesc.MinDepth = 0.f;
 	ViewPortDesc.MaxDepth = 1.f;
 

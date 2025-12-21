@@ -3,24 +3,35 @@
 
 void CEffectMesh::Set_WorldPosition(_matrix mWorldMatrix)
 {
-	/* Effect Local Matrix */
-	_matrix mScaleMatrixLocal = XMMatrixScaling(m_tMeshEffectDesc.vScale.x, m_tMeshEffectDesc.vScale.y, m_tMeshEffectDesc.vScale.z);
-	_matrix mRotationMatrixLocal = XMMatrixRotationRollPitchYaw(XMConvertToRadians(m_tMeshEffectDesc.vRotation.x), XMConvertToRadians(m_tMeshEffectDesc.vRotation.y), XMConvertToRadians(m_tMeshEffectDesc.vRotation.z));
-	_matrix mTranslationMatrixLocal = XMMatrixTranslation(m_tMeshEffectDesc.vPosition.x, m_tMeshEffectDesc.vPosition.y, m_tMeshEffectDesc.vPosition.z);
+	// Local: Scale * Rot * Trans  (Åø °ª)
+	_matrix mScaleLocal = XMMatrixScaling(
+		m_tMeshEffectDesc.vScale.x,
+		m_tMeshEffectDesc.vScale.y,
+		m_tMeshEffectDesc.vScale.z);
 
-	_matrix mLocalMatrix = XMMatrixMultiply(mScaleMatrixLocal, mRotationMatrixLocal);
-	mLocalMatrix = XMMatrixMultiply(mLocalMatrix, mTranslationMatrixLocal);
+	_matrix mRotLocal = XMMatrixRotationRollPitchYaw(
+		XMConvertToRadians(m_tMeshEffectDesc.vRotation.x),
+		XMConvertToRadians(m_tMeshEffectDesc.vRotation.y),
+		XMConvertToRadians(m_tMeshEffectDesc.vRotation.z));
 
-	/* Effect World Matrix (combined with Owner WorldMatrix). */
-	_matrix mMatrix = XMMatrixMultiply(mLocalMatrix, mWorldMatrix);
-	m_pTransformCom->Set_WorldMatrix(mMatrix);
+	_matrix mTransLocal = XMMatrixTranslation(
+		m_tMeshEffectDesc.vPosition.x,
+		m_tMeshEffectDesc.vPosition.y,
+		m_tMeshEffectDesc.vPosition.z);
+
+	_matrix mLocal = mScaleLocal * mRotLocal * mTransLocal;
+
+	_matrix mFix = XMMatrixRotationX(XMConvertToRadians(-90.f));
+
+	// Final = Local * Fix * OwnerWorld
+	_matrix mFinal = mLocal * mFix * mWorldMatrix;
+	m_pTransformCom->Set_WorldMatrix(mFinal);
 }
 
 void CEffectMesh::LookAt(_vector vTarget)
 {
 	/* Billboard. */
 	m_pTransformCom->LookAt(vTarget);
-
 }
 
 CEffectMesh::CEffectMesh(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

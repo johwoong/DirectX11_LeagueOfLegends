@@ -23,25 +23,29 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
 {
     CModel* pModel = m_pOwner->Get_Model();
 
-    m_bIsAnimationFinished = m_pOwner->Get_Model()->Play_Animation(fDeltaTime, m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex()), nullptr, 0.1f);
+    m_bIsAnimationFinished = pModel->Play_Animation(
+        fDeltaTime,
+        m_pOwner->Is_AnimationLoop(pModel->Get_CurrentAnimIndex()),
+        nullptr, 0.1f);
 
-    // ===============================
-    // 2) 애니메이션 이벤트 체크
-    // ===============================
-    vector<ANIMEVENT> events = pModel->Get_Events();
-
-    for (auto& evt : events)
+    // 이미 발사했으면 더 이상 스폰 금지
+    if (!m_bProjectileSpawned)
     {
-        if (!evt.isPlay) continue;
-        if (m_bProjectileSpawned) continue;
+        vector<ANIMEVENT> events = pModel->Get_Events();
 
-        if (evt.eType == ANIMEVENT::EVENT_PROJECTILE)
+        for (auto& evt : events)
         {
+            if (!evt.isPlay)
+                continue;
+
+            if (evt.eType != ANIMEVENT::EVENT_PROJECTILE)
+                continue;
+
             m_bProjectileSpawned = true;
 
-            CGameInstance* GI = CGameInstance::GetInstance();
-
+            // 손 위치
             CBone* pHand = pModel->Get_BonePtr("L_Hand");
+            if (!pHand) break;
 
             _float4x4 pivot = pModel->Get_PivotFloat4x4();
             _matrix pivotMat = XMLoadFloat4x4(&pivot);
@@ -55,32 +59,96 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
             HandMatrix.r[1] = XMVector4Normalize(HandMatrix.r[1]);
             HandMatrix.r[2] = XMVector4Normalize(HandMatrix.r[2]);
 
-            _float3 vStartPos;
-            XMStoreFloat3(&vStartPos, HandMatrix.r[3]);
+            _vector vHandPos = HandMatrix.r[3];
 
-           
+            // ? 방향 (Enter에서 만든 m_vDir 사용) - 먼저 계산!
+            _vector vDir = XMLoadFloat3(&m_vDir);
+            vDir = XMVectorSetY(vDir, 0.f);
+
+            if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
+                break;
+
+            vDir = XMVector3Normalize(vDir);
+            vDir = XMVectorSetW(vDir, 0.f);
+
+            if (!m_bCastFxSpawned)
+            {
+                m_bCastFxSpawned = true;
+
+                _vector vUpMesh = -vDir;                              
+                _vector vLookMesh = XMVectorSet(0.f, 1.f, 0.f, 0.f);    
+                _vector vRightMesh = XMVector3Cross(vUpMesh, vLookMesh);  
+
+                if (XMVectorGetX(XMVector3LengthSq(vRightMesh)) < 1e-6f)
+                    vRightMesh = XMVectorSet(1.f, 0.f, 0.f, 0.f);
+
+                vRightMesh = XMVector3Normalize(vRightMesh);
+                vUpMesh = XMVector3Normalize(XMVector3Cross(vLookMesh, vRightMesh)); 
+                vLookMesh = XMVector3Normalize(vLookMesh);
+
+                _matrix mWorld = XMMatrixIdentity();
+                mWorld.r[0] = vRightMesh;    
+                mWorld.r[1] = vUpMesh;        
+                mWorld.r[2] = vLookMesh;    
+
+                // 손에서 살짝 앞으로
+                _vector vPos = XMVectorSetW(vHandPos + vDir * 0.25f, 1.f);
+                mWorld.r[3] = vPos;
+
+                CEffect::PlayEffectAtLocation(TEXT("Ezreal_QWait.dat"), mWorld);
+            }
+
+            // 투사체 생성
+            CProjectile::PROJECTILEDESC desc{};
+            desc.eCollisionGroup = PLAYER;
+            desc.eProjType = CEzrealProjectile::Q;
+            desc.vInitPositon = XMVectorSetW(vHandPos, 1.f);
+            desc.vTargetDir = vDir;
+            desc.fVelocity = 10.f;
+            desc.fDeadTime = 1.2f;
+            desc.iDamage = 90;
+            desc.pOwner = m_pOwner;
+            desc.pTarget = nullptr;
+
+            CGameInstance* GI = CGameInstance::GetInstance();
+            if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
+                LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+            {
+                m_bProjectileSpawned = false;
+                m_bCastFxSpawned = false; // ? 실패하면 FX도 다시 가능하게(선택)
+            }
+
+            break; // 한 발만
         }
     }
 
     if (m_bIsAnimationFinished)
     {
         m_pOwner->Set_PlayIdleQ(true);
-
         return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
     }
-
 
     return nullptr;
 }
 
 CPlayerState* CEzrealSkillStateQ::Late_Update(_float fDeltaTime)
 {
+
+    if (!m_pEffects.empty())
+    {
+        for (auto& iter : m_pEffects)
+        {
+            if (iter != nullptr && iter->Get_PreDead())
+                iter = nullptr;
+        }
+    }
     return nullptr;
 }
 
 void CEzrealSkillStateQ::Enter()
 {
     __super::Enter();
+    m_bCastFxSpawned = false;
     m_pOwner->SetUsingSkill(true);
     CCursorManager* CM = CCursorManager::GetInstance();
 
@@ -111,12 +179,20 @@ void CEzrealSkillStateQ::Enter()
     XMStoreFloat3(&m_vDir, -vLook);
 
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::Q);
+
+
 }
 
 
 void CEzrealSkillStateQ::Exit()
 {
     m_pOwner->SetUsingSkill(false);
+    for (auto& iter : m_pEffects)
+    {
+        if (iter != nullptr && iter->Get_PreDead())
+            iter = nullptr;
+    }
+
     __super::Exit();
 }
 

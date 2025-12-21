@@ -49,6 +49,7 @@ private:
     ID3D11DepthStencilView* m_pShadowDeptheStencil = { nullptr };
     ID3D11Texture2D* m_pBackBufferTextureCopy = { nullptr };
     ID3D11ShaderResourceView* m_pBackBufferSRV = { nullptr };
+	_uint m_WinCX, m_WinCY = {};
 
 private:
     class CRenderTarget* Find_RenderTarget(const _tchar* pTargetTag);

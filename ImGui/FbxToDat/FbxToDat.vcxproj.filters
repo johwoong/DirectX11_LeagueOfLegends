@@ -19,6 +19,9 @@
     <Filter Include="소스 파일\Anim">
       <UniqueIdentifier>{c0fa831d-3e36-44e9-808b-f9e3932ff2bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\EffectMesh">
+      <UniqueIdentifier>{36ec1d54-5003-4fe8-90c6-b6e6551e6a0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FbxToDatNonAnim.cpp">
@@ -41,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="FbxToAnimReverse.cpp">
       <Filter>소스 파일\Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectMeshToDat.cpp">
+      <Filter>소스 파일\EffectMesh</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

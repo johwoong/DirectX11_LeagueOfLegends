@@ -564,6 +564,25 @@ HRESULT CLoader::Loading_ForEffect()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Sphere"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Sphere/Sphere.dat"))))
 		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Bow"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Bow/Bow.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Cylinder0"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Cylinder/Cylinder0.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Cylinder1"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Cylinder/Cylinder1.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Cylinder2"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Cylinder/Cylinder2.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("CylinderSphere"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Cylinder/CylinderSphere.dat"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("CylinderWind"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Cylinder/CylinderWind.dat"))))
+		return E_FAIL;
+
 	return S_OK;
 }
 

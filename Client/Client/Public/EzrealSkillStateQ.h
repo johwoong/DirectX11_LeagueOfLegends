@@ -20,7 +20,8 @@ public:
 private:
     bool m_bProjectileSpawned = false;   // 이벤트 기반 발사
     _float3 m_vDir = { 0,0,0 };          // 마우스 방향
-
+    vector<CEffect*> m_pEffects;
+    bool m_bCastFxSpawned = false;
 };
 NS_END
 NS_END
