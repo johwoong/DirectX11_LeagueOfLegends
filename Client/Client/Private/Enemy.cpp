@@ -8,6 +8,7 @@
 #include "UI_Enemy_HpBar.h"
 #include "Minion.h"
 #include "Building.h"
+#include "Vayne.h"
 
 namespace
 {
@@ -250,7 +251,7 @@ void CEnemy::Late_Update(_float fTimeDelta)
 		return;
 
 	__super::Late_Update(fTimeDelta);
-
+	Update_Mark(fTimeDelta); 
 	if (m_pRendererCom)
 	{
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
@@ -346,7 +347,7 @@ void CEnemy::Find_Target()
 		return;
 
 	// ? 최소 시야를 강제로 키워줌 (30 이상)
-	float aggroRange = max(m_tStats.AttackRange + m_fAggroBonus, 30.f);
+	float aggroRange = m_tAggro.fChaseRange;
 
 	CActor* bestChampion = nullptr;
 	float     bestChampDist = aggroRange;
@@ -484,8 +485,7 @@ CActor* CEnemy::Check_FiledTarget()
 
 
 	// Check_FiledTarget
-	float aggroRange = max(m_tStats.AttackRange + m_fAggroBonus, 30.f);
-	if (Target_Distance(m_pTarget) > aggroRange * m_fAggroReleaseMul)
+	if (Target_Distance(m_pTarget) > m_tAggro.fGiveUpRange)
 	{
 		m_pTarget = nullptr;
 		return nullptr;
@@ -495,6 +495,12 @@ CActor* CEnemy::Check_FiledTarget()
 
 void CEnemy::Follow_Lane(_float fTimeDelta)
 {
+	// ?? 스킬 시전 중이면 절대 이동 / 회전 금지
+	if (auto pVayne = dynamic_cast<CVayne*>(this))
+	{
+		if (pVayne->m_bSkillLock)
+			return;
+	}
 	// =======================
    // 0) 타겟 찾기 / 유지
    // =======================
@@ -506,7 +512,7 @@ void CEnemy::Follow_Lane(_float fTimeDelta)
 	// =======================
 	if (pTarget && m_pTransformCom)
 	{
-		m_bWasChasing = true;   // ★ 지금은 추격 중
+		m_bWasChasing = true; 
 
 		CTransform* pTr = m_pTransformCom;
 
@@ -521,14 +527,8 @@ void CEnemy::Follow_Lane(_float fTimeDelta)
 
 			float stopDist = Get_AttackRangeWorld();
 
-			if (dist > stopDist)
-			{
-				myPos += vDir * (m_tStats.MoveSpeed * fTimeDelta);
-				pTr->Set_State(CTransform::STATE_TRANSLATION, myPos);
-			}
 
-			// ★ 여기부터 방향 맞추기 - 미니언과 동일 컨벤션
-			_vector vLook = XMVectorSetY(myPos - tPos, 0.f);  // 내 위치 - 타겟 위치
+			_vector vLook = XMVectorSetY(myPos - tPos, 0.f);
 			if (XMVectorGetX(XMVector3LengthSq(vLook)) > 0.0001f)
 			{
 				vLook = XMVector3Normalize(vLook);
@@ -732,8 +732,8 @@ _float3 CEnemy::Get_FirstTowerWaitPos() const
 	// EnemyMidDestnation.dat 안의 8번째 포인트를 "미드 1차 포탑 대기 위치"로 사용
 	const auto& path = Get_EnemyLanePath(m_eLineType);
 
-	if (path.size() > 8)
-		return path[7];          // 0 기반 인덱스: 8번째 노드
+	if (path.size() > 10)
+		return path[9];          // 0 기반 인덱스: 8번째 노드
 	else if (!path.empty())
 		return path.back();      // 혹시 포인트가 적으면 마지막 포인트라도 사용
 	else
@@ -897,14 +897,31 @@ HRESULT CEnemy::SetUp_ShaderID()
 
 _int CEnemy::Take_Damage(int iDamage, CActor* DamageCauser)
 {
+	// 0) 기본 데미지 먼저
 	m_tStats.Hp -= iDamage;
-	if (m_tStats.Hp < 0.f)
-		m_tStats.Hp = 0.f;
+	if (m_tStats.Hp < 0.f) m_tStats.Hp = 0.f;
+
+	// 1) W 표식 터짐 (플레이어 공격일 때만)
+	// DamageCauser가 투사체(owner=플레이어)일 수도 있으니
+	// 네 프로젝트 규칙에 맞춰 조건 걸어라.
+	// 일단 "들어온 DamageCauser가 챔피언이면"로 예시.
+	if (auto pChamp = dynamic_cast<CChampion*>(DamageCauser))
+	{
+		const int WPopDamage = 80; // 너 스탯/스킬레벨 기반으로 바꾸면 됨
+
+		if (Has_Mark(MARK_TYPE::EZREAL_W))
+		{
+			// 이펙트 + 마크 제거
+			Pop_EzrealW_Mark(DamageCauser, WPopDamage, TEXT("Ezreal_W_Hit.dat"));
+
+			// 추가 데미지
+			m_tStats.Hp -= WPopDamage;
+			if (m_tStats.Hp < 0.f) m_tStats.Hp = 0.f;
+		}
+	}
 
 	if (m_tStats.Hp <= 0.f)
-	{
 		Mark_Dead();
-	}
 
 	return (_int)m_tStats.Hp;
 }

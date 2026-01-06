@@ -40,6 +40,13 @@ struct KEYFRAME { float fTime; float vScale[3]; float vRotation[4]; float vPosit
 static void write_n(FILE* fp, const void* p, size_t sz) {
     if (fwrite(p, 1, sz, fp) != sz) throw runtime_error("file write error");
 }
+static void put_str_empty_fixed(FILE* fp)
+{
+    char buf[MAX_PATH]{};
+    // 전부 0 = 빈 문자열
+    write_n(fp, buf, sizeof(buf));
+}
+
 static void put_str_fixed(FILE* fp, const string& s) {
     char buf[MAX_PATH]{};
     string fixed = s;
@@ -170,48 +177,9 @@ static void WriteModelData(FILE* fp, const aiScene* scene, const fs::path& texDi
 
     for (unsigned mi = 0; mi < numMats; ++mi)
     {
-        aiMaterial* mat = scene->mMaterials[mi];
-
-        // 머티리얼 이름 가져오기
-        aiString matName;
-        mat->Get(AI_MATKEY_NAME, matName);
-
-        string mName = matName.C_Str();
-        transform(mName.begin(), mName.end(), mName.begin(), ::tolower);
-
-        // 기본 텍스처 (없을 때)
-        // 애니메이션용 챔피언 기본 텍스처 이름으로 바꿔도 됨
-        string texName = "default_diffuse.dds";
-
-        // === 여기서부터는 네가 원하는 규칙대로 매핑 ===
-        // 예시) 챔피언 바디/무기/머리 같은 거 분리해 놨을 때
-        if (mName.find("folaige_mat") != string::npos)
-        {
-            texName = "Foliage.dds";
-        }
-        else if (mName.find("main_mat") != string::npos)
-        {
-            texName = "Main.dds";
-        }
-
-        // NonAnim이랑 동일하게: AI_TEXTURE_TYPE_MAX 만큼 고정 길이로 기록
+        // AI_TEXTURE_TYPE_MAX 만큼 빈 경로 기록 (포맷 유지)
         for (int t = 0; t < AI_TEXTURE_TYPE_MAX; ++t)
-        {
-            fs::path texPath = texDir / texName;
-
-            // dds 없으면 png로 시도 (선택 사항)
-            if (!fs::exists(texPath))
-            {
-                fs::path pngPath = texPath;
-                pngPath.replace_extension(".png");
-                if (fs::exists(pngPath))
-                    texPath = pngPath;
-            }
-
-            char path[MAX_PATH]{};
-            strncpy_s(path, texPath.string().c_str(), MAX_PATH - 1);
-            write_n(fp, path, sizeof(path));
-        }
+            put_str_empty_fixed(fp);
     }
 }
 

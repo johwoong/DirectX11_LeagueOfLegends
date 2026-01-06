@@ -15,11 +15,11 @@ public:
     virtual CVayneState* LateUpdate(_float fTimeDelta) override;
 
     virtual void Enter() override;
-    virtual void Exit()  override;
+    virtual void Exit() override;
 
 private:
-    _bool m_bProjectileSpawned = false;
-    _bool m_bIsAnimFinished = false;
+    bool m_bProjectileSpawned = false;   // E 투사체 발사 여부
+    bool m_bAnimFinished = false;        // 애니메이션 종료 여부
 };
 
 NS_END

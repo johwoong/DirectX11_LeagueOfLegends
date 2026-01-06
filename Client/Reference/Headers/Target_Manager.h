@@ -50,6 +50,10 @@ private:
     ID3D11Texture2D* m_pBackBufferTextureCopy = { nullptr };
     ID3D11ShaderResourceView* m_pBackBufferSRV = { nullptr };
 	_uint m_WinCX, m_WinCY = {};
+	_uint m_ShadowCX = 0;
+	_uint m_ShadowCY = 0;
+	D3D11_VIEWPORT m_OldViewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE] = {};
+	UINT           m_OldNumViewports = 0;
 
 private:
     class CRenderTarget* Find_RenderTarget(const _tchar* pTargetTag);

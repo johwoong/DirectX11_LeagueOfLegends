@@ -37,6 +37,7 @@ public:
 public:
 	void Update(_fmatrix WorldMatrix);
 	_float Get_SphereRadius(void) { return 1.f; }
+	_vector Get_WorldCenter() const;
 	HRESULT Set_Colider_Desc(void* pArg);
 	void Set_Sphere_Radius(float radius);
 	void Set_Scale(_float3 vScale);

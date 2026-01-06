@@ -543,6 +543,20 @@ _float4x4 CGameInstance::Get_ShadowLightView()
 
 	return m_pLight_Manager->Get_ShadowLightView();
 }
+_float4x4 CGameInstance::Get_ShadowLightProj()
+{
+	if (nullptr == m_pLight_Manager)
+		return _float4x4();
+
+	return m_pLight_Manager->Get_ShadowLightProj();
+}
+HRESULT CGameInstance::Set_ShadowLightProj_Ortho(float w, float h, float zn, float zf)
+{
+	if (nullptr == m_pLight_Manager)
+		return E_FAIL;
+
+	return m_pLight_Manager->Set_ShadowLightProj_Ortho(w,h, zn, zf);
+}
 #pragma endregion
 
 #pragma region Font

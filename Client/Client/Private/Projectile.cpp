@@ -1,5 +1,5 @@
 #include "Projectile.h"
-
+#include "PoolManager.h"
 CProjectile::CProjectile(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	:CActor(pDevice, pContext)
 {
@@ -17,7 +17,11 @@ HRESULT CProjectile::Initialize_Prototype()
 
 HRESULT CProjectile::Initialize(void* pArg)
 {
+	if (!pArg) return E_FAIL;
+
 	memcpy(&m_ProjectileDesc, pArg, sizeof(PROJECTILEDESC));
+	m_ePoolLevel = m_ProjectileDesc.ePoolLevel;
+	m_pPoolLayerTag = m_ProjectileDesc.pPoolLayerTag;
 
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
@@ -25,6 +29,20 @@ HRESULT CProjectile::Initialize(void* pArg)
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
 
+	// ? 프리워밍은 "비활성 상태"로만 만들어서 풀에 넣는 용도
+	if (m_ProjectileDesc.bPrewarm)
+	{
+		m_bDead = false;
+		m_bDeadEffect = false;
+		m_bInPool = true;              // 중요: Late_Update에서 렌더/충돌/타이머 금지
+		m_fTime = 0.f;
+		m_bCollisionRegistered = false; // 충돌그룹 등록 안 했으니 false
+
+		m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, m_ProjectileDesc.vInitPositon);
+		return S_OK;
+	}
+
+	// ? 실사용(발사된 탄)만 충돌그룹 등록
 	if (m_ProjectileDesc.eCollisionGroup == PLAYER)
 		CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_PLAYER, this);
 	else if (m_ProjectileDesc.eCollisionGroup == ENEMY)
@@ -34,21 +52,34 @@ HRESULT CProjectile::Initialize(void* pArg)
 	else if (m_ProjectileDesc.eCollisionGroup == BUILD)
 		CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_BUILDING, this);
 
-	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, m_ProjectileDesc.vInitPositon);
+	m_bCollisionRegistered = true;
 
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, m_ProjectileDesc.vInitPositon);
 	return S_OK;
 }
 
 int CProjectile::Update(_float fTimeDelta)
 {
-	if (m_bDead)
-		return OBJ_DEAD;
+	// ? 풀 상태면 씬에서 제거 대상(레이어에서 erase만!)
+	if (m_bInPool)
+		return OBJ_POOL;
 
+	if (m_bDead || m_bDeadEffect)
+	{
+		if (!m_bInPool)
+		{
+			m_bInPool = true;
+			On_ReturnToPool();
+		}
+		return OBJ_POOL;
+	}
 	return OBJ_NOEVENT;
 }
 
 void CProjectile::Late_Update(_float fTimeDelta)
 {
+	if (m_bInPool)
+		return; // ★ 풀에 들어간 놈은 렌더/충돌/타이머 다 금지
 
 	if (m_pRendererCom)
 	{
@@ -60,7 +91,43 @@ void CProjectile::Late_Update(_float fTimeDelta)
 	if (m_fTime >= m_ProjectileDesc.fDeadTime)
 		m_bDeadEffect = true;
 
-	Collision_Check();
+	if (!m_bDeadEffect && !m_bDead)
+		Collision_Check();
+}
+
+void CProjectile::ReUse_Setting(void* pArg)
+{
+	if (!pArg) return;
+
+	memcpy(&m_ProjectileDesc, pArg, sizeof(PROJECTILEDESC));
+	m_ProjectileDesc.bPrewarm = false; // ? 재사용 들어오면 프리워밍 해제
+
+	m_ePoolLevel = m_ProjectileDesc.ePoolLevel;
+	m_pPoolLayerTag = m_ProjectileDesc.pPoolLayerTag;
+
+	m_bDead = false;
+	m_bDeadEffect = false;
+	m_bInPool = false;
+	m_fTime = 0.f;
+
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, m_ProjectileDesc.vInitPositon);
+
+	// ? 충돌그룹 재등록 (중복 방지)
+	if (!m_bCollisionRegistered)
+	{
+		if (m_ProjectileDesc.eCollisionGroup == PLAYER)
+			CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_PLAYER, this);
+		else if (m_ProjectileDesc.eCollisionGroup == ENEMY)
+			CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
+		else if (m_ProjectileDesc.eCollisionGroup == MINION)
+			CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
+		else if (m_ProjectileDesc.eCollisionGroup == BUILD)
+			CCollision_Manager::GetInstance()->Add_CollisionGroup(CCollision_Manager::COLLISION_BUILDING, this);
+
+		m_bCollisionRegistered = true;
+	}
+
+	if (m_pOBBCom) m_pOBBCom->Update(m_pTransformCom->Get_WorldMatrix());
 }
 
 HRESULT CProjectile::Render()
@@ -181,33 +248,66 @@ void CProjectile::Collision_Check()
 }
 
 
-void CProjectile::Free()
+void CProjectile::On_ReturnToPool()
 {
-	__super::Free();
-
-	Safe_Release(m_pModelCom);
-
-	for (auto& iter : m_pEffects)
+	// 1) 충돌그룹 Out (등록된 경우만)
+	if (m_bCollisionRegistered)
 	{
-		if (iter != nullptr)
-			iter->Set_Dead(true);
+		if (m_ProjectileDesc.eCollisionGroup == PLAYER)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_PLAYER, this);
+		else if (m_ProjectileDesc.eCollisionGroup == ENEMY)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
+		else if (m_ProjectileDesc.eCollisionGroup == MINION)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
+		else if (m_ProjectileDesc.eCollisionGroup == BUILD)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_BUILDING, this);
+
+		m_bCollisionRegistered = false;
+	}
+
+	// 2) FX 정리
+	for (auto& fx : m_pEffects)
+	{
+		if (!fx) continue;
+		fx->Set_AttachObject(nullptr);
+		if (auto ps = dynamic_cast<CParticleSystem*>(fx)) ps->Set_Stop(true);
+		fx->Set_Dead(true);
 	}
 	m_pEffects.clear();
 
-	for (auto& iter : m_pDeadEffects)
+	for (auto& fx : m_pDeadEffects)
 	{
-		if (iter != nullptr)
-			iter->Set_Dead(true);
+		if (!fx) continue;
+		fx->Set_AttachObject(nullptr);
+		if (auto ps = dynamic_cast<CParticleSystem*>(fx)) ps->Set_Stop(true);
+		fx->Set_Dead(true);
 	}
 	m_pDeadEffects.clear();
 
-	if (m_ProjectileDesc.eCollisionGroup == PLAYER)
-		CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_PLAYER, this);
-	else if (m_ProjectileDesc.eCollisionGroup == ENEMY)
-		CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
-	else if (m_ProjectileDesc.eCollisionGroup == MINION)
-		CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
-	else if (m_ProjectileDesc.eCollisionGroup == BUILD)
-		CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_BUILDING, this);
+	m_ProjectileDesc.pTarget = nullptr;
+	m_ProjectileDesc.pOwner = nullptr;
 
+	if (m_pPoolLayerTag)
+		CPoolManager::GetInstance()->Add_Pooling_Object(m_ePoolLevel, m_pPoolLayerTag, this);
+}
+
+void CProjectile::Free()
+{
+	__super::Free();
+	Safe_Release(m_pModelCom);
+
+	// ? 여기서도 Out은 등록된 경우만
+	if (m_bCollisionRegistered)
+	{
+		if (m_ProjectileDesc.eCollisionGroup == PLAYER)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_PLAYER, this);
+		else if (m_ProjectileDesc.eCollisionGroup == ENEMY)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
+		else if (m_ProjectileDesc.eCollisionGroup == MINION)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_MINION, this);
+		else if (m_ProjectileDesc.eCollisionGroup == BUILD)
+			CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_BUILDING, this);
+
+		m_bCollisionRegistered = false;
+	}
 }

@@ -19,23 +19,28 @@ class CProjectile abstract : public CActor
 public:
 	typedef struct ProjectileTag
 	{
-		OBJECT_ID  eCollisionGroup = PLAYER; //Player or Monster bullet;
-		_uint	   eProjType = 0;
+		OBJECT_ID  eCollisionGroup = PLAYER;
+		_uint      eProjType = 0;
 
-		_vector	   vInitPositon = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+		_vector    vInitPositon = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+		_float     fStartTime = 0.f;
+		_float     fDeadTime = 10.f;
+		_float     fVelocity = 5.f;
+		_int       iDamage = 20;
 
-		_float	   fStartTime = 0.f;
-		_float	   fDeadTime = 10.f;
-		_float	   fVelocity = 5.f;
-		_int	   iDamage = 20;
-
-		_vector	   vTargetDir = XMVectorSet(0.f, 0.f, 0.f, 0.f);
-		_vector	   vTargetPosition = XMVectorSet(0.f, 0.f, 0.f, 0.f);
+		_vector    vTargetDir = XMVectorSet(0.f, 0.f, 0.f, 0.f);
+		_vector    vTargetPosition = XMVectorSet(0.f, 0.f, 0.f, 0.f);
 
 		CActor* pTarget = nullptr;
 		CActor* pOwner = nullptr;
-		_float offsetX = 0.f;
-		_float offsetZ = 0.f;
+		_float  offsetX = 0.f;
+		_float  offsetZ = 0.f;
+
+		LEVEL        ePoolLevel = LEVEL_GAMEPLAY;
+		const _tchar* pPoolLayerTag = nullptr;
+
+		// ? 추가: 풀 프리워밍(미리 만들어 풀에 넣는 용도)일 때 true
+		_bool bPrewarm = false;
 
 	}PROJECTILEDESC;
 
@@ -58,14 +63,24 @@ protected:
 	virtual void Collision_Check();
 
 protected:
+	void ReUse_Setting(void* pArg) override;
+protected:
 	PROJECTILEDESC m_ProjectileDesc;
 
 	CModel* m_pModelCom = nullptr;
 	vector<CEffect*> m_pEffects;
 	vector<CEffect*> m_pDeadEffects;
+protected:
+	_bool m_bCollisionRegistered = false;
+protected:
+	bool m_bInPool = false;
+	void On_ReturnToPool();
 
 	_float	m_fTime = 0;
 	_bool	m_bDeadEffect = false;
+protected:
+	LEVEL        m_ePoolLevel = LEVEL_GAMEPLAY;
+	const _tchar* m_pPoolLayerTag = nullptr;
 
 public:
 	virtual void Free() override;

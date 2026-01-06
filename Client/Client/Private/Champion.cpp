@@ -54,6 +54,21 @@ HRESULT CChampion::Render()
 	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
+	/* Rim Light */
+	Get_AuraColor();
+	if (FAILED(m_pShaderCom->Set_RawValue("g_bRimLight", &m_bOverLimit, sizeof(_bool))))
+		return E_FAIL;
+	if (FAILED(m_pShaderCom->Set_RawValue("g_vRimColor", &m_vAuraColor, sizeof(_float3))))
+		return E_FAIL;
+	if (FAILED(m_pShaderCom->Set_RawValue("g_vRimTimer", &m_fFresnelTimer, sizeof(_float))))
+		return E_FAIL;
+
+	_float4 vCameraLook = (_float4)(CGameInstance::GetInstance()->Get_CamWorldMatrix().m[2]);
+	_float3 vCamLook = _float3(vCameraLook.x, vCameraLook.y, vCameraLook.z);
+
+	if (FAILED(m_pShaderCom->Set_RawValue("g_vCameraLook", &vCamLook, sizeof(_float3))))
+		return E_FAIL;
+
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshs();
 
 	for (_uint i = 0; i < iNumMeshes; ++i)
@@ -67,6 +82,10 @@ HRESULT CChampion::Render()
 		if (FAILED(m_pModelCom->Render(m_pShaderCom, i, 0)))
 			return E_FAIL;
 	}
+
+	_bool bRimLight = false;
+	if (FAILED(m_pShaderCom->Set_RawValue("g_bRimLight", &bRimLight, sizeof(_bool))))
+		return E_FAIL;
 
 	return S_OK;
 }

@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="..\Public\EzrealProjectile.h" />
     <ClInclude Include="..\Public\EffectObject.h" />
+    <ClInclude Include="..\Public\MinionProjectile.h" />
     <ClInclude Include="..\Public\Particle_Rect.h" />
     <ClInclude Include="..\Public\Effect.h" />
     <ClInclude Include="..\Public\EffectMesh.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="..\Public\RenektonMoveState.h" />
     <ClInclude Include="..\Public\RenektonState.h" />
     <ClInclude Include="..\Public\StoreNpc.h" />
+    <ClInclude Include="..\Public\TurretProjectile.h" />
     <ClInclude Include="..\Public\UI_AttackRange.h" />
     <ClInclude Include="..\Public\EzrealAttackState.h" />
     <ClInclude Include="..\Public\EzrealSkillStateQ.h" />
@@ -246,11 +248,13 @@
     <ClInclude Include="..\Public\VayneAttackState.h" />
     <ClInclude Include="..\Public\VayneIdleState.h" />
     <ClInclude Include="..\Public\VayneMoveState.h" />
+    <ClInclude Include="..\Public\VayneProjectile.h" />
     <ClInclude Include="..\Public\VayneReturnState.h" />
     <ClInclude Include="..\Public\VayneSkillStateE.h" />
     <ClInclude Include="..\Public\VayneSkillStateQ.h" />
     <ClInclude Include="..\Public\VayneSkillStateR.h" />
     <ClInclude Include="..\Public\VayneState.h" />
+    <ClInclude Include="Bow.h" />
     <ClInclude Include="LeonaState.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Vi.h" />
@@ -263,6 +267,7 @@
   <ItemGroup>
     <ClCompile Include="..\Private\EzrealProjectile.cpp" />
     <ClCompile Include="..\Private\EffectObject.cpp" />
+    <ClCompile Include="..\Private\MinionProjectile.cpp" />
     <ClCompile Include="..\Private\Particle_Point.cpp" />
     <ClCompile Include="..\Private\Particle_Rect.cpp" />
     <ClCompile Include="..\Private\Effect.cpp" />
@@ -285,6 +290,7 @@
     <ClCompile Include="..\Private\RenektonIdleState.cpp" />
     <ClCompile Include="..\Private\RenektonMoveState.cpp" />
     <ClCompile Include="..\Private\StoreNpc.cpp" />
+    <ClCompile Include="..\Private\TurretProjectile.cpp" />
     <ClCompile Include="..\Private\UI_AttackRange.cpp" />
     <ClCompile Include="..\Private\EzrealAttackState.cpp" />
     <ClCompile Include="..\Private\EzrealSkillStateQ.cpp" />
@@ -345,10 +351,12 @@
     <ClCompile Include="..\Private\VayneAttackState.cpp" />
     <ClCompile Include="..\Private\VayneIdleState.cpp" />
     <ClCompile Include="..\Private\VayneMoveState.cpp" />
+    <ClCompile Include="..\Private\VayneProjectile.cpp" />
     <ClCompile Include="..\Private\VayneReturnState.cpp" />
     <ClCompile Include="..\Private\VayneSkillStateE.cpp" />
     <ClCompile Include="..\Private\VayneSkillStateQ.cpp" />
     <ClCompile Include="..\Private\VayneSkillStateR.cpp" />
+    <ClCompile Include="Bow.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Vi.cpp" />
     <ClCompile Include="stdafx.cpp" />

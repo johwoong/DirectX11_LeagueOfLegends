@@ -104,18 +104,28 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
             desc.eProjType = CEzrealProjectile::Q;
             desc.vInitPositon = XMVectorSetW(vHandPos, 1.f);
             desc.vTargetDir = vDir;
-            desc.fVelocity = 10.f;
+            desc.fVelocity = 15.f;
             desc.fDeadTime = 1.2f;
             desc.iDamage = 90;
             desc.pOwner = m_pOwner;
             desc.pTarget = nullptr;
 
             CGameInstance* GI = CGameInstance::GetInstance();
-            if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
-                LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+            desc.ePoolLevel = LEVEL_GAMEPLAY;
+            desc.pPoolLayerTag = TEXT("Layer_Projectile");
+
+            CPoolManager* PM = CPoolManager::GetInstance();
+
+            // 1) 풀에 있으면 재사용 (새로 생성 X)
+            if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc))
             {
-                m_bProjectileSpawned = false;
-                m_bCastFxSpawned = false; // ? 실패하면 FX도 다시 가능하게(선택)
+                // 2) 풀에 없을 때만 새로 생성
+                if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
+                    LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+                {
+                    m_bProjectileSpawned = false;
+                    m_bCastFxSpawned = false;
+                }
             }
 
             break; // 한 발만

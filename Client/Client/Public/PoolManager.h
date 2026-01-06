@@ -20,7 +20,7 @@ public:
 public:
     void Add_Pooling_Object(LEVEL iLevelIdx, const _tchar* pLayerTag, CGameObject* pGameObject);
     void Add_Pooling_Layer(LEVEL iLevelIdx, const _tchar* pLayerTag);
-
+    _bool Find_LayerTag(_uint iLevelIdx, const _tchar* pLayerTag);
     _bool Reuse_Pooling_Layer(LEVEL iLevelIdx, const _tchar* pLayerTag, void* pArg = nullptr);
     _bool Reuse_Pooling_Object(LEVEL iLevelIdx, const _tchar* pLayerTag, void* pArg = nullptr);
     _bool Clear_AllPooling_Layer();
@@ -35,7 +35,6 @@ private:
 
 private:
     list<class CGameObject*>* Find_PoolingObjects(_uint iLevelIdx, const _tchar* pLayerTag);
-    _bool Find_LayerTag(_uint iLevelIdx, const _tchar* pLayerTag);
 
 
 public:

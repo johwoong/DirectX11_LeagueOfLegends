@@ -16,15 +16,6 @@
     <Filter Include="00. MainApp">
       <UniqueIdentifier>{cd1138b9-2e20-45eb-a9e7-271b838d5fc1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Levels">
-      <UniqueIdentifier>{c732de2b-ae7a-46d7-a8ae-28462495e37a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Levels\00. Loader">
-      <UniqueIdentifier>{55167f9b-1279-4c4f-bd36-643f5bd807c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Levels\02. GamePlay">
-      <UniqueIdentifier>{d0f08c20-99ee-4a66-9ba4-28a43944535e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. GameObjects">
       <UniqueIdentifier>{3f352e4c-2274-4d9a-897b-2cf4b559f213}</UniqueIdentifier>
     </Filter>
@@ -70,9 +61,6 @@
     <Filter Include="96. ShaderFiles">
       <UniqueIdentifier>{d1b26620-fd19-4e03-a176-8064bc795a7a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Levels\00. Loader\01. Logo">
-      <UniqueIdentifier>{27aae03c-2db9-4dcd-8d80-ee767bd5d3bc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="03. ToolManager\04. EffectManager">
       <UniqueIdentifier>{1b5d2ef4-6d7e-4755-9d81-a5760984dc2b}</UniqueIdentifier>
     </Filter>
@@ -93,6 +81,18 @@
     </Filter>
     <Filter Include="02. GameObjects\03. AnimModel\02. NonAnimModel">
       <UniqueIdentifier>{4ba85a4a-9b21-40cf-9a38-d9d6ef55a76d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00. MainApp\01. Levels">
+      <UniqueIdentifier>{c732de2b-ae7a-46d7-a8ae-28462495e37a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00. MainApp\01. Levels\00. Loader">
+      <UniqueIdentifier>{55167f9b-1279-4c4f-bd36-643f5bd807c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00. MainApp\01. Levels\00. Loader\01. Logo">
+      <UniqueIdentifier>{27aae03c-2db9-4dcd-8d80-ee767bd5d3bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00. MainApp\01. Levels\02. GamePlay">
+      <UniqueIdentifier>{d0f08c20-99ee-4a66-9ba4-28a43944535e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -142,19 +142,19 @@
       <Filter>100. IMGUI\Default\Manager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_Loading.h">
-      <Filter>01. Levels\00. Loader</Filter>
+      <Filter>00. MainApp\01. Levels\00. Loader</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Loader.h">
-      <Filter>01. Levels\00. Loader</Filter>
+      <Filter>00. MainApp\01. Levels\00. Loader</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Camera_Manager.h">
       <Filter>03. ToolManager\00. CameraManager</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_Logo.h">
-      <Filter>01. Levels\00. Loader\01. Logo</Filter>
+      <Filter>00. MainApp\01. Levels\00. Loader\01. Logo</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Level_GamePlay.h">
-      <Filter>01. Levels\02. GamePlay</Filter>
+      <Filter>00. MainApp\01. Levels\02. GamePlay</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Camera_Dynamic.h">
       <Filter>97. Camera\Dynamic</Filter>
@@ -256,22 +256,22 @@
       <Filter>100. IMGUI\Default\Manager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_Loading.cpp">
-      <Filter>01. Levels\00. Loader</Filter>
+      <Filter>00. MainApp\01. Levels\00. Loader</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Loader.cpp">
-      <Filter>01. Levels\00. Loader</Filter>
+      <Filter>00. MainApp\01. Levels\00. Loader</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Camera_Manager.cpp">
       <Filter>03. ToolManager\00. CameraManager</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_Logo.cpp">
-      <Filter>01. Levels\00. Loader\01. Logo</Filter>
+      <Filter>00. MainApp\01. Levels\00. Loader\01. Logo</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>98. Default</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Level_GamePlay.cpp">
-      <Filter>01. Levels\02. GamePlay</Filter>
+      <Filter>00. MainApp\01. Levels\02. GamePlay</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Camera_Dynamic.cpp">
       <Filter>97. Camera\Dynamic</Filter>

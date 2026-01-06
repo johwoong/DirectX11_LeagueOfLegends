@@ -19,6 +19,19 @@ public:
 	_float4x4	Get_ShadowLightView();
 	HRESULT		Set_ShadowLightView(_float4 vEye, _float4 vAt);
 public:
+	_float4x4 Get_ShadowLightProj()
+	{
+		_float4x4 m;
+		XMStoreFloat4x4(&m, XMMatrixTranspose(XMLoadFloat4x4(&m_matShadowLightProj)));
+		return m;
+	}
+
+	HRESULT Set_ShadowLightProj_Ortho(float w, float h, float zn, float zf)
+	{
+		XMStoreFloat4x4(&m_matShadowLightProj, XMMatrixOrthographicLH(w, h, zn, zf));
+		return S_OK;
+	}
+public:
 	HRESULT Add_Light(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const LIGHTDESC& LightDesc);
 	HRESULT Render_Lights(class CShader* pShader, class CVIBuffer_Rect* pVIBuffer);
 	void Clear_AllLight();
@@ -28,7 +41,8 @@ public:
 private:
 	list<class CLight*>				m_Lights;
 	_float4x4						m_matShadowLightView;
-
+private:
+	_float4x4 m_matShadowLightProj;
 public:
 	virtual void Free() override;
 };

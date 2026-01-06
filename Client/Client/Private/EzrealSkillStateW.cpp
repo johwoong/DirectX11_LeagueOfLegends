@@ -89,7 +89,31 @@ CPlayerState* CEzrealSkillStateW::Update(_float fDeltaTime)
                     _float3 vStartPos;
                     XMStoreFloat3(&vStartPos, HandMatrix.r[3]);
 
-                   
+                    // ===== W 방향 (Enter에서 만든 m_vDir) =====
+                    _vector vDir = XMLoadFloat3(&m_vDir);
+                    vDir = XMVectorSetY(vDir, 0.f);
+                    if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
+                        break;
+                    vDir = XMVector3Normalize(vDir);
+                    vDir = XMVectorSetW(vDir, 0.f);
+
+                    // ===== W 투사체 생성 =====
+                    CProjectile::PROJECTILEDESC desc{};
+                    desc.eCollisionGroup = PLAYER;
+                    desc.eProjType = CEzrealProjectile::W;
+                    desc.vInitPositon = XMVectorSetW(XMLoadFloat3(&vStartPos), 1.f);
+                    desc.vTargetDir = vDir;
+                    desc.fVelocity = 20.f;      // 필요하면 Q/W 따로 튜닝
+                    desc.fDeadTime = 1.2f;
+                    desc.iDamage = 80;          // W는 보통 딜 낮게(원하면 90/100)
+                    desc.pOwner = m_pOwner;
+                    desc.pTarget = nullptr;
+
+                    if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
+                        LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+                    {
+                        m_bProjectileSpawned = false;
+                    }
                 }
             }
 

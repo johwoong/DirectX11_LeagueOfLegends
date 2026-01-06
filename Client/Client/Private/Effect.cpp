@@ -30,6 +30,10 @@ HRESULT CEffect::Initialize(void* pArg)
 
 int CEffect::Update(_float fTimeDelta)
 {
+	// ¡Ú ÇÙ½É: Á×À½ Ã³¸®
+	if (m_bDead || m_bPreDead)
+		return OBJ_POOL;
+
 	return OBJ_NOEVENT;
 }
 

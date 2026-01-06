@@ -54,6 +54,13 @@ public:
 		float MpRegenPerLevel; // 초당 마나 재생 증가량
 	}STATS;
 
+	struct AGGRO_DESC
+	{
+		float fAttackRange;   // 실제 공격 사거리 (보통 Stats.AttackRange)
+		float fChaseRange;    // 추적 허용 최대 거리
+		float fGiveUpRange;   // 이 이상이면 타겟 완전 포기
+	};
+
 	// ?? Enemy 공통 라인 타입
 	enum LINE_TYPE
 	{
@@ -117,13 +124,27 @@ public:
 			return 0.f;
 		return m_tStats.Hp / m_tStats.MaxHp;
 	}
-
+	const AGGRO_DESC& GetAggroDesc() const { return m_tAggro; }
 	// ?? XZ 거리 계산 (Minion이랑 비슷)
 	_float  Target_Distance(CActor* pTarget) const;
 
 	// ?? 공격 사거리 (필요하면 월드 스케일 반영해서 튜닝)
 	_float  Get_AttackRangeWorld() const { return m_tStats.AttackRange; }
+	const AISKILLINFO& GetSkill(AISKILLTYPE eType) const
+	{
+		static AISKILLINFO dummy{};
+		if (eType <= SKILL_NONE || eType >= SKILL_END)
+			return dummy;
+		return m_tSkill[eType];
+	}
 
+	AISKILLINFO& GetSkillRef(AISKILLTYPE eType)
+	{
+		static AISKILLINFO dummy{};
+		if (eType <= SKILL_NONE || eType >= SKILL_END)
+			return dummy;
+		return m_tSkill[eType];
+	}
 public:
 	virtual void AI_Behaviour(_float fTimeDelta) {};
 	virtual void Find_Target();
@@ -176,6 +197,7 @@ protected: /* For.Components */
 	CNavigation* m_pNavigationCom = nullptr;
 	CActor* m_pTarget = nullptr;
 
+
 protected:
 	// 어그로 관련
 	float m_fAggroBonus = {};
@@ -188,7 +210,7 @@ protected:
 	AISKILLTYPE m_eNextSkill = SKILL_NONE;
 	bool m_bWasChasing = false;   // 직전에 타겟을 쫓고 있었는지 여부
 	bool    m_bReachedFirstTower = false;   // ← 추가: 미드 1차 포탑(8번째 노드)까지 갔는지
-
+	AGGRO_DESC m_tAggro;
 public:
 	virtual void Free() override;
 

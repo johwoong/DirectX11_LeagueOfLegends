@@ -12,29 +12,34 @@ HRESULT CTarget_Manager::Ready_ShadowDepthStencilRenderTargetView(ID3D11Device* 
 	if (!pDevice)
 		return E_FAIL;
 
+	m_ShadowCX = iWinCX;
+	m_ShadowCY = iWinCY;
+
+	Safe_Release(m_pShadowDeptheStencil);
+
 	ID3D11Texture2D* pDepthStencilTexture = nullptr;
-	D3D11_TEXTURE2D_DESC TextureDesc;
-	ZeroMemory(&TextureDesc, sizeof(D3D11_TEXTURE2D_DESC));
 
-	TextureDesc.Width = iWinCX;
-	TextureDesc.Height = iWinCY;
-	TextureDesc.MipLevels = 1;
-	TextureDesc.ArraySize = 1;
-	TextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	TextureDesc.SampleDesc.Quality = 0;
-	TextureDesc.SampleDesc.Count = 1;
-	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	TextureDesc.CPUAccessFlags = 0;
-	TextureDesc.MiscFlags = 0;
+	D3D11_TEXTURE2D_DESC desc{};
+	desc.Width = iWinCX;
+	desc.Height = iWinCY;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-	if (FAILED(pDevice->CreateTexture2D(&TextureDesc, nullptr, &pDepthStencilTexture)))
+	if (FAILED(pDevice->CreateTexture2D(&desc, nullptr, &pDepthStencilTexture)))
 		return E_FAIL;
+
 	if (FAILED(pDevice->CreateDepthStencilView(pDepthStencilTexture, nullptr, &m_pShadowDeptheStencil)))
+	{
+		Safe_Release(pDepthStencilTexture);
 		return E_FAIL;
+	}
 
 	Safe_Release(pDepthStencilTexture);
-
 	return S_OK;
 }
 
@@ -130,40 +135,49 @@ HRESULT CTarget_Manager::Begin_MRT(ID3D11DeviceContext* pContext, const _tchar* 
 	}
 
 	pContext->OMSetRenderTargets(iNumRenderTargets, pRTVs, m_pOldDSV);
-
+	m_OldNumViewports = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+	pContext->RSGetViewports(&m_OldNumViewports, m_OldViewports);
 	return S_OK;
 }
 
 HRESULT CTarget_Manager::Begin_ShadowMRT(ID3D11DeviceContext* pContext, const _tchar* pMRTTag)
 {
-	list<CRenderTarget*>* pMRTList = Find_MRT(pMRTTag);
+	auto* pMRTList = Find_MRT(pMRTTag);
 	if (!pMRTList)
 		return E_FAIL;
 
+	// 1) 기존 RTV/DSV 저장
 	pContext->OMGetRenderTargets(1, &m_pOldRTV, &m_pOldDSV);
 
-	ID3D11RenderTargetView* pRTVs[8] = { nullptr };
-	_uint iNumRenderTargets = 0;
+	// 2) 기존 뷰포트 저장 (Shadow도 반드시 저장해야 함)
+	m_OldNumViewports = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+	pContext->RSGetViewports(&m_OldNumViewports, m_OldViewports);
+
+	ID3D11RenderTargetView* pRTVs[8] = {};
+	_uint iNum = 0;
 
 	for (auto& pRenderTarget : *pMRTList)
 	{
 		pRenderTarget->Clear();
-		pRTVs[iNumRenderTargets++] = pRenderTarget->Get_RTV();
+		pRTVs[iNum++] = pRenderTarget->Get_RTV();
 	}
 
-	pContext->ClearDepthStencilView(m_pShadowDeptheStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
-	pContext->OMSetRenderTargets(iNumRenderTargets, pRTVs, m_pShadowDeptheStencil);
+	// 3) Shadow DSV clear
+	pContext->ClearDepthStencilView(m_pShadowDeptheStencil,
+		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
-	D3D11_VIEWPORT ViewPortDesc;
-	ZeroMemory(&ViewPortDesc, sizeof(D3D11_VIEWPORT));
-	ViewPortDesc.TopLeftX = 0;
-	ViewPortDesc.TopLeftY = 0;
-	ViewPortDesc.Width = m_WinCX * 12.5f;
-	ViewPortDesc.Height = m_WinCY * 12.5f;
-	ViewPortDesc.MinDepth = 0.f;
-	ViewPortDesc.MaxDepth = 1.f;
+	// 4) ? Shadow RTV + ? Shadow DSV 바인딩 (여기서 끝! 다시 oldDSV로 바꾸면 안 됨)
+	pContext->OMSetRenderTargets(iNum, pRTVs, m_pShadowDeptheStencil);
 
-	pContext->RSSetViewports(1, &ViewPortDesc);
+	// 5) Shadow 뷰포트 설정
+	D3D11_VIEWPORT vp{};
+	vp.TopLeftX = 0.f;
+	vp.TopLeftY = 0.f;
+	vp.Width = (FLOAT)m_ShadowCX;
+	vp.Height = (FLOAT)m_ShadowCY;
+	vp.MinDepth = 0.f;
+	vp.MaxDepth = 1.f;
+	pContext->RSSetViewports(1, &vp);
 
 	return S_OK;
 }
@@ -172,19 +186,12 @@ HRESULT CTarget_Manager::End_MRT(ID3D11DeviceContext* pContext)
 {
 	pContext->OMSetRenderTargets(1, &m_pOldRTV, m_pOldDSV);
 
+	// ? 뷰포트 복구는 "저장한 것"만 복구
+	if (m_OldNumViewports > 0)
+		pContext->RSSetViewports(m_OldNumViewports, m_OldViewports);
+
 	Safe_Release(m_pOldRTV);
 	Safe_Release(m_pOldDSV);
-
-	D3D11_VIEWPORT ViewPortDesc;
-	ZeroMemory(&ViewPortDesc, sizeof(D3D11_VIEWPORT));
-	ViewPortDesc.TopLeftX = 0;
-	ViewPortDesc.TopLeftY = 0;
-	ViewPortDesc.Width = m_WinCX;
-	ViewPortDesc.Height = m_WinCY;
-	ViewPortDesc.MinDepth = 0.f;
-	ViewPortDesc.MaxDepth = 1.f;
-
-	pContext->RSSetViewports(1, &ViewPortDesc);
 	return S_OK;
 }
 

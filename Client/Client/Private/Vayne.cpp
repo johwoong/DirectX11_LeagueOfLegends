@@ -18,6 +18,7 @@ _bool CVayne::Is_AnimationLoop(_uint eAnimId)
 	case IDLE3:
 	case IDLE4:
 	case RUN:
+	case Q_RUN:      // ?? 추가
 		return true;
 	default:
 		return false;
@@ -47,6 +48,18 @@ void CVayne::Ready_Animation_Event()
 	pAnim = m_pModelCom->Get_Animations()[CRIT];
 	evt.fStartTime = 5.2f;
 	evt.fEndTime = 6.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
+	pAnim = m_pModelCom->Get_Animations()[Q_ATTACK];
+	evt.fStartTime = 10.f;
+	evt.fEndTime = 11.f;
+	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
+	pAnim->Add_Event(evt);;
+
+	pAnim = m_pModelCom->Get_Animations()[E];
+	evt.fStartTime = 7.f;
+	evt.fEndTime = 9.f;
 	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
 	pAnim->Add_Event(evt);;
 }
@@ -87,9 +100,12 @@ HRESULT CVayne::Initialize(void* pArg)
 	m_tStats.AttackRange = 8.f;
 	m_tStats.AttackDamage = 60.f;
 	m_tStats.AttackSpeed = 0.4f;
+	m_tAggro.fAttackRange = 8.f;
+	m_tAggro.fChaseRange = 10.f;   // 감지 + 추적
+	m_tAggro.fGiveUpRange = 16.f;   // 이 이상이면 완전 포기
 
 	// 라인 타입 (이 Enemy가 어느 라인 담당인지)
-	m_eLineType = LINE_MID;   // 탑/바텀 Enemy는 LINE_TOP / LINE_BOTTOM 설정
+	m_eLineType = LINE_MID; 
 
 	// 한 점 목적지는 그대로
 	_float3 vDest = CEnemy::Get_EnemyLaneDest(m_eLineType);
@@ -121,13 +137,15 @@ HRESULT CVayne::Initialize(void* pArg)
 
 		m_iLaneNodeIndex = bestIdx;
 	}
+	m_tSkill[SKILL_E].fCooldown = 10.F;
 
 	// ★ 베인 전용 스킬 AI 값 설정
 	// Q
-	m_tSkill[SKILL_Q].fCooldown = 8.f;
+	// Q
+	m_tSkill[SKILL_Q].fCooldown = 3.5f;
 	m_tSkill[SKILL_Q].fTimer = 0.f;
-	m_tSkill[SKILL_Q].fRange = 7.f;
-	m_tSkill[SKILL_Q].fUseProb = 0.25f;  // 25%
+	m_tSkill[SKILL_Q].fRange = 9.f;        // 공격 사거리보다 살짝 큼
+	m_tSkill[SKILL_Q].fUseProb = 0.45f;    // ?? 살짝 낮춤
 
 	// W
 	m_tSkill[SKILL_W].fCooldown = 12.f;
@@ -135,11 +153,12 @@ HRESULT CVayne::Initialize(void* pArg)
 	m_tSkill[SKILL_W].fRange = 7.f;
 	m_tSkill[SKILL_W].fUseProb = 0.15f;
 
-	// E
-	m_tSkill[SKILL_E].fCooldown = 10.f;
+
+	// E  ← ★★★ 핵심
+	m_tSkill[SKILL_E].fCooldown = 6.0f;    // ★ 제대로 지정
 	m_tSkill[SKILL_E].fTimer = 0.f;
-	m_tSkill[SKILL_E].fRange = 5.f;
-	m_tSkill[SKILL_E].fUseProb = 0.1f;
+	m_tSkill[SKILL_E].fRange = 8.5f;       // ★ 공격 사거리랑 맞춤
+	m_tSkill[SKILL_E].fUseProb = 0.85f;    // ★ 체감 확 올라감
 
 	// R
 	m_tSkill[SKILL_R].fCooldown = 60.f;
@@ -164,6 +183,14 @@ int CVayne::Update(_float fTimeDelta)
 	// 3) 살아 있는 경우에만 AI / State 진행
 	AI_Behavior(fTimeDelta);
 	Update_State(fTimeDelta);
+	if (m_bQEmpowered && !m_bConsumeQThisAttack)
+	{
+		m_fQEmpoweredTime -= fTimeDelta;
+		if (m_fQEmpoweredTime <= 0.f)
+		{
+			m_bQEmpowered = false; // 공격 안 했으면 여기서 종료
+		}
+	}
 
 	m_fTimeDeltaAcc += fTimeDelta;
 

@@ -266,6 +266,10 @@ HRESULT CAnim::Ready_Components(void* pArg)
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Npc_StoreKeeper"), (CComponent**)&m_pModelCom)))
 			return E_FAIL;
 		break;
+	case BOW:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("BowMesh"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
 	}
 
 	return S_OK;

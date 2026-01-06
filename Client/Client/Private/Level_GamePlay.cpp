@@ -8,6 +8,7 @@
 #include "Building.h"
 #include "PoolManager.h"
 #include "MinionManager.h"
+#include "Projectile.h"
 #include "Collision_Manager.h"
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -37,7 +38,6 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if (FAILED(Ready_Layer_UI(TEXT("Layer_UI"))))
 		return E_FAIL;
-
 	CPlayerManager* pPM = CPlayerManager::GetInstance();
 	CChampion* pActiveChampion = dynamic_cast<CChampion*>(pPM->Get_ActivePlayer());
 	if (!pActiveChampion)
@@ -76,6 +76,12 @@ HRESULT CLevel_GamePlay::Initialize()
 	if (CPoolManager::GetInstance()->Reuse_Pooling_Layer(LEVEL_GAMEPLAY, TEXT("Layer_Minion_Blue_Melee")) == false)
 	{
 		if (FAILED(Ready_Layer_Minion()))
+			return E_FAIL;
+	}
+	// 풀에 레이어가 없으면 “풀 생성”만 한다
+	if (!CPoolManager::GetInstance()->Find_LayerTag(LEVEL_GAMEPLAY, TEXT("Layer_Projectile")))
+	{
+		if (FAILED(Ready_Layer_Projectile())) // 내부에서 Add_Pooling_Layer로 씬에서 빼서 풀로 넣기
 			return E_FAIL;
 	}
 	CPoolManager::GetInstance()->Reuse_Pooling_Layer(LEVEL_GAMEPLAY, TEXT("Layer_Effects"));
@@ -117,19 +123,30 @@ HRESULT CLevel_GamePlay::Ready_Layer_Terrian(const _tchar* pLayerTag)
 HRESULT CLevel_GamePlay::Ready_Lights()
 {
 	m_pGameInstance->Clear_AllLight();
-	LIGHTDESC LightDesc;
+
+	LIGHTDESC LightDesc{};
 	LightDesc.eTYPE = LIGHTDESC::TYPE_DIRECTIONAL;
 	LightDesc.vDirection = _float4(1.f, -1.f, 1.f, 0.f);
-	LightDesc.vDiffuse = _float4(1.f, 1.f, 1.f, 1.f);
-	LightDesc.vAmbient = _float4(1.f, 1.f, 1.f, 1.f);
-	LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
+	LightDesc.vDiffuse = _float4(1.1f, 1.1f, 1.1f, 1.f);   // 직광 밝기
+	LightDesc.vAmbient = _float4(0.55f, 0.55f, 0.55f, 1.f); // 전체 기본 밝기
+	LightDesc.vSpecular = _float4(0.25f, 0.25f, 0.25f, 1.f); // 번쩍임 억제
 
 	if (FAILED(m_pGameInstance->Add_Light(m_pDevice, m_pContext, LightDesc)))
 		return E_FAIL;
 
-	return S_OK;
-}
+	// =========================
+	// Shadow Light View
+	// =========================
+	_float4 vLightEye, vLightAt;
+	XMStoreFloat4(&vLightEye, XMVectorSet(0.f, 30.f, -20.f, 1.f));
+	XMStoreFloat4(&vLightAt, XMVectorSet(0.f, 0.f, 0.f, 1.f));
 
+	m_pGameInstance->Set_ShadowLightView(vLightEye, vLightAt);
+	// ? 라이트 Ortho (값은 일단 크게)
+	m_pGameInstance->Set_ShadowLightProj_Ortho(30.f, 30.f, 0.1f, 100.f);
+	return S_OK;
+
+}
 HRESULT CLevel_GamePlay::Ready_Layer_MapObject(const _tchar* pLayerTag)
 {
 	HANDLE hFile = 0;
@@ -406,6 +423,35 @@ HRESULT CLevel_GamePlay::Ready_Layer_Minion()
 		CPoolManager::GetInstance()->Add_Pooling_Layer(LEVEL_GAMEPLAY, pLayerTag);
 	}
 
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Projectile()
+{
+	constexpr int PROJ_POOL_COUNT = 200;
+
+	CProjectile::PROJECTILEDESC d{};
+	d.vInitPositon = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+	d.vTargetDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+	d.fVelocity = 15.f;
+	d.fDeadTime = 1.2f;
+	d.iDamage = 0;
+	d.pOwner = nullptr;
+	d.pTarget = nullptr;
+	d.ePoolLevel = LEVEL_GAMEPLAY;
+	d.pPoolLayerTag = TEXT("Layer_Projectile");
+
+	d.bPrewarm = true;          // ? 핵심!
+
+	for (int i = 0; i < PROJ_POOL_COUNT; ++i)
+	{
+		if (FAILED(m_pGameInstance->Add_GameObject(
+			TEXT("Prototype_GameObject_EzrealProjectile"),
+			LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &d)))
+			return E_FAIL;
+	}
+
+	CPoolManager::GetInstance()->Add_Pooling_Layer(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"));
 	return S_OK;
 }
 

@@ -447,36 +447,44 @@ HRESULT CEffectMesh::Ready_Components(void* pArg)
 {
 	memcpy(&m_tMeshEffectDesc, (MESHEFFECTDESC*)pArg, sizeof(MESHEFFECTDESC));
 
-	CTransform::TRANSFORMDESC TransformDesc;
-	ZeroMemory(&TransformDesc, sizeof(CTransform::TRANSFORMDESC));
+	CTransform::TRANSFORMDESC TransformDesc{};
 	TransformDesc.fSpeedPerSec = 0.1f;
 	TransformDesc.fRotationPerSec = XMConvertToRadians(90.0f);
 
-	/* For.Com_Transform */
-	if (FAILED(__super::Add_Components(TEXT("Com_Transform"), LEVEL_STATIC, TEXT("Prototype_Component_Transform"), (CComponent**)&m_pTransformCom, &TransformDesc)))
-		return E_FAIL;
-	/* For.Com_Renderer */
-	if (FAILED(__super::Add_Components(TEXT("Com_Renderer"), LEVEL_STATIC, TEXT("Prototype_Component_Renderer"), (CComponent**)&m_pRenderCom)))
-		return E_FAIL;
-	/* For.Com_Model */
-	if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, m_tMeshEffectDesc.wcPrototypeId, (CComponent**)&m_pModelCom)))
-		return E_FAIL;
-	/* For.Com_Shader */
-	if (FAILED(__super::Add_Components(TEXT("Com_Shader"), LEVEL_GAMEPLAY, TEXT("Prototype_Component_Shader_VtxModel"), (CComponent**)&m_pShaderCom)))
+	if (FAILED(__super::Add_Components(TEXT("Com_Transform"), LEVEL_STATIC,
+		TEXT("Prototype_Component_Transform"), (CComponent**)&m_pTransformCom, &TransformDesc)))
 		return E_FAIL;
 
-	if (wcscmp(m_tMeshEffectDesc.wcMaskTexture, TEXT("")))
+	if (FAILED(__super::Add_Components(TEXT("Com_Renderer"), LEVEL_STATIC,
+		TEXT("Prototype_Component_Renderer"), (CComponent**)&m_pRenderCom)))
+		return E_FAIL;
+
+	if (FAILED(__super::Add_Components(TEXT("Com_Shader"), LEVEL_GAMEPLAY,
+		TEXT("Prototype_Component_Shader_VtxModel"), (CComponent**)&m_pShaderCom)))
+		return E_FAIL;
+
+	// ? Model은 OPTIONAL 로 바꿈
+	if (m_tMeshEffectDesc.wcPrototypeId && m_tMeshEffectDesc.wcPrototypeId[0] != L'\0')
 	{
-		/* For.Com_MaskTexture */
-		if (FAILED(__super::Add_Components(TEXT("Com_TextureMask"), LEVEL_STATIC, m_tMeshEffectDesc.wcMaskTexture, (CComponent**)&m_pMaskTexture)))
-			return E_FAIL;
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY,
+			m_tMeshEffectDesc.wcPrototypeId, (CComponent**)&m_pModelCom)))
+		{
+			// 모델 로드 실패해도 여기서 전체 실패로 안 죽임
+			m_pModelCom = nullptr;
+		}
 	}
-	if (wcscmp(m_tMeshEffectDesc.wcNoiseTexture, TEXT("")))
+	else
 	{
-		/* For.Com_NoiseTexture */
-		if (FAILED(__super::Add_Components(TEXT("Com_TextureNoise"), LEVEL_STATIC, m_tMeshEffectDesc.wcNoiseTexture, (CComponent**)&m_pNoiseTexture)))
-			return E_FAIL;
+		m_pModelCom = nullptr; // 모델 없음
 	}
+
+	// ? Mask optional
+	if (m_tMeshEffectDesc.wcMaskTexture && m_tMeshEffectDesc.wcMaskTexture[0] != L'\0')
+		__super::Add_Components(TEXT("Com_TextureMask"), LEVEL_STATIC, m_tMeshEffectDesc.wcMaskTexture, (CComponent**)&m_pMaskTexture);
+
+	// ? Noise optional
+	if (m_tMeshEffectDesc.wcNoiseTexture && m_tMeshEffectDesc.wcNoiseTexture[0] != L'\0')
+		__super::Add_Components(TEXT("Com_TextureNoise"), LEVEL_STATIC, m_tMeshEffectDesc.wcNoiseTexture, (CComponent**)&m_pNoiseTexture);
 
 	return S_OK;
 }

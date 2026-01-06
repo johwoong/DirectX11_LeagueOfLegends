@@ -70,8 +70,8 @@ void CEzreal::Ready_Animation_Event()
 	pAnim->Add_Event(evt);;
 	
 	pAnim = m_pModelCom->Get_Animations()[R];
-	evt.fStartTime = 29.f;
-	evt.fEndTime = 30.f;
+	evt.fStartTime = 7.f;
+	evt.fEndTime = 8.f;
 	evt.eType = ANIMEVENT::EVENT_PROJECTILE;
 	pAnim->Add_Event(evt);;
 

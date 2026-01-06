@@ -87,7 +87,8 @@ void CPlayer::Late_Update(_float fTimeDelta)
 		return;
 
 	m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
-
+	m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_SHADOWDEPTH, this);
+	//m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_EDGE_DETECTION, this);
 #ifdef _DEBUG
 	m_pRendererCom->Add_Debug(m_pNavigationCom);
 	__super::Late_Update(fTimeDelta);
@@ -97,11 +98,48 @@ void CPlayer::Late_Update(_float fTimeDelta)
 
 HRESULT CPlayer::Render_ShadowDepth()
 {
+	_float4x4 WorldMatrix = m_pTransformCom->Get_World_TP();
+
+	// ? Shadow 찍는 쪽도 Blend와 동일하게 LightManager 기준으로 통일
+	_float4x4 ViewMatrix = m_pGameInstance->Get_ShadowLightView();
+	_float4x4 ProjMatrix = m_pGameInstance->Get_ShadowLightProj();
+
+	if (FAILED(m_pShaderCom->Set_RawValue("g_WorldMatrix", &WorldMatrix, sizeof(_float4x4))))
+		return E_FAIL;
+
+	if (FAILED(m_pShaderCom->Set_RawValue("g_ViewMatrix", &ViewMatrix, sizeof(_float4x4))))
+		return E_FAIL;
+
+	if (FAILED(m_pShaderCom->Set_RawValue("g_ProjMatrix", &ProjMatrix, sizeof(_float4x4))))
+		return E_FAIL;
+
+	_uint iNumMeshes = m_pModelCom->Get_NumMeshs();
+	for (_uint i = 0; i < iNumMeshes; ++i)
+	{
+		if (FAILED(m_pModelCom->Render(m_pShaderCom, i, SHADER_ANIMSHADOW)))
+			return E_FAIL;
+	}
+
 	return S_OK;
 }
 
 HRESULT CPlayer::Render_EdgeDetection()
 {
+	if (nullptr == m_pShaderCom || nullptr == m_pModelCom)
+		return E_FAIL;
+
+	if (FAILED(SetUp_ShaderResources()))
+		return E_FAIL;
+
+	_uint iNumMeshes = m_pModelCom->Get_NumMeshs();
+	for (_uint i = 0; i < iNumMeshes; ++i)
+	{
+		if (FAILED(m_pModelCom->SetUp_Material(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE)))
+			return E_FAIL;
+		if (FAILED(m_pModelCom->Render(m_pShaderCom, i, 5)))
+			return E_FAIL;
+	}
+
 	return S_OK;
 }
 
@@ -174,9 +212,18 @@ void CPlayer::Compute_CurrentIndex()
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION));
 }
 
-
-
-
+void CPlayer::Get_AuraColor()
+{
+	switch (m_ePlayerID)
+	{
+	case CPlayer::PLAYERID::EZREAL:
+		m_vAuraColor = _float3(1.f, .35f, 0.f);
+		break;
+	case CPlayer::PLAYERID::VI:
+		m_vAuraColor = _float3(0.f, .3f, 1.f);
+		break;
+	}
+}
 
 
 void CPlayer::Free()

@@ -54,6 +54,21 @@ public:	/*For Navigation*/
 	// 🔹 미니언처럼 경로 따라 이동
 
 private:
+	bool  m_bJustAttacked = false;
+public:
+	float m_fPostAttackMoveTime = 0.f;
+public:
+	void Set_JustAttacked(bool b) { m_bJustAttacked = b; }
+	bool Get_JustAttacked() const { return m_bJustAttacked; }
+	// Vayne.h
+	_vector m_vKitingDest = XMVectorZero();
+	bool    m_bDoKiting = false;
+	bool m_bQEmpowered = false;          // Q 강화 대기 상태
+	bool m_bConsumeQThisAttack = false; // 이번 공격이 Q 강화인지
+	float m_fQEmpoweredTime = 0.f;
+	const float Q_EMPOWER_DURATION = 3.0f; // 베인 원본 느낌
+	bool m_bSkillLock = false;
+private:
 	virtual HRESULT Ready_Components(void* pArg) override;
 
 private:

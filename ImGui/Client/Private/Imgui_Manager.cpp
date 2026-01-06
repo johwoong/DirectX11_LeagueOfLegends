@@ -4584,10 +4584,10 @@ void CImGui_Manager::Show_MeshCustomization()
 	ImGui::NewLine();
 
 	/* Pseudo Diffuse Map. */
-	ImGui::Text("Mask Texture");
+	ImGui::Text("Texture");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(200.f);
-	if (ImGui::BeginCombo("##MaskTexture", m_sSelectedMaskTexture.c_str()))
+	if (ImGui::BeginCombo("##Texture", m_sSelectedMaskTexture.c_str()))
 	{
 		_uint iCounter = 0;
 		for (auto iter = m_TextureNames.begin(); iter != m_TextureNames.end(); iter++)

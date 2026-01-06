@@ -63,7 +63,11 @@ public: // Navigation
 
 public: // Animation Event
 	virtual void Ready_Animation_Event() PURE;
-	 
+public:
+	/* LimGright */
+	void            Set_Overlimit(_bool bOverlimit) { m_bOverLimit = bOverlimit; }
+	_bool           Get_Overlimit() { return m_bOverLimit; }
+	void			Get_AuraColor();
 	
 protected:
 	// Component
@@ -73,6 +77,14 @@ protected: // 챔피언 교체
 	PLAYERID	m_ePlayerID = EZREAL;
 	CPlayerState* m_pPlayerState = { nullptr };
 	CPlayerManager* m_pPlayerManager = { nullptr };
+
+	// Rim Light
+	_bool			m_bOverLimit = false;
+	_float			m_fOverLimitTimer = 0.f;
+	_float			m_fFresnelTimer = 0.f;
+	_bool			m_bIsOverlimiEffectSpawned = false;
+	_float3			m_vAuraColor;
+	_float			m_fAuraTimer = 0.f;
 
 protected: // 플레이어 이동
 	_bool m_bMoving = false;

@@ -36,9 +36,15 @@ CVayneState* CMoveState::AI_Behaviour(_float fTimeDelta)
     float dist = m_pOwner->Target_Distance(pTarget);
     float range = m_pOwner->Get_AttackRangeWorld();
 
+    // 공격 쿨타임 감소
+    if (m_pOwner->m_fPostAttackMoveTime > 0.f)
+    {
+        m_pOwner->m_fPostAttackMoveTime -= fTimeDelta;
+        return nullptr; // ★ 이 프레임은 절대 공격 안 함
+    }
+
     if (dist <= range)
     {
-        // ?? 사거리 안 → 공격 상태로 전환
         return new CAttackState(m_pOwner);
     }
 
@@ -47,6 +53,8 @@ CVayneState* CMoveState::AI_Behaviour(_float fTimeDelta)
 
 CVayneState* CMoveState::Update(_float fTimeDelta)
 {
+    
+
     if (!m_pOwner)
         return nullptr;
 
@@ -54,6 +62,46 @@ CVayneState* CMoveState::Update(_float fTimeDelta)
     CNavigation* pNavi = m_pOwner->Get_Navigation();
     if (!pTr || !pNavi)
         return nullptr;
+
+    if (m_pOwner->m_fPostAttackMoveTime > 0.f)
+    {
+        // ?? 이동
+        pTr->Move_ByPath(fTimeDelta, pNavi);
+        m_pOwner->Check_Navigation();
+
+        // ?? 이동 중에는 무조건 RUN 애니
+        if (CModel* pModel = m_pOwner->Get_Model())
+        {
+            pModel->Play_Animation(fTimeDelta, true);
+        }
+
+        return nullptr;
+    }
+
+    CActor* pTarget = m_pOwner->Check_FiledTarget();
+    if (pTarget)
+    {
+        float dist = m_pOwner->Target_Distance(pTarget);
+        float range = m_pOwner->Get_AttackRangeWorld();
+
+        if (dist > range)
+        {
+            _vector vTargetPos =
+                pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+
+            // 네비 목적지 설정
+            pTr->Set_Destination(vTargetPos, pNavi);
+            pTr->Move_ByPath(fTimeDelta, pNavi);
+            m_pOwner->Check_Navigation();
+
+            // RUN 애니
+            if (CModel* pModel = m_pOwner->Get_Model())
+                pModel->Play_Animation(fTimeDelta, true);
+
+            return nullptr;
+        }
+    }
+
 
     if (!m_pOwner->HasReachedFirstTower())
     {
@@ -76,59 +124,69 @@ CVayneState* CMoveState::Update(_float fTimeDelta)
     }
     else
     {
-        // ? 첫 포탑 이후 구간
         CMinion* pFront = m_pOwner->Get_FrontAllyMinion(100.f);
+
+        bool bDidFollowMinion = false;
 
         if (pFront)
         {
-            _vector vMinionPos = pFront->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
-            _vector vMyPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
+            _vector vMyPos =
+                pTr->Get_State(CTransform::STATE_TRANSLATION);
+            _vector vMinionPos =
+                pFront->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-            vMinionPos = XMVectorSetY(vMinionPos, XMVectorGetY(vMyPos));
+            vMyPos = XMVectorSetY(vMyPos, 0.f);
+            vMinionPos = XMVectorSetY(vMinionPos, 0.f);
 
             const auto& path = CVayne::Get_EnemyLanePath(m_pOwner->Get_LineType());
-            _vector vFollowPos = vMinionPos;
 
             if (path.size() >= 2)
             {
                 _vector vStart = XMLoadFloat3(&path.front());
                 _vector vEnd = XMLoadFloat3(&path.back());
-                _vector vDir = XMVector3Normalize(XMVectorSetY(vEnd - vStart, 0.f));
+                _vector vDir = XMVector3Normalize(
+                    XMVectorSetY(vEnd - vStart, 0.f));
 
-                vFollowPos = vMinionPos - vDir * 2.5f; // 미니언 뒤에 붙기
+                // ? 미니언이 "내 앞"에 있을 때만
+                float forwardDot =
+                    XMVectorGetX(XMVector3Dot(vMinionPos - vMyPos, vDir));
+
+                if (forwardDot > 0.f)
+                {
+                    _vector vFollowPos = vMinionPos - vDir * 2.5f;
+
+                    pTr->Set_Destination(vFollowPos, pNavi);
+                    pTr->Move_ByPath(fTimeDelta, pNavi);
+                    m_pOwner->Check_Navigation();
+
+                    bDidFollowMinion = true;
+                }
             }
-
-            _float3 newFollow{};
-            XMStoreFloat3(&newFollow, vFollowPos);
-
-            if (!m_bHasFollowPos ||
-                XMVectorGetX(
-                    XMVector3Length(
-                        XMLoadFloat3(&m_vLastFollowPos) - vFollowPos)) > 1.f)
-            {
-                m_vLastFollowPos = newFollow;
-                m_bHasFollowPos = true;
-                pTr->Set_Destination(vFollowPos, pNavi);
-            }
-
-            pTr->Move_ByPath(fTimeDelta, pNavi);
-            m_pOwner->Check_Navigation();
         }
-        else
+
+        // ? 미니언 추종 안 했으면 무조건 라인 전진
+        if (!bDidFollowMinion)
         {
-            // 앞에 우리 미니언이 아예 없으면 그냥 라인 따라 이동 (원래 로직)
             m_pOwner->Follow_Lane(fTimeDelta);
         }
     }
 
-    // RUN 애니
     if (CModel* pModel = m_pOwner->Get_Model())
     {
-        m_bIsAnimationFinished =
-            pModel->Play_Animation(
-                fTimeDelta,
-                m_pOwner->Is_AnimationLoop(
-                    pModel->Get_CurrentAnimIndex()));
+        if (m_pOwner->m_bQEmpowered)
+        {
+            if (pModel->Get_CurrentAnimIndex() != CVayne::ANIM::Q_RUN)
+                pModel->Set_CurrentAnimIndex(CVayne::ANIM::Q_RUN);
+
+            pModel->Play_Animation(fTimeDelta, true);
+        }
+        else
+        {
+            if (pModel->Get_CurrentAnimIndex() != CVayne::ANIM::RUN)
+                pModel->Set_CurrentAnimIndex(CVayne::ANIM::RUN);
+
+            pModel->Play_Animation(fTimeDelta, true);
+        }
     }
 
     return nullptr;
@@ -142,21 +200,36 @@ CVayneState* CMoveState::LateUpdate(_float fTimeDelta)
 void CMoveState::Enter()
 {
     m_eStateId = STATE_MOVE;
-    m_fMoveTimeAcc = 0.f;
 
     if (!m_pOwner)
         return;
 
-    // RUN 애니메이션
-    if (m_pOwner->Get_Model())
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVayne::ANIM::RUN);
+    CModel* pModel = m_pOwner->Get_Model();
+    if (pModel)
+    {
+        // ?? Q 강화 상태면 Q_RUN
+        if (m_pOwner->m_bQEmpowered)
+            pModel->Set_CurrentAnimIndex(CVayne::ANIM::Q_RUN);
+        else
+            pModel->Set_CurrentAnimIndex(CVayne::ANIM::RUN);
+    }
 
-    // ★ 첫 목적지 세팅
     CTransform* pTr = m_pOwner->Get_Transform();
     CNavigation* pNavi = m_pOwner->Get_Navigation();
     if (!pTr || !pNavi)
         return;
 
+    // ?? 카이팅 우선
+    if (m_pOwner->m_bDoKiting)
+    {
+        pTr->Set_Destination(m_pOwner->m_vKitingDest, pNavi);
+        m_pOwner->m_bDoKiting = false;
+        return;
+    }
+
+    // ===============================
+    // 2. 기존 라인 이동 (그대로)
+    // ===============================
     const auto& path = CVayne::Get_EnemyLanePath(m_pOwner->Get_LineType());
     if (path.empty())
         return;
@@ -165,12 +238,8 @@ void CMoveState::Enter()
     if (nodeIdx < 0 || nodeIdx >= (_int)path.size())
         nodeIdx = 0;
 
-    m_pOwner->Set_LaneNodeIndex(nodeIdx);
-
     _float3 vTarget = path[nodeIdx];
-    _vector vTargetV = XMLoadFloat3(&vTarget);
-
-    pTr->Set_Destination(vTargetV, pNavi);
+    pTr->Set_Destination(XMLoadFloat3(&vTarget), pNavi);
 }
 
 void CMoveState::Exit()

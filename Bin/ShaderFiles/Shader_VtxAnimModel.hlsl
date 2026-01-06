@@ -22,6 +22,7 @@ float4 g_vGlowColor;
 bool g_bUseDiffuseColor;
 float g_fGlowUpTimer;
 float g_fGlowUpLifespan;
+float g_fGlowPower = 4.f; // ? 추가 (UI에서 조절할 값)
 
 /* Dissolve */
 texture2D g_DissolveTexture;
@@ -114,6 +115,8 @@ struct PS_OUT
     float4 vDepth : SV_TARGET2;
 };
 
+
+
 struct PS_OUT_SHADOW
 {
     float4 vLightDepth : SV_TARGET0;
@@ -155,16 +158,36 @@ PS_OUT PS_MAIN(PS_IN In)
     return Out;
 }
 
+PS_OUT PS_MAIN_BOW(PS_IN In)
+{
+    PS_OUT Out = (PS_OUT) 0;
+
+    float3 vNormal = g_NormalTexture.Sample(LinearSampler, In.vTexUV).xyz;
+    vNormal = vNormal * 2.f - 1.f;
+
+    float3x3 WorldMatrix = float3x3(In.vTangent, In.vBinormal, In.vNormal);
+    vNormal = mul(vNormal, WorldMatrix);
+
+    Out.vDiffuse = g_DiffuseTexture.Sample(LinearSampler, In.vTexUV);
+    if (Out.vDiffuse.a <= 0.f)
+        discard;
+
+    Out.vDiffuse *= g_vColor;
+
+    Out.vNormal = vector(vNormal * 0.5f + 0.5f, 0.f);
+    Out.vDepth = vector(In.vProjPos.z / In.vProjPos.w, In.vProjPos.w / 1000.f, 0.f, 0.f);
+    return Out;
+}
+
 PS_OUT_SHADOW PS_SHADOWDEPTH(PS_IN In)
 {
     PS_OUT_SHADOW Out = (PS_OUT_SHADOW) 0;
 
-    Out.vLightDepth.r = In.vProjPos.w / 1000.f;
-    Out.vLightDepth.a = 1.f;
-
+    // ? D3D NDC depth: z/w -> [0,1]
+    float depth01 = In.vProjPos.z / In.vProjPos.w;
+    Out.vLightDepth = float4(depth01, depth01, depth01, 1.f);
     return Out;
 }
-
 PS_OUT PS_DISSOLVE(PS_IN In)
 {
     PS_OUT Out = (PS_OUT) 0;
@@ -225,6 +248,20 @@ PS_OUT_GLOW PS_GLOW(PS_IN In)
     if (Out.vGlow.a == 0)
         discard;
 
+    return Out;
+}
+
+PS_OUT_GLOW PS_GLOW_BOW(PS_IN In)
+{
+    PS_OUT_GLOW Out = (PS_OUT_GLOW) 0;
+
+    float4 vDiffuse = g_DiffuseTexture.Sample(LinearSampler, In.vTexUV);
+    if (vDiffuse.a <= 0.f)
+        discard;
+
+    Out.vGlow = vDiffuse;
+    Out.vGlow.rgb *= g_vGlowColor.rgb * g_fGlowPower;
+    Out.vGlow.a *= g_vColor.a;
     return Out;
 }
 
@@ -382,5 +419,25 @@ technique11 DefaultTechnique
         VertexShader = compile vs_5_0 VS_MAIN();
         GeometryShader = NULL;
         PixelShader = compile ps_5_0 PS_GLOW_BOSS();
+    }
+
+    pass Bow_Default // 예: 7번
+    {
+        SetRasterizerState(RS_Default);
+        SetBlendState(BS_Default, float4(0, 0, 0, 1), 0xffffffff);
+        SetDepthStencilState(DSS_Default, 0);
+
+        VertexShader = compile vs_5_0 VS_MAIN();
+        PixelShader = compile ps_5_0 PS_MAIN_BOW();
+    }
+
+    pass Bow_Glow // 예: 8번
+    {
+        SetRasterizerState(RS_Default);
+        SetBlendState(BS_AlphaBlending, float4(0, 0, 0, 1), 0xffffffff);
+        SetDepthStencilState(DSS_Default, 0);
+
+        VertexShader = compile vs_5_0 VS_MAIN();
+        PixelShader = compile ps_5_0 PS_GLOW_BOW();
     }
 }

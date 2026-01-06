@@ -4,5 +4,6 @@
 namespace Engine
 {
 	enum class WINMODE { FULL, WIN };
+	enum class D3DTS { VIEW, PROJ, END };
 }
 #endif // Engine_Enum_h__

@@ -3,7 +3,7 @@
 
 void CEffectMesh::Set_WorldPosition(_matrix mWorldMatrix)
 {
-	// Local: Scale * Rot * Trans  (툴 값)
+	// ===== Local: 툴에서 설정한 값 =====
 	_matrix mScaleLocal = XMMatrixScaling(
 		m_tMeshEffectDesc.vScale.x,
 		m_tMeshEffectDesc.vScale.y,
@@ -21,9 +21,16 @@ void CEffectMesh::Set_WorldPosition(_matrix mWorldMatrix)
 
 	_matrix mLocal = mScaleLocal * mRotLocal * mTransLocal;
 
+	// ===== Fix 회전 =====
 	_matrix mFix = XMMatrixRotationX(XMConvertToRadians(-90.f));
 
-	// Final = Local * Fix * OwnerWorld
+	// ===== ?? OwnerWorld에서 스케일 제거 =====
+	mWorldMatrix.r[0] = XMVector3Normalize(mWorldMatrix.r[0]); // Right
+	mWorldMatrix.r[1] = XMVector3Normalize(mWorldMatrix.r[1]); // Up
+	mWorldMatrix.r[2] = XMVector3Normalize(mWorldMatrix.r[2]); // Look
+	// r[3] (위치)는 그대로 둔다
+
+	// ===== Final =====
 	_matrix mFinal = mLocal * mFix * mWorldMatrix;
 	m_pTransformCom->Set_WorldMatrix(mFinal);
 }
@@ -334,8 +341,8 @@ void CEffectMesh::ScaleLerp()
 
 		_float3 vCurveScale = _float3(fScaleCurve[0], fScaleCurve[1], fScaleCurve[2]);
 		_vector fLerpScale =
-			XMLoadFloat3(&m_tMeshEffectDesc.vColorInitial) +
-			fInterpFactor * (XMLoadFloat3(&vCurveScale) - XMLoadFloat3(&m_tMeshEffectDesc.vColorInitial));
+			XMLoadFloat3(&m_tMeshEffectDesc.vScaleInitial) +
+			fInterpFactor * (XMLoadFloat3(&vCurveScale) - XMLoadFloat3(&m_tMeshEffectDesc.vScaleInitial));
 		XMStoreFloat3(&m_tMeshEffectDesc.vScale, fLerpScale);
 
 		break;
@@ -593,6 +600,4 @@ CGameObject* CEffectMesh::Clone(void* pArg)
 void CEffectMesh::Free()
 {
 	__super::Free();
-
-	Safe_Release(m_pModelCom);
 }

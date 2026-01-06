@@ -115,6 +115,20 @@ void CColider::Update(_fmatrix WorldMatrix)
 }
 
 
+_vector CColider::Get_WorldCenter() const
+{
+    if (m_pSphere[BOUNDING_WORLD])
+        return XMLoadFloat3(&m_pSphere[BOUNDING_WORLD]->Center);
+
+    if (m_pOBB[BOUNDING_WORLD])
+        return XMLoadFloat3(&m_pOBB[BOUNDING_WORLD]->Center);
+
+    if (m_pAABB[BOUNDING_WORLD])
+        return XMLoadFloat3(&m_pAABB[BOUNDING_WORLD]->Center);
+
+    return XMVectorZero();
+}
+
 HRESULT CColider::Set_Colider_Desc(void* pArg)
 {
     if (nullptr == pArg)

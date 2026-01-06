@@ -110,6 +110,8 @@ public: /* For.Light_Manager */
 	_uint Get_LightSize();
 	HRESULT	Set_ShadowLightView(_float4 vEye, _float4 vAt);
 	_float4x4	Get_ShadowLightView();
+	_float4x4 Get_ShadowLightProj();
+	HRESULT Set_ShadowLightProj_Ortho(float w, float h, float zn, float zf);
 
 #pragma region PipeLine
 public: /* For.PipeLine */

@@ -8,6 +8,7 @@
 #include "Champion.h"
 #include "Minion.h"
 #include "Building.h"
+#include "VayneAttackState.h"
 
 USING(Client);
 using namespace Vayne;
@@ -44,125 +45,57 @@ CVayneState* CVayneSkillStateQ::AI_Behaviour(_float fTimeDelta)
 
 CVayneState* CVayneSkillStateQ::Update(_float fTimeDelta)
 {
-    if (!m_pOwner)
-        return nullptr;
+    m_fQMinTime -= fTimeDelta;
 
-    // 1) 타겟 다시 확인
-    CActor* pTarget = m_pOwner->Check_FiledTarget();
-    if (!pTarget)
-        return new CMoveState(m_pOwner);   // ?? Idle 말고 Move
-
-    // 2) 거리 체크 (안전)
-    float dist = m_pOwner->Target_Distance(pTarget);
-    float range = m_pOwner->Get_AttackRangeWorld();
-
-    if (dist > range * 1.1f)
-    {
-        return new CMoveState(m_pOwner);
-    }
-
-    // 3) 타겟 바라보기
     CTransform* pTr = m_pOwner->Get_Transform();
-    if (pTr)
-    {
-        _vector myPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
-        _vector tarPos = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
-
-        _vector lookDir = tarPos - myPos;
-        lookDir = XMVectorSetY(lookDir, 0.f);
-        if (XMVectorGetX(XMVector3LengthSq(lookDir)) > 0.0001f)
-        {
-            lookDir = XMVector3Normalize(lookDir);
-            // 베인이 타겟을 바라보도록
-            pTr->SmoothLookAt(-lookDir, fTimeDelta, 8.f);
-        }
-    }
-
-    // 4) 공격 애니메이션 진행
+    CNavigation* pNav = m_pOwner->Get_Navigation();
     CModel* pModel = m_pOwner->Get_Model();
-    m_bIsAnimFinished =
-        pModel->Play_Animation(
-            fTimeDelta,
-            false,      // 평타 애니메이션은 루프 X
-            nullptr,
-            0.1f);
+    if (!pTr || !pNav || !pModel)
+        return new CMoveState(m_pOwner);
 
-    // 5) 애니메이션 이벤트에서 투사체 발사
-    vector<ANIMEVENT> events = pModel->Get_Events();
-    for (auto& evt : events)
+    // 이동
+    pTr->Move_ByPath(fTimeDelta * 2.5f, pNav);
+    m_pOwner->Check_Navigation();
+
+    // ?? Weapon Bone 기준 FX 위치 갱신
+    if (!m_QFxList.empty())
     {
-        if (!evt.isPlay) continue;
-
-        if (evt.eType == ANIMEVENT::EVENT_PROJECTILE)
+        CBone* pWeaponBone = pModel->Get_BonePtr("weapon");
+        if (pWeaponBone)
         {
-            if (!m_bProjectileSpawned)
+            _float4x4 pivot = pModel->Get_PivotFloat4x4();
+            _matrix pivotMat = XMLoadFloat4x4(&pivot);
+
+            _matrix weaponWorld =
+                pWeaponBone->Get_CombinedTransformationMatrix() *
+                pivotMat *
+                pTr->Get_WorldMatrix();
+
+            weaponWorld.r[0] = XMVector4Normalize(weaponWorld.r[0]);
+            weaponWorld.r[1] = XMVector4Normalize(weaponWorld.r[1]);
+            weaponWorld.r[2] = XMVector4Normalize(weaponWorld.r[2]);
+
+            // 약간 전방 보정
+            _vector vDir = XMVector3Normalize(
+                XMVectorSetY(pTr->Get_State(CTransform::STATE_LOOK), 0.f));
+
+            weaponWorld.r[3] = XMVectorSetW(
+                weaponWorld.r[3] + vDir * 0.1f,
+                1.f
+            );
+
+            // ?? 모든 FX 갱신
+            for (auto& fx : m_QFxList)
             {
-                CGameInstance* pGI = CGameInstance::GetInstance();
-
-                CBone* pHand = m_pOwner->Get_Model()->Get_BonePtr("weapon_b");
-
-                _float4x4 pivot = m_pOwner->Get_Model()->Get_PivotFloat4x4();
-                _matrix pivotMat = XMLoadFloat4x4(&pivot);
-
-                _matrix HandMatrix =
-                    pHand->Get_CombinedTransformationMatrix() *
-                    pivotMat *
-                    m_pOwner->Get_Transform()->Get_WorldMatrix();
-
-                HandMatrix.r[0] = XMVector4Normalize(HandMatrix.r[0]);
-                HandMatrix.r[1] = XMVector4Normalize(HandMatrix.r[1]);
-                HandMatrix.r[2] = XMVector4Normalize(HandMatrix.r[2]);
-
-                _vector vHandVec = HandMatrix.r[3];
-             
-                m_bProjectileSpawned = true;
+                if (fx)
+                    fx->Set_WorldPosition(weaponWorld);
             }
         }
     }
 
-    if (m_bIsAnimFinished)
-    {
-        m_bProjectileSpawned = false;
-        m_bIsAnimFinished = false;
-
-        // 아직 타겟 유효 + 사거리 안이면 계속 공격 루프
-        pTarget = m_pOwner->Check_FiledTarget();
-        if (!pTarget)
-            return new CMoveState(m_pOwner);
-
-        float dist2 = m_pOwner->Target_Distance(pTarget);
-        float range2 = m_pOwner->Get_AttackRangeWorld();
-
-        if (dist2 > range2 * 1.1f)
-            return new CMoveState(m_pOwner);
-
-        // ================================
-        // ?? 10% 확률로 "도망가기(ReturnState)" 전환
-        // ================================
-        {
-            int retreatRoll = rand() % 100;   // 0~99
-            if (retreatRoll < 10)             // 10% 확률
-            {
-                return new CReturnState(m_pOwner);
-            }
-        }
-
-        // ?? 같은 AttackState 안에서 새 평타 애니 다시 세팅 (연속 공격)
-        const int AttackAnims[] =
-        {
-            CVayne::ANIM::ATTACK1,
-            CVayne::ANIM::ATTACK2,
-            CVayne::ANIM::CRIT,
-        };
-
-        int r = rand() % 10;
-        int animIdx = 0;
-        if (r < 4)      animIdx = AttackAnims[0];   // ATTACK1
-        else if (r < 8) animIdx = AttackAnims[1];   // ATTACK2
-        else            animIdx = AttackAnims[2];   // CRIT (10% 정도)
-
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(animIdx);
-    }
+    bool bEnd = pModel->Play_Animation(fTimeDelta, false);
+    if (bEnd && m_fQMinTime <= 0.f)
+        return new CAttackState(m_pOwner);
 
     return nullptr;
 }
@@ -174,31 +107,101 @@ CVayneState* CVayneSkillStateQ::LateUpdate(_float fTimeDelta)
 
 void CVayneSkillStateQ::Enter()
 {
-    m_bProjectileSpawned = false;
-    m_bIsAnimFinished = false;
+    m_fQMinTime = 0.18f;
+    m_bQFxSpawned = false;
+    m_QFxList.clear();
 
-    if (!m_pOwner)
+    m_pOwner->m_bQEmpowered = true;
+    m_pOwner->m_fQEmpoweredTime = m_pOwner->Q_EMPOWER_DURATION;
+
+    CModel* pModel = m_pOwner->Get_Model();
+    CTransform* pTr = m_pOwner->Get_Transform();
+    if (!pModel || !pTr)
         return;
 
-    // 첫 공격 애니 랜덤 설정
-    const int AttackAnims[] =
+    pModel->Set_CurrentAnimIndex(CVayne::ANIM::Q);
+
+    // ?? Q FX 1회 생성
+    if (!m_bQFxSpawned)
     {
-        CVayne::ANIM::ATTACK1,
-        CVayne::ANIM::ATTACK2,
-        CVayne::ANIM::CRIT,
-    };
+        CBone* pWeaponBone = pModel->Get_BonePtr("weapon");
+        if (pWeaponBone)
+        {
+            _float4x4 pivot = pModel->Get_PivotFloat4x4();
+            _matrix pivotMat = XMLoadFloat4x4(&pivot);
 
-    int r = rand() % 10;
-    int animIdx = 0;
-    if (r < 4)      animIdx = AttackAnims[0];   // ATTACK1
-    else if (r < 8) animIdx = AttackAnims[1];   // ATTACK2
-    else            animIdx = AttackAnims[2];   // CRIT
+            _matrix weaponWorld =
+                pWeaponBone->Get_CombinedTransformationMatrix() *
+                pivotMat *
+                pTr->Get_WorldMatrix();
 
-    m_pOwner->Get_Model()->Set_CurrentAnimIndex(animIdx);
+            weaponWorld.r[0] = XMVector4Normalize(weaponWorld.r[0]);
+            weaponWorld.r[1] = XMVector4Normalize(weaponWorld.r[1]);
+            weaponWorld.r[2] = XMVector4Normalize(weaponWorld.r[2]);
+
+            // ?? vector로 받는다 (이게 핵심)
+            m_QFxList = CEffect::PlayEffectAtLocation(
+                TEXT("Vayne_Q_Shine.dat"),
+                weaponWorld
+            );
+
+            m_bQFxSpawned = true;
+        }
+    }
+
+    CNavigation* pNav = m_pOwner->Get_Navigation();
+    if (!pTr || !pNav)
+        return;
+
+    // =========================
+    // 1. 기준 벡터
+    // =========================
+    _vector vLook = XMVector3Normalize(
+        XMVectorSetY(pTr->Get_State(CTransform::STATE_LOOK), 0.f));
+    _vector vRight = XMVector3Normalize(
+        XMVectorSetY(pTr->Get_State(CTransform::STATE_RIGHT), 0.f));
+
+    // =========================
+    // 2. 방향 선택 (베인 느낌)
+    // =========================
+    int r = rand() % 100;
+    _vector vDir;
+
+    if (r < 40)        vDir = -vLook;       // 뒤로 (kite)
+    else if (r < 65)   vDir = vRight;       // 오른쪽
+    else if (r < 90)   vDir = -vRight;      // 왼쪽
+    else               vDir = vLook;        // 앞으로 (가끔 공격적)
+
+    // =========================
+    // 3. 이동 거리 & 목적지
+    // =========================
+    const float Q_DIST = 2.7f;   // ★ 핵심 튜닝 포인트
+
+    _vector vPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
+    _vector vDest = vPos + vDir * Q_DIST;
+
+    // 네비 보정
+    pTr->Set_Destination(vDest, pNav);
+
+    // =========================
+    // 4. "구르는 시간" 설정
+    // =========================
+    m_pOwner->m_bDoKiting = true;
+    m_pOwner->m_vKitingDest = vDest;
+
+    // 이 시간 동안은 이동 애니 + 공격 금지
+    m_pOwner->m_fPostAttackMoveTime = 0.25f;
 }
 
 void CVayneSkillStateQ::Exit()
 {
-    m_bProjectileSpawned = false;
-    m_bIsAnimFinished = false;
+    for (auto& fx : m_QFxList)
+    {
+        if (fx)
+            fx->Set_Dead(true);
+    }
+
+    m_QFxList.clear();
+    m_bQFxSpawned = false;
+    m_pOwner->m_fPostAttackMoveTime = 0.f;
 }

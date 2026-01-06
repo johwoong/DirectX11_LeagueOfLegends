@@ -20,6 +20,11 @@ public:
 private:
     _bool m_bProjectileSpawned = false;
     _bool m_bIsAnimFinished = false;
+    private:
+    vector<CEffect*> m_QFxList;   // ?? 이게 정답
+    bool m_bQFxSpawned = false;
+private:
+    float m_fQMinTime = 0.f;
 };
 
 NS_END

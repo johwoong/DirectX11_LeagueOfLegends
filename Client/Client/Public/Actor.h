@@ -11,9 +11,32 @@ class CColider;
 NS_END
 
 NS_BEGIN(Client)
-
+class CEffect;
 class CActor abstract :public CGameObject
 {
+public:
+	enum class MARK_TYPE : uint8_t
+	{
+		NONE = 0,
+		EZREAL_W,
+		LEE_SIN_Q,
+		VAYNE_SILVER,
+	};
+
+	struct MARK_DATA
+	{
+		bool        bActive = false;
+		MARK_TYPE   eType = MARK_TYPE::NONE;
+
+		float       fAcc = 0.f;
+		float       fDuration = 0.f;
+
+		CActor* pCaster = nullptr;
+
+		int         iHitCount = 0;   // ? 베인용 스택
+		_float3     vOffset = { 0.f, 1.1f, 0.f };
+		std::vector<CEffect*> fx;
+	};
 protected:
 	CActor(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CActor(const CActor& rhs);
@@ -33,6 +56,15 @@ public:
 	_bool Is_Frustum(_float fOffset = 0);
 	void SetUp_BillBoard();
 	void Update_Collider();
+
+public: // 마크용 
+	void Apply_Mark(MARK_TYPE eType, CActor* pCaster, float fDuration,
+		const _tchar* pMarkDat, const _float3& vOffset);
+	void Set_MarkOffset(const _float3& v) { m_tMark.vOffset = v; } // 툴에서 호출용
+	_float3 Get_MarkOffset() const { return m_tMark.vOffset; }
+	bool Has_Mark(MARK_TYPE type) const;
+	bool Pop_EzrealW_Mark(CActor* pDamageCauser, int iPopDamage, const _tchar* pPopDat);
+	void Apply_VayneSilverMark(CActor* pCaster);
 public:
 	_float3 Get_Scale() { return m_vScale; }
 	CTransform* Get_Transform() { return m_pTransformCom; }
@@ -49,10 +81,15 @@ public:
 public:
 	virtual _int Take_Damage(int iDamage, CActor* DamageCauser) { return 0; }
 
+
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderID() { return S_OK; }
 	virtual HRESULT SetUp_ShaderResources() = 0;
+
+protected:
+	void Update_Mark(float dt);
+	void Clear_Mark();
 
 
 protected:
@@ -72,6 +109,8 @@ protected:
 	_float3 m_vMousePickedPos;
 	_bool m_bPicked = false;
 	_float m_fAlpha = 1.f;
+protected:
+	MARK_DATA m_tMark;
 
 public:
 	virtual void Free() override;

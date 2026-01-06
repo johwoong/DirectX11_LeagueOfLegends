@@ -396,20 +396,21 @@ HRESULT CRenderer::Render_AlphaBlendLights()
 
 HRESULT CRenderer::Render_Lights()
 {
-    if (nullptr == m_pTarget_Manager ||
-        nullptr == m_pLight_Manager)
+    if (!m_pTarget_Manager || !m_pLight_Manager)
         return E_FAIL;
 
-    /* Target_Shader에 그린다. */
+    // MRT_LightAcc = Target_Shade + Target_Specular (RTV로 출력)
     if (FAILED(m_pTarget_Manager->Begin_MRT(m_pContext, TEXT("MRT_LightAcc"))))
         return E_FAIL;
 
+    // ? 입력은 Normal/Depth만 있으면 됨
     if (FAILED(m_pTarget_Manager->Bind_ShaderResource(TEXT("Target_Normal"), m_pShaderDeferred, "g_NormalTexture")))
         return E_FAIL;
     if (FAILED(m_pTarget_Manager->Bind_ShaderResource(TEXT("Target_Depth"), m_pShaderDeferred, "g_DepthTexture")))
         return E_FAIL;
-    if (FAILED(m_pTarget_Manager->Bind_ShaderResource(TEXT("Target_Specular"), m_pShaderDeferred, "g_SpecularTexture")))
-        return E_FAIL;
+
+    // ? 이거 하면 RTV/SRV 충돌 터짐 -> 제거
+    // m_pTarget_Manager->Bind_ShaderResource(TEXT("Target_Specular"), m_pShaderDeferred, "g_SpecularTexture");
 
     if (FAILED(m_pShaderDeferred->Set_RawValue("g_WorldMatrix", &m_worldMatrix, sizeof(_float4x4))))
         return E_FAIL;
@@ -421,21 +422,16 @@ HRESULT CRenderer::Render_Lights()
     CPipeLine* pPipeLine = CPipeLine::GetInstance();
     pPipeLine->AddRef();
 
-    const _float4x4 ProjInv =
-        pPipeLine->Get_TransformFloat4x4_Inverse_TP(CPipeLine::D3DTS_PROJ);
-
-    if (FAILED(m_pShaderDeferred->Set_RawValue("g_ProjMatrixInv",
-        &ProjInv, sizeof(ProjInv))))
+    const _float4x4 ProjInv = pPipeLine->Get_TransformFloat4x4_Inverse_TP(CPipeLine::D3DTS_PROJ);
+    if (FAILED(m_pShaderDeferred->Set_RawValue("g_ProjMatrixInv", &ProjInv, sizeof(ProjInv))))
         return E_FAIL;
-
 
     const _float4x4 ViewInv = pPipeLine->Get_TransformFloat4x4_Inverse_TP(CPipeLine::D3DTS_VIEW);
-    if (FAILED(m_pShaderDeferred->Set_RawValue("g_ViewMatrixInv",
-        &ViewInv, sizeof(ViewInv))))
+    if (FAILED(m_pShaderDeferred->Set_RawValue("g_ViewMatrixInv", &ViewInv, sizeof(ViewInv))))
         return E_FAIL;
+
     const _float4 CamPos = pPipeLine->Get_CamPosition();
-    if (FAILED(m_pShaderDeferred->Set_RawValue("g_vCamPosition",
-        &CamPos, sizeof(CamPos))))
+    if (FAILED(m_pShaderDeferred->Set_RawValue("g_vCamPosition", &CamPos, sizeof(CamPos))))
         return E_FAIL;
 
     pPipeLine->Release();
@@ -473,8 +469,8 @@ HRESULT CRenderer::Render_Blend()
 
     if (FAILED(m_pShaderDeferred->Set_RawValue("g_LightViewMatrix", &LightView, sizeof(_float4x4))))
         return E_FAIL;
-    if (FAILED(m_pShaderDeferred->Set_RawValue("g_LightProjMatrix", &CPipeLine::GetInstance()->Get_TransformFloat4x4_TP(CPipeLine::D3DTS_PROJ), sizeof(_float4x4))))
-        return E_FAIL;
+    _float4x4 LightProj = CLightManager::GetInstance()->Get_ShadowLightProj();
+    m_pShaderDeferred->Set_RawValue("g_LightProjMatrix", &LightProj, sizeof(_float4x4));
     const _float4x4 ViewInv = CPipeLine::GetInstance()->Get_TransformFloat4x4_Inverse_TP(CPipeLine::D3DTS_VIEW);
     if (FAILED(m_pShaderDeferred->Set_RawValue("g_ViewMatrixInv", &ViewInv, sizeof(ViewInv))))
         return E_FAIL;

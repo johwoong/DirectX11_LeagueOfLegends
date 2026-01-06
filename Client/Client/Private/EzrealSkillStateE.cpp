@@ -49,8 +49,13 @@ CPlayerState* CEzrealSkillStateE::Update(_float fDeltaTime)
         {
             m_bTeleported = true;
             pTr->Set_State(CTransform::STATE_TRANSLATION, m_vDashTarget);
-            // 필요하면 네비 인덱스 재계산
             m_pOwner->Get_Navigation()->Compute_CurrentIndex_byXZ(m_vDashTarget);
+
+            if (!m_bArriveFxSpawned)
+            {
+                m_bArriveFxSpawned = true;
+                Spawn_E_BlinkFx(m_vDashTarget, E_BLINK_FX::ARRIVE);
+            }
         }
 
         if (finished)
@@ -99,6 +104,12 @@ void CEzrealSkillStateE::Enter()
     _vector myPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
     float y = XMVectorGetY(myPos);
 
+
+    // ★ 시전 위치 저장
+    m_vCastPos = myPos;
+    m_bCastFxSpawned = false;
+    m_bArriveFxSpawned = false;
+
     // ===== 1) 바닥 평면과의 교점 구하기 =====
     float rayDirY = XMVectorGetY(rayDir);
     if (fabsf(rayDirY) < 0.0001f)
@@ -121,6 +132,13 @@ void CEzrealSkillStateE::Enter()
         m_vDashTarget = myPos + dir * maxRange;
     else
         m_vDashTarget = hit;
+
+    // ★ 시전 위치 이펙트 1번 (딱 한번)
+    if (!m_bCastFxSpawned)
+    {
+        m_bCastFxSpawned = true;
+        Spawn_E_BlinkFx(m_vCastPos, E_BLINK_FX::CAST);
+    }
 
     // ===== 4) 현재 바라보는 방향과의 각도로 애니 선택 =====
     _vector look = XMVector3Normalize(
@@ -158,6 +176,7 @@ void CEzrealSkillStateE::Enter()
     pTr->Set_State(CTransform::STATE_RIGHT, vRight);
     pTr->Set_State(CTransform::STATE_UP, vUp);
     pTr->Set_State(CTransform::STATE_LOOK, vLook);
+
 }
 
 
@@ -165,4 +184,36 @@ void CEzrealSkillStateE::Exit()
 {
     m_pOwner->SetUsingSkill(false);
     __super::Exit();
+}
+
+void CEzrealSkillStateE::Spawn_E_BlinkFx(_vector vPos, E_BLINK_FX eType)
+{
+    vPos = XMVectorSetW(vPos, 1.f);
+
+    _float4 camPos4 = CGameInstance::GetInstance()->Get_CamPosition();
+    _vector vCamPos = XMLoadFloat4(&camPos4);
+
+    _vector vToCam = vCamPos - vPos;
+    vToCam = XMVectorSetY(vToCam, 0.f);
+    if (XMVectorGetX(XMVector3LengthSq(vToCam)) < 1e-6f)
+        vToCam = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+    _vector vLook = XMVector3Normalize(vToCam);
+    _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+    _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+    vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight));
+
+    _matrix mWorld = XMMatrixIdentity();
+    mWorld.r[0] = vRight;
+    mWorld.r[1] = vUp;
+    mWorld.r[2] = vLook;
+    mWorld.r[3] = vPos;
+
+    const _tchar* pDat = nullptr;
+    if (eType == E_BLINK_FX::CAST)
+        pDat = TEXT("Ezreal_E_Front.dat");     // 시작용
+    else
+        pDat = TEXT("Ezreal_E_Back.dat");   // 도착용
+
+    CEffect::PlayEffectAtLocation(pDat, mWorld);
 }

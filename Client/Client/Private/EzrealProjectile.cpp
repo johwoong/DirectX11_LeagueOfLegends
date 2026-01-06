@@ -26,30 +26,41 @@ HRESULT CEzrealProjectile::Initialize(void* pArg)
 {
     __super::Initialize(pArg);
 
-    // 시작점 저장
+    // ? 풀 프리워밍이면 여기서 끝 (FX 생성 금지)
+    if (m_ProjectileDesc.bPrewarm)
+    {
+        m_iRHitCount = 0;
+        ZeroMemory(m_RHitList, sizeof(m_RHitList));
+        return S_OK;
+    }
+
+    // ===== 아래는 "실사용"일 때만 =====
     m_vStartPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
     m_vStartPos = XMVectorSetW(m_vStartPos, 1.f);
 
-    // 타입별 최대 사거리
     switch (m_ProjectileDesc.eProjType)
     {
     case Q: m_fMaxDistance = 650.f; break;
     case W: m_fMaxDistance = 700.f; break;
-    case R: m_fMaxDistance = 2000.f; break;
+    case R:
+        m_fMaxDistance = -1.f;              // ? 사거리 제한 없음
+        m_ProjectileDesc.fDeadTime = 20.f;  // ? 충분히 길게
+        break;
     default: m_fMaxDistance = 0.f; break;
     }
 
-    // ===== 날아가는 FX =====
+    m_iRHitCount = 0;
+    ZeroMemory(m_RHitList, sizeof(m_RHitList));
+
     _matrix projWorld = m_pTransformCom->Get_WorldMatrix();
 
-    const _tchar* pFlyDat = nullptr;
+    const _tchar* pFlyDat = TEXT("Ezreal_Base.dat");
     switch (m_ProjectileDesc.eProjType)
     {
     case BASE: pFlyDat = TEXT("Ezreal_Base.dat"); break;
     case Q:    pFlyDat = TEXT("Ezreal_Q.dat");    break;
     case W:    pFlyDat = TEXT("Ezreal_W.dat");    break;
-    case R:    pFlyDat = TEXT("Ezreal_R.dat");    break;
-    default:   pFlyDat = TEXT("Ezreal_Base.dat"); break;
+    case R:    pFlyDat = TEXT("Ezreal_R.dat");          break;
     }
 
     m_pEffects = CEffect::PlayEffectAtLocation(pFlyDat, projWorld);
@@ -63,14 +74,8 @@ int CEzrealProjectile::Update(_float fTimeDelta)
 {
     _int iSuperTick = __super::Update(fTimeDelta);
 
-    if (iSuperTick == OBJ_DEAD)
-    {
-        Dead_Effect();
-        return OBJ_DEAD;
-    }
-
-    if (iSuperTick == OBJ_NOSHOW)
-        return OBJ_NOSHOW;
+    if (iSuperTick == OBJ_POOL)
+        return OBJ_POOL;  
 
     // 이동
     switch (m_ProjectileDesc.eProjType)
@@ -92,18 +97,44 @@ int CEzrealProjectile::Update(_float fTimeDelta)
 
 void CEzrealProjectile::Late_Update(_float fTimeDelta)
 {
+    if (m_bInPool) return;   // ? 추가
     __super::Late_Update(fTimeDelta);
 
     for (auto& iter : m_pEffects)
         if (iter && iter->Get_PreDead())
             iter = nullptr;
 
-    // 수명 만료
-    if (m_fTime >= m_ProjectileDesc.fDeadTime)
-        m_bDead = true;
+    if (m_ProjectileDesc.eProjType != R)
+    {
+        if (m_fTime >= m_ProjectileDesc.fDeadTime)
+            m_bDead = true;
+    }
+    else
+    {
+        // R은 DeadTime만으로 종료
+        if (m_fTime >= m_ProjectileDesc.fDeadTime)
+            m_bDead = true;
+    }
 }
 
-// ? "무조건 레드만 맞는다" 판정
+bool CEzrealProjectile::HasHitTarget(CActor* pActor) const
+{
+    for (int i = 0; i < m_iRHitCount; ++i)
+    {
+        if (m_RHitList[i] == pActor)
+            return true;
+    }
+    return false;
+}
+
+void CEzrealProjectile::RegisterHitTarget(CActor* pActor)
+{
+    if (m_iRHitCount >= MAX_R_HIT)
+        return;
+
+    m_RHitList[m_iRHitCount++] = pActor;
+}
+
 bool CEzrealProjectile::Is_RedTarget(CActor* pActor) const
 {
     if (!pActor) return false;
@@ -139,7 +170,6 @@ void CEzrealProjectile::Collision_Check()
         {
             m_bDead = true;
             Dead_Effect();
-            // 여기서 Out_CollisionGroup 굳이 안 해도 Free에서 빠짐
             return;
         }
 
@@ -201,6 +231,73 @@ void CEzrealProjectile::Collision_Check()
         return;
     }
 
+    if (m_ProjectileDesc.eProjType == W)
+    {
+        CActor* pHit = nullptr;
+
+        if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHit) ||
+            CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_BUILDING, m_pOBBCom, &pHit))
+        {
+            if (!Is_RedTarget(pHit))
+                return;
+
+            // 몸통 위치 느낌 기본값
+            _float3 offsetEzW = { 0.f, 1.f, 0.f };
+
+            pHit->Apply_Mark(
+                MARK_TYPE::EZREAL_W,
+                m_ProjectileDesc.pOwner,
+                3.f,
+                TEXT("Ezreal_WMark.dat"),
+                offsetEzW
+            );
+
+            // W 투사체는 여기서 죽음
+            Spawn_Effect(pHit);
+            m_bDead = true;
+            Dead_Effect();
+        }
+        return;
+    }
+
+    // =========================
+// R : 관통 궁극기
+// =========================
+    if (m_ProjectileDesc.eProjType == R)
+    {
+        CActor* pHit = nullptr;
+
+        if (m_ProjectileDesc.eProjType == R)
+        {
+            CActor* pHit = nullptr;
+
+            if (CCollision_Manager::GetInstance()->CollisionwithGroup(
+                CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHit) ||
+                CCollision_Manager::GetInstance()->CollisionwithGroup(
+                    CCollision_Manager::COLLISION_MINION, m_pOBBCom, &pHit))
+            {
+                if (!Is_RedTarget(pHit))
+                    return;
+
+                if (HasHitTarget(pHit))
+                    return;
+
+                RegisterHitTarget(pHit);
+
+                if (auto pEnemy = dynamic_cast<CEnemy*>(pHit))
+                    pEnemy->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
+                else if (auto pMinion = dynamic_cast<CMinion*>(pHit))
+                    pMinion->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
+
+                Spawn_Effect(pHit);
+            }
+
+            return;
+        }
+
+        return;
+    }
+
     // ? Q가 아닌 경우(W/R/BASE 직선 등)는 건물도 포함 가능
     if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHit) ||
         CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_MINION, m_pOBBCom, &pHit) ||
@@ -220,6 +317,10 @@ void CEzrealProjectile::Collision_Check()
         m_bDead = true;
         Dead_Effect();
     }
+
+   
+
+
 }
 
 void CEzrealProjectile::Dead_Effect()
@@ -277,9 +378,9 @@ void CEzrealProjectile::Spawn_Effect(CActor* pHitObj)
     switch (m_ProjectileDesc.eProjType)
     {
     case Q:  pHitDat = TEXT("Ezreal_Q_Hit.dat"); break;
-    case W:  pHitDat = TEXT("Ezreal_W_Hit.dat"); break;
     case R:  pHitDat = TEXT("Ezreal_R_Hit.dat"); break;
-    default: pHitDat = TEXT("Ezreal_Base_Hit.dat"); break;
+    case BASE: pHitDat = TEXT("Ezreal_Base_Hit"); break;
+    default: pHitDat = TEXT("Ezreal_Base_HitD.dat"); break;
     }
 
     CEffect::PlayEffectAtLocation(pHitDat, mWorld);
@@ -341,10 +442,11 @@ void CEzrealProjectile::Update_Projectile(_float fTimeDelta)
     m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vNext);
 
     // 사거리 체크
-    if (m_fMaxDistance > 0.f)
+    if (m_ProjectileDesc.eProjType != R && m_fMaxDistance > 0.f)
     {
         _vector vDelta = vNext - m_vStartPos;
         vDelta = XMVectorSetY(vDelta, 0.f);
+
         float dist = XMVectorGetX(XMVector3Length(vDelta));
         if (dist >= m_fMaxDistance)
         {
@@ -372,6 +474,46 @@ void CEzrealProjectile::Update_Projectile(_float fTimeDelta)
     _matrix ownerWorld = m_pTransformCom->Get_WorldMatrix();
     for (auto& fx : m_pEffects)
         if (fx) fx->Set_WorldPosition(ownerWorld);
+}
+
+void CEzrealProjectile::ReUse_Setting(void* pArg)
+{
+    __super::ReUse_Setting(pArg);
+
+    // 시작점/사거리
+    m_vStartPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    m_vStartPos = XMVectorSetW(m_vStartPos, 1.f);
+
+    switch (m_ProjectileDesc.eProjType)
+    {
+    case Q: m_fMaxDistance = 650.f; break;
+    case W: m_fMaxDistance = 700.f; break;
+    case R:
+        m_fMaxDistance = -1.f;
+        m_ProjectileDesc.fDeadTime = 20.f;
+        break;
+    default: m_fMaxDistance = 0.f; break;
+    }
+
+    // ? R 히트리스트 반드시 초기화 (재사용하면 안 맞는 버그/터지는 버그 방지)
+    m_iRHitCount = 0;
+    ZeroMemory(m_RHitList, sizeof(m_RHitList));
+
+    // ? 날아가는 FX 재생 (풀에선 안 만들었고, 여기서 만든다)
+    _matrix projWorld = m_pTransformCom->Get_WorldMatrix();
+
+    const _tchar* pFlyDat = TEXT("Ezreal_Base.dat");
+    switch (m_ProjectileDesc.eProjType)
+    {
+    case BASE: pFlyDat = TEXT("Ezreal_Base.dat"); break;
+    case Q:    pFlyDat = TEXT("Ezreal_Q.dat");    break;
+    case W:    pFlyDat = TEXT("Ezreal_W.dat");    break;
+    case R:    pFlyDat = TEXT("Ezreal_R.dat");          break;
+    }
+
+    m_pEffects = CEffect::PlayEffectAtLocation(pFlyDat, projWorld);
+    for (auto& fx : m_pEffects)
+        if (fx) fx->Set_AttachObject(this);
 }
 
 CEzrealProjectile* CEzrealProjectile::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

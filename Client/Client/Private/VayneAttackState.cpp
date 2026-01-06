@@ -8,6 +8,8 @@
 #include "Champion.h"
 #include "Minion.h"
 #include "Building.h"
+#include "VayneSkillStateQ.h"
+#include "VayneSkillStateE.h"
 
 USING(Client);
 using namespace Vayne;
@@ -35,170 +37,145 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
     float dist = m_pOwner->Target_Distance(pTarget);
     float range = m_pOwner->Get_AttackRangeWorld();
 
-    // ?? 타겟이 포탑/건물인데, 내 앞에 우리 미니언이 없다 → 바로 도망
-    if (auto pTower = dynamic_cast<CBuilding*>(pTarget))
-    {
-        if (!m_pOwner->Has_AllyMinionUnderEnemyTower(pTower, 15.f))
-        {
-            return new CReturnState(m_pOwner);
-        }
-    }
-
-    if (dist > range * 1.1f)
+    // 사거리 벗어나면 추격
+    if (dist > range * 1.05f)
         return new CMoveState(m_pOwner);
 
-    CTransform* pTr = m_pOwner->Get_Transform();
-    if (pTr)
+    // ======================
+    // 1. 타겟 바라보기
+    // ======================
+    if (CTransform* pTr = m_pOwner->Get_Transform())
     {
         _vector myPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
         _vector tarPos = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
-        // ★ 미니언과 동일 컨벤션: Look = 내 위치 - 타겟 위치
-        _vector vLook = XMVectorSetY(myPos - tarPos, 0.f);
+        _vector vLookDir = XMVectorSetY(myPos - tarPos, 0.f);
 
-        if (XMVectorGetX(XMVector3LengthSq(vLook)) > 0.0001f)
+        if (XMVectorGetX(XMVector3LengthSq(vLookDir)) > 0.0001f)
         {
-            vLook = XMVector3Normalize(vLook);
+            vLookDir = XMVector3Normalize(vLookDir);
 
+            // ? 기존 스케일 보존
             _vector vOldRight = pTr->Get_State(CTransform::STATE_RIGHT);
             float   fScale = XMVectorGetX(XMVector3Length(vOldRight));
             if (fScale < 0.0001f) fScale = 1.f;
 
             _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-            _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLook));
+            _vector vRight = XMVector3Normalize(XMVector3Cross(vUp, vLookDir));
+            _vector vLook = XMVector3Normalize(vLookDir);
 
+            // ?? 스케일 다시 곱해준다
             vRight *= fScale;
+            vUp *= fScale;
             vLook *= fScale;
-            vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight)) * fScale;
 
-            vRight = XMVectorSetW(vRight, 0.f);
-            vUp = XMVectorSetW(vUp, 0.f);
-            vLook = XMVectorSetW(vLook, 0.f);
-
-            pTr->Set_State(CTransform::STATE_RIGHT, vRight);
-            pTr->Set_State(CTransform::STATE_UP, vUp);
-            pTr->Set_State(CTransform::STATE_LOOK, vLook);
+            pTr->Set_State(CTransform::STATE_RIGHT, XMVectorSetW(vRight, 0.f));
+            pTr->Set_State(CTransform::STATE_UP, XMVectorSetW(vUp, 0.f));
+            pTr->Set_State(CTransform::STATE_LOOK, XMVectorSetW(vLook, 0.f));
         }
     }
 
-    // 4) 공격 애니메이션 진행
+    // ======================
+    // 2. 공격 애니 1회
+    // ======================
     CModel* pModel = m_pOwner->Get_Model();
-    m_bIsAnimFinished =
-        pModel->Play_Animation(
-            fTimeDelta,
-            false,      // 평타 애니메이션은 루프 X
-            nullptr,
-            0.1f);
+    m_bIsAnimFinished = pModel->Play_Animation(
+        fTimeDelta,
+        false,      // 루프 X
+        nullptr,
+        0.1f
+    );
 
-    // 5) 애니메이션 이벤트에서 투사체 발사
-    vector<ANIMEVENT> events = pModel->Get_Events();
-    for (auto& evt : events)
+    // ======================
+    // 3. 투사체 이벤트
+    // ======================
+    for (auto& evt : pModel->Get_Events())
     {
-        if (!evt.isPlay) continue;
-
-        if (evt.eType == ANIMEVENT::EVENT_PROJECTILE)
+        if (evt.isPlay && evt.eType == ANIMEVENT::EVENT_PROJECTILE && !m_bProjectileSpawned)
         {
-            if (!m_bProjectileSpawned)
+            m_bProjectileSpawned = true;
+
+            CTransform* pTr = m_pOwner->Get_Transform();
+            _vector vSpawn = pTr->Get_State(CTransform::STATE_TRANSLATION);
+            vSpawn += XMVectorSet(0.f, 1.0f, 0.f, 0.f);
+            vSpawn = XMVectorSetW(vSpawn, 1.f);
+
+            // 타겟 방향
+            _vector vTar = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+            _vector vDir = XMVectorSetY(vTar - vSpawn, 0.f);
+            vDir = XMVector3Normalize(vDir);
+
+            CProjectile::ProjectileTag tag{};
+            tag.eCollisionGroup = ENEMY;
+            tag.vInitPositon = vSpawn;
+            tag.vTargetDir = vDir;
+            tag.pOwner = m_pOwner;
+
+            // =========================
+            // 강화 평타
+            // =========================
+            if (m_pOwner->m_bConsumeQThisAttack)
             {
-                CGameInstance* pGI = CGameInstance::GetInstance();
-
-                CBone* pHand = m_pOwner->Get_Model()->Get_BonePtr("weapon_b");
-
-                _float4x4 pivot = m_pOwner->Get_Model()->Get_PivotFloat4x4();
-                _matrix pivotMat = XMLoadFloat4x4(&pivot);
-
-                _matrix HandMatrix =
-                    pHand->Get_CombinedTransformationMatrix() *
-                    pivotMat *
-                    m_pOwner->Get_Transform()->Get_WorldMatrix();
-
-                HandMatrix.r[0] = XMVector4Normalize(HandMatrix.r[0]);
-                HandMatrix.r[1] = XMVector4Normalize(HandMatrix.r[1]);
-                HandMatrix.r[2] = XMVector4Normalize(HandMatrix.r[2]);
-
-                _vector vHandVec = HandMatrix.r[3];
-
-                m_bProjectileSpawned = true;
-            }
-        }
-    }
-
-    if (m_bIsAnimFinished)
-    {
-        m_bProjectileSpawned = false;
-        m_bIsAnimFinished = false;
-
-        pTarget = m_pOwner->Check_FiledTarget();
-        if (!pTarget)
-            return new CMoveState(m_pOwner);
-
-        float dist2 = m_pOwner->Target_Distance(pTarget);
-        float range2 = m_pOwner->Get_AttackRangeWorld();
-
-        // 사거리 완전 벗어나면 그냥 추격
-        if (dist2 > range2 * 1.1f)
-            return new CMoveState(m_pOwner);
-
-        // ---------------------------
-        // 여기부터 "도망 판단" 로직 강화
-        // ---------------------------
-        float myHpRate = m_pOwner->Get_HpPercent();
-
-        // 타겟이 챔피언인지 체크
-        CChampion* pChampTarget = dynamic_cast<CChampion*>(pTarget);
-        if (pChampTarget)
-        {
-            float tarHpRate = pChampTarget->Get_HpPercent(); // 있으면 사용, 없으면 스킵
-
-            int retreatRoll = rand() % 100;
-
-            // 내가 피가 40% 이하 & 적은 60% 이상이면 → 많이 불리하니까 도망 우선
-            if (myHpRate < 0.4f && tarHpRate > 0.6f)
-            {
-                if (retreatRoll < 70)     // 70% 확률로 뒤로 빼기
-                    return new CReturnState(m_pOwner);
-            }
-            else if (dist2 < range2 * 0.7f)
-            {
-                // 너무 붙어있으면 → 기존보다 살짝 높은 확률로 회피
-                if (retreatRoll < 50)
-                    return new CReturnState(m_pOwner);
+                tag.eProjType = 1;
+                tag.iDamage = 40;
+                tag.fVelocity = 32.f;
             }
             else
             {
-                // 그 외 상황: 살짝만 빼주는 정도
-                if (retreatRoll < 15)
-                    return new CReturnState(m_pOwner);
+                tag.eProjType = 0;
+                tag.iDamage = 20;
+                tag.fVelocity = 25.f;
             }
+
+            if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_VayneProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &tag)))
+                return nullptr;
         }
-        else
+    }
+
+    // ======================
+    // 4. 공격 끝 → 무조건 카이팅
+    // ======================
+
+ // ======================
+// 4. 공격 끝 → 스킬 판정
+// ======================
+    if (m_bIsAnimFinished)
+    {
+        m_bIsAnimFinished = false;
+        m_bProjectileSpawned = false;
+
+        float dist = m_pOwner->Target_Distance(pTarget);
+
+        // =========================
+        // ?? 1?? E 먼저 (Condemn은 강한 스킬)
+        // =========================
+        if (m_pOwner->CanUseSkill(CEnemy::SKILL_E, dist))
         {
-            // 타겟이 미니언/건물인 경우: 이전 로직 그대로 (너무 붙었으면 조금 도망)
-            if (dist2 < range2 * 0.7f)
+            float r = (rand() % 1000) / 1000.f;
+            if (r <= m_pOwner->GetSkill(CEnemy::SKILL_E).fUseProb)
             {
-                int retreatRoll = rand() % 100;
-                if (retreatRoll < 30)
-                    return new CReturnState(m_pOwner);
+                m_pOwner->ConsumeSkill(CEnemy::SKILL_E);
+                return new CVayneSkillStateE(m_pOwner);
             }
         }
 
-        // ---------------------------
-        // 안 도망치면 평타 애니 다시 설정
-        // ---------------------------
-        const int AttackAnims[] =
+        // =========================
+        // 2?? Q
+        // =========================
+        if (m_pOwner->CanUseSkill(CEnemy::SKILL_Q, dist))
         {
-            CVayne::ANIM::ATTACK1,
-            CVayne::ANIM::ATTACK2,
-            CVayne::ANIM::CRIT,
-        };
+            float r = (rand() % 1000) / 1000.f;
+            if (r <= m_pOwner->GetSkill(CEnemy::SKILL_Q).fUseProb)
+            {
+                m_pOwner->ConsumeSkill(CEnemy::SKILL_Q);
+                return new CVayneSkillStateQ(m_pOwner);
+            }
+        }
 
-        int r = rand() % 10;
-        int animIdx = 0;
-        if (r < 4)      animIdx = AttackAnims[0];
-        else if (r < 8) animIdx = AttackAnims[1];
-        else            animIdx = AttackAnims[2];
-
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(animIdx);
+        // =========================
+        // 3?? 이동
+        // =========================
+        return new CMoveState(m_pOwner);
     }
     return nullptr;
 }
@@ -213,10 +190,25 @@ void CAttackState::Enter()
     m_bProjectileSpawned = false;
     m_bIsAnimFinished = false;
 
-    if (!m_pOwner)
+    CModel* pModel = m_pOwner->Get_Model();
+    if (!pModel)
         return;
 
-    // 첫 공격 애니 랜덤 설정
+    // =========================
+    // Q 강화 여부 확정 (여기서!)
+    // =========================
+    if (m_pOwner->m_bQEmpowered)
+    {
+        m_pOwner->m_bConsumeQThisAttack = true;
+        pModel->Set_CurrentAnimIndex(CVayne::ANIM::Q_ATTACK);
+        return;
+    }
+
+    // =========================
+    // 일반 공격
+    // =========================
+    m_pOwner->m_bConsumeQThisAttack = false;
+
     const int AttackAnims[] =
     {
         CVayne::ANIM::ATTACK1,
@@ -225,16 +217,20 @@ void CAttackState::Enter()
     };
 
     int r = rand() % 10;
-    int animIdx = 0;
-    if (r < 4)      animIdx = AttackAnims[0];   // ATTACK1
-    else if (r < 8) animIdx = AttackAnims[1];   // ATTACK2
-    else            animIdx = AttackAnims[2];   // CRIT
+    int animIdx =
+        (r < 4) ? AttackAnims[0] :
+        (r < 8) ? AttackAnims[1] :
+        AttackAnims[2];
 
-    m_pOwner->Get_Model()->Set_CurrentAnimIndex(animIdx);
+    pModel->Set_CurrentAnimIndex(animIdx);
 }
 
 void CAttackState::Exit()
 {
-    m_bProjectileSpawned = false;
-    m_bIsAnimFinished = false;
+    if (m_pOwner->m_bConsumeQThisAttack)
+    {
+        m_pOwner->m_bConsumeQThisAttack = false;
+        m_pOwner->m_bQEmpowered = false;
+        m_pOwner->m_fQEmpoweredTime = 0.f;
+    }
 }

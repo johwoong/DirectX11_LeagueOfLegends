@@ -9,6 +9,7 @@
 #include "Vi.h"
 #include "Enemy.h"
 #include "EzrealProjectile.h"
+#include "PoolManager.h"
 
 NS_BEGIN(Engine)
 class CModel;

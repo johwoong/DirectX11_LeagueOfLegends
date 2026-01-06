@@ -18,6 +18,8 @@ public:
 	virtual int Update(_float fTimeDelta);
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render();
+	virtual HRESULT Render_ShadowDepth() override;
+	virtual HRESULT Render_EdgeDetection() override;
 
 public:
 	const char* Get_ModelTag() { return m_ModelDesc.pModeltag; }

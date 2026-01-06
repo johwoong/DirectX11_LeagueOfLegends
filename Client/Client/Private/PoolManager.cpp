@@ -146,4 +146,25 @@ _bool CPoolManager::Find_LayerTag(_uint iLevelIdx, const _tchar* pLayerTag)
 
 void CPoolManager::Free()
 {
+	if (!m_pObjects)
+		return;
+
+	for (int i = 0; i < LEVEL_END; ++i)
+	{
+		for (auto& pair : m_pObjects[i])
+		{
+			auto* pList = pair.second;
+			if (!pList) continue;
+
+			for (auto* obj : *pList)
+				Safe_Release(obj);   // ★ 풀에 남아있던 오브젝트 전부 해제
+
+			pList->clear();
+			Safe_Delete(pList);
+		}
+		m_pObjects[i].clear();
+	}
+
+	Safe_Delete_Array(m_pObjects);
+	m_pObjects = nullptr;
 }

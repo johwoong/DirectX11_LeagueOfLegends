@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "GameInstance.h"
+#include "Effect.h"
 
 CActor::CActor(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CGameObject(pDevice, pContext)
@@ -31,6 +32,8 @@ int CActor::Update(_float fTimeDelta)
 
 	if (m_bDead)
 		return OBJ_DEAD; 
+	// ? 마크(이즈W/베인스택) 위치 갱신은 매 프레임 돌려야 함
+	Update_Mark(fTimeDelta);
 
 	return OBJ_NOEVENT;
 }
@@ -86,6 +89,67 @@ void CActor::Update_Collider()
 		m_pSphereCom->Update(m_pTransformCom->Get_WorldMatrix());
 }
 
+void CActor::Apply_Mark(MARK_TYPE eType, CActor* pCaster, float fDuration,
+	const _tchar* pMarkDat, const _float3& vOffset)
+{
+	Clear_Mark();
+
+	m_tMark.bActive = true;
+	m_tMark.eType = eType;
+	m_tMark.fAcc = 0.f;
+	m_tMark.fDuration = fDuration;
+	m_tMark.pCaster = pCaster;
+	m_tMark.vOffset = vOffset;
+
+	if (!pMarkDat)
+		return;
+
+	_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	vPos += XMVectorSet(vOffset.x, vOffset.y, vOffset.z, 0.f);
+	vPos = XMVectorSetW(vPos, 1.f);
+
+	_matrix world = Get_Transform()->Get_WorldMatrix();
+	world.r[3] = vPos;
+
+	auto fxList = CEffect::PlayEffectAtLocation(pMarkDat, world);
+
+	for (auto& fx : fxList)
+	{
+		if (!fx) continue;
+
+		fx->Set_AttachObject(this);   // ? 이거 추가
+		m_tMark.fx.push_back(fx);
+	}
+}
+
+bool CActor::Has_Mark(MARK_TYPE type) const
+{
+	return m_tMark.bActive && m_tMark.eType == type;
+}
+
+bool CActor::Pop_EzrealW_Mark(CActor* pDamageCauser, int iPopDamage, const _tchar* pPopDat)
+{
+	if (!Has_Mark(MARK_TYPE::EZREAL_W))
+		return false;
+
+
+	// 1) 터지는 이펙트 재생 
+	if (pPopDat)
+	{
+		_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos += XMVectorSet(m_tMark.vOffset.x, m_tMark.vOffset.y, m_tMark.vOffset.z, 0.f);
+		vPos = XMVectorSetW(vPos, 1.f);
+
+		_matrix world = Get_Transform()->Get_WorldMatrix();
+		world.r[3] = vPos;
+
+		CEffect::PlayEffectAtLocation(pPopDat, world);
+	}
+
+	Clear_Mark();
+	return true;
+}
+
 _vector CActor::Get_TransformState(CTransform::STATE eState)
 {
 	if (m_pTransformCom == nullptr)
@@ -126,7 +190,127 @@ CColider* CActor::Get_Collider()
 		return nullptr;
 }
 
+void CActor::Update_Mark(float dt)
+{
+	if (!m_tMark.bActive)
+		return;
+
+	m_tMark.fAcc += dt;
+
+	// ===== 베인 스택 시간 초과 =====
+	if (m_tMark.eType == MARK_TYPE::VAYNE_SILVER &&
+		m_tMark.fAcc >= m_tMark.fDuration)
+	{
+		Clear_Mark();   // 스택 리셋
+		return;
+	}
+
+	// 기존 위치 추적
+	_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	vPos += XMVectorSet(m_tMark.vOffset.x, m_tMark.vOffset.y, m_tMark.vOffset.z, 0.f);
+	vPos = XMVectorSetW(vPos, 1.f);
+
+	_matrix world = Get_Transform()->Get_WorldMatrix();
+	world.r[3] = vPos;
+
+	for (auto& fx : m_tMark.fx)
+		if (fx) fx->Set_WorldPosition(world);
+}
+
+void CActor::Apply_VayneSilverMark(CActor* pCaster)
+{
+	// ===== 이미 스택 있음 =====
+	if (Has_Mark(MARK_TYPE::VAYNE_SILVER))
+	{
+		m_tMark.iHitCount++;
+		m_tMark.fAcc = 0.f; // 시간 리셋
+
+		// 기존 스택 FX 제거
+		for (auto& fx : m_tMark.fx)
+			if (fx) fx->Set_Dead(true);
+		m_tMark.fx.clear();
+
+		_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos += XMVectorSet(0.f, 1.1f, 0.f, 0.f);
+		vPos = XMVectorSetW(vPos, 1.f);
+
+		_matrix world = Get_Transform()->Get_WorldMatrix();
+		world.r[3] = vPos;
+
+		// ===== 3타 =====
+		if (m_tMark.iHitCount >= 3)
+		{
+			Take_Damage(60, pCaster);
+
+			// ?? Burst FX는 "마크와 분리"해서 붙인다
+			auto burstFx = CEffect::PlayEffectAtLocation(TEXT("Vayne_WBurst.dat"), world);
+			for (auto& fx : burstFx)
+			{
+				if (!fx) continue;
+				fx->Set_AttachObject(this);   // 따라가긴 함
+				// ? m_tMark.fx에 절대 넣지 마라
+			}
+
+			// ?? 마크만 정리
+			Clear_Mark();
+			return;
+		}
+
+		// ===== 2타 =====
+		auto fx = CEffect::PlayEffectAtLocation(TEXT("Vayne_WStack.dat"), world);
+		for (auto& e : fx)
+		{
+			if (!e) continue;
+			e->Set_AttachObject(this);      // ??? 핵심
+			m_tMark.fx.push_back(e);
+		}
+
+		return;
+	}
+
+	// ===== 첫 타 =====
+	Apply_Mark(
+		MARK_TYPE::VAYNE_SILVER,
+		pCaster,
+		3.f,            // 스택 유지 시간
+		nullptr,        // FX는 직접 처리
+		{ 0.f, 1.1f, 0.f }
+	);
+
+	m_tMark.iHitCount = 1;
+
+	_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	vPos += XMVectorSet(0.f, 1.1f, 0.f, 0.f);
+	vPos = XMVectorSetW(vPos, 1.f);
+
+	_matrix world = Get_Transform()->Get_WorldMatrix();
+	world.r[3] = vPos;
+
+	auto fx = CEffect::PlayEffectAtLocation(TEXT("Vayne_W.dat"), world);
+	for (auto& e : fx)
+	{
+		if (!e) continue;
+		e->Set_AttachObject(this);
+		e->Set_WorldPosition(world);   // ?
+		m_tMark.fx.push_back(e);
+	}
+
+}
+
+void CActor::Clear_Mark()
+{
+	if (!m_tMark.bActive)
+		return;
+
+	for (auto& fx : m_tMark.fx)
+		if (fx) fx->Set_Dead(true);
+	m_tMark.fx.clear();
+
+	m_tMark = MARK_DATA{};
+}
+
 void CActor::Free()
 {
 	__super::Free();
+	Safe_Release(m_pRendererCom);
 }

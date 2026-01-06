@@ -193,6 +193,34 @@ _int CTurret::Update(_float fTimeDelta)
         if (dist <= m_tStats.fAttackRange && m_fAttackTimer >= m_fAttackCoolTime)
         {
             m_fAttackTimer = 0.f;
+
+            // ============================
+            // Projectile Spawn
+            // ============================
+            _vector vStart =
+                Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+            vStart += XMVectorSet(0.f, 3.0f, 0.f, 0.f); // 포신 높이 보정
+            vStart = XMVectorSetW(vStart, 1.f);
+
+            _vector vDir = tarPos - vStart;
+            vDir = XMVectorSetY(vDir, 0.f);
+            vDir = XMVector3Normalize(vDir);
+
+            CProjectile::PROJECTILEDESC Desc{};
+            Desc.eCollisionGroup = ENEMY;
+            Desc.vInitPositon = vStart;
+            Desc.vTargetDir = vDir;
+            Desc.fVelocity = 18.f;
+            Desc.fDeadTime = 1.f;
+            Desc.iDamage = (int)m_tStats.fAttackDamage;
+            Desc.pOwner = this;
+            Desc.pTarget = m_pTarget;
+
+            CGameInstance::GetInstance()->Add_GameObject(
+                TEXT("Prototype_GameObject_TurretProjectile"),
+                LEVEL_GAMEPLAY,
+                TEXT("Layer_Projectile"),
+                &Desc);
         }
     }
 
