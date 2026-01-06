@@ -622,10 +622,10 @@ HRESULT CLoader::Loading_ForEffect()
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Trail/Trail.dat"))))
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Sphere0"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Sphere/Sphere0.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Sphere/Sphere.dat"))))
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("HalfSphere_ak_04"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Sphere/HalfSphere_ak_04.dat"))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Sphere/HalfSphere.dat"))))
 		return E_FAIL;
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("Akizame"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, "../../../Bin/Bin_Data/Effect/Akizame/Akizame.dat"))))
