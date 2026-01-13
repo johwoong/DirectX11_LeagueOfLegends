@@ -6,9 +6,14 @@ public:
     struct SkillDesc
     {
         std::wstring IconTag;
-        int SlotIndex; 
+        int SlotIndex;
         float Cooldown;
     };
+
+private:
+    // ★ 아이콘 변경용 상태 저장
+    int          m_iSlotIndex = -1;
+    std::wstring m_CurIconTag;
 
 private:
     CUI_SkillImage(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -27,7 +32,7 @@ private:
     HRESULT SetUp_ShaderResources();
 
 public:
-    void Set_Icon(const wstring& IconTag);
+    void Set_Icon(const std::wstring& IconTag);
 
 public:
     static CUI_SkillImage* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

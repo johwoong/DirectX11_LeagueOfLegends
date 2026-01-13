@@ -7,6 +7,70 @@
 #include "Collision_Manager.h"
 #include "GameInstance.h"
 
+namespace
+{
+    // =========================
+    // FX 월드행렬 생성:
+    // - "앞방향이 +X(STATE_RIGHT)"인 메쉬 기준
+    // - 발사 방향(vDir)을 +X축으로 맞춰준다.
+    // =========================
+    inline _matrix MakeFxWorld_DirXForward(_vector vPos, _vector vDir)
+    {
+        vDir = XMVectorSetY(vDir, 0.f);
+        if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
+            vDir = XMVectorSet(1.f, 0.f, 0.f, 0.f);
+
+        vDir = XMVector3Normalize(vDir);
+
+        _vector vRight = vDir; // +X = 발사방향 (메쉬 "앞"이 +X라고 가정)
+        _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+        _vector vLook = XMVector3Cross(vUp, vRight);
+        if (XMVectorGetX(XMVector3LengthSq(vLook)) < 1e-6f)
+            vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+        vLook = XMVector3Normalize(vLook);
+        vUp = XMVector3Normalize(XMVector3Cross(vRight, vLook));
+
+        _matrix m = XMMatrixIdentity();
+        m.r[0] = vRight;                  // RIGHT
+        m.r[1] = vUp;                     // UP
+        m.r[2] = vLook;                   // LOOK
+        m.r[3] = XMVectorSetW(vPos, 1.f); // POS
+        return m;
+    }
+
+    // 만약 네 FX(Plane/Slash 등)가 "앞방향이 +Z(STATE_LOOK)"이면,
+    // 위 함수 대신 아래처럼 쓰면 된다(스왑 버전).
+    /*
+    inline _matrix MakeFxWorld_DirZForward(_vector vPos, _vector vDir)
+    {
+        vDir = XMVectorSetY(vDir, 0.f);
+        if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
+            vDir = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+        vDir = XMVector3Normalize(vDir);
+
+        _vector vLook = vDir; // +Z = 발사방향
+        _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+        _vector vRight = XMVector3Cross(vUp, vLook);
+        if (XMVectorGetX(XMVector3LengthSq(vRight)) < 1e-6f)
+            vRight = XMVectorSet(1.f, 0.f, 0.f, 0.f);
+
+        vRight = XMVector3Normalize(vRight);
+        vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight));
+
+        _matrix m = XMMatrixIdentity();
+        m.r[0] = vRight;
+        m.r[1] = vUp;
+        m.r[2] = vLook;
+        m.r[3] = XMVectorSetW(vPos, 1.f);
+        return m;
+    }
+    */
+}
+
 CEzrealProjectile::CEzrealProjectile(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CProjectile(pDevice, pContext)
 {
@@ -25,8 +89,9 @@ HRESULT CEzrealProjectile::Initialize_Prototype()
 HRESULT CEzrealProjectile::Initialize(void* pArg)
 {
     __super::Initialize(pArg);
+    ApplyInitialDirection();
 
-    // ? 풀 프리워밍이면 여기서 끝 (FX 생성 금지)
+    // 풀 프리워밍이면 여기서 끝 (FX 생성 금지)
     if (m_ProjectileDesc.bPrewarm)
     {
         m_iRHitCount = 0;
@@ -43,8 +108,8 @@ HRESULT CEzrealProjectile::Initialize(void* pArg)
     case Q: m_fMaxDistance = 650.f; break;
     case W: m_fMaxDistance = 700.f; break;
     case R:
-        m_fMaxDistance = -1.f;              // ? 사거리 제한 없음
-        m_ProjectileDesc.fDeadTime = 20.f;  // ? 충분히 길게
+        m_fMaxDistance = -1.f;              // 사거리 제한 없음
+        m_ProjectileDesc.fDeadTime = 20.f;  // 충분히 길게
         break;
     default: m_fMaxDistance = 0.f; break;
     }
@@ -52,7 +117,13 @@ HRESULT CEzrealProjectile::Initialize(void* pArg)
     m_iRHitCount = 0;
     ZeroMemory(m_RHitList, sizeof(m_RHitList));
 
-    _matrix projWorld = m_pTransformCom->Get_WorldMatrix();
+    // ===============================
+    // FX 생성: "발사 방향"으로 회전 맞춘 월드행렬을 넘긴다
+    // ===============================
+    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    _matrix fxWorld = MakeFxWorld_DirXForward(vPos, m_ProjectileDesc.vTargetDir);
+    // 만약 +Z forward 메쉬면 위 라인 대신:
+    // _matrix fxWorld = MakeFxWorld_DirZForward(vPos, m_ProjectileDesc.vTargetDir);
 
     const _tchar* pFlyDat = TEXT("Ezreal_Base.dat");
     switch (m_ProjectileDesc.eProjType)
@@ -60,10 +131,10 @@ HRESULT CEzrealProjectile::Initialize(void* pArg)
     case BASE: pFlyDat = TEXT("Ezreal_Base.dat"); break;
     case Q:    pFlyDat = TEXT("Ezreal_Q.dat");    break;
     case W:    pFlyDat = TEXT("Ezreal_W.dat");    break;
-    case R:    pFlyDat = TEXT("Ezreal_R.dat");          break;
+    case R:    pFlyDat = TEXT("Ezreal_R.dat");    break;
     }
 
-    m_pEffects = CEffect::PlayEffectAtLocation(pFlyDat, projWorld);
+    m_pEffects = CEffect::PlayEffectAtLocation(pFlyDat, fxWorld);
     for (auto& fx : m_pEffects)
         if (fx) fx->Set_AttachObject(this);
 
@@ -75,7 +146,7 @@ int CEzrealProjectile::Update(_float fTimeDelta)
     _int iSuperTick = __super::Update(fTimeDelta);
 
     if (iSuperTick == OBJ_POOL)
-        return OBJ_POOL;  
+        return OBJ_POOL;
 
     // 이동
     switch (m_ProjectileDesc.eProjType)
@@ -97,24 +168,16 @@ int CEzrealProjectile::Update(_float fTimeDelta)
 
 void CEzrealProjectile::Late_Update(_float fTimeDelta)
 {
-    if (m_bInPool) return;   // ? 추가
+    if (m_bInPool) return;
     __super::Late_Update(fTimeDelta);
 
     for (auto& iter : m_pEffects)
         if (iter && iter->Get_PreDead())
             iter = nullptr;
 
-    if (m_ProjectileDesc.eProjType != R)
-    {
-        if (m_fTime >= m_ProjectileDesc.fDeadTime)
-            m_bDead = true;
-    }
-    else
-    {
-        // R은 DeadTime만으로 종료
-        if (m_fTime >= m_ProjectileDesc.fDeadTime)
-            m_bDead = true;
-    }
+    // R은 DeadTime만으로 종료
+    if (m_fTime >= m_ProjectileDesc.fDeadTime)
+        m_bDead = true;
 }
 
 bool CEzrealProjectile::HasHitTarget(CActor* pActor) const
@@ -143,7 +206,7 @@ bool CEzrealProjectile::Is_RedTarget(CActor* pActor) const
     if (dynamic_cast<CEnemy*>(pActor))
         return true;
 
-    const TEAMTYPE RED = TEAM_RED; // 네 enum에 맞춰
+    const TEAMTYPE RED = TEAM_RED;
 
     if (auto pMinion = dynamic_cast<CMinion*>(pActor))
         return pMinion->Get_Team() == RED;
@@ -173,11 +236,11 @@ void CEzrealProjectile::Collision_Check()
             return;
         }
 
-        // ? Q는 건물 절대 맞으면 안 됨
+        // Q는 건물 절대 맞으면 안 됨
         if (m_ProjectileDesc.eProjType == Q && dynamic_cast<CBuilding*>(m_ProjectileDesc.pTarget))
             return;
 
-        // ? 레드 타겟만(Enemy는 무조건 true)
+        // 레드 타겟만(Enemy는 무조건 true)
         if (!Is_RedTarget(m_ProjectileDesc.pTarget))
             return;
 
@@ -187,7 +250,6 @@ void CEzrealProjectile::Collision_Check()
 
         if (pMyCol && pTargetCol && pMyCol->Collision(pTargetCol))
         {
-            // ? Q는 건물 데미지 금지(안전장치)
             if (!(m_ProjectileDesc.eProjType == Q && dynamic_cast<CBuilding*>(m_ProjectileDesc.pTarget)))
             {
                 if (auto pEnemy = dynamic_cast<CEnemy*>(m_ProjectileDesc.pTarget))
@@ -209,13 +271,12 @@ void CEzrealProjectile::Collision_Check()
     // 2) 직선탄(Q/W/R)
     // =========================
 
-    // ? Q는 BUILDING 그룹을 아예 검사하지 않는다
+    // Q는 BUILDING 그룹을 아예 검사하지 않는다
     if (m_ProjectileDesc.eProjType == Q)
     {
         if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHit) ||
             CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_MINION, m_pOBBCom, &pHit))
         {
-            // Enemy는 무조건 true / Minion은 RED만 true
             if (!Is_RedTarget(pHit))
                 return;
 
@@ -233,18 +294,17 @@ void CEzrealProjectile::Collision_Check()
 
     if (m_ProjectileDesc.eProjType == W)
     {
-        CActor* pHit = nullptr;
+        CActor* pHitW = nullptr;
 
-        if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHit) ||
-            CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_BUILDING, m_pOBBCom, &pHit))
+        if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHitW) ||
+            CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_BUILDING, m_pOBBCom, &pHitW))
         {
-            if (!Is_RedTarget(pHit))
+            if (!Is_RedTarget(pHitW))
                 return;
 
-            // 몸통 위치 느낌 기본값
             _float3 offsetEzW = { 0.f, 1.f, 0.f };
 
-            pHit->Apply_Mark(
+            pHitW->Apply_Mark(
                 MARK_TYPE::EZREAL_W,
                 m_ProjectileDesc.pOwner,
                 3.f,
@@ -252,8 +312,7 @@ void CEzrealProjectile::Collision_Check()
                 offsetEzW
             );
 
-            // W 투사체는 여기서 죽음
-            Spawn_Effect(pHit);
+            Spawn_Effect(pHitW);
             m_bDead = true;
             Dead_Effect();
         }
@@ -261,44 +320,34 @@ void CEzrealProjectile::Collision_Check()
     }
 
     // =========================
-// R : 관통 궁극기
-// =========================
+    // R : 관통 궁극기
+    // =========================
     if (m_ProjectileDesc.eProjType == R)
     {
-        CActor* pHit = nullptr;
+        CActor* pHitR = nullptr;
 
-        if (m_ProjectileDesc.eProjType == R)
+        if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHitR) ||
+            CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_MINION, m_pOBBCom, &pHitR))
         {
-            CActor* pHit = nullptr;
+            if (!Is_RedTarget(pHitR))
+                return;
 
-            if (CCollision_Manager::GetInstance()->CollisionwithGroup(
-                CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHit) ||
-                CCollision_Manager::GetInstance()->CollisionwithGroup(
-                    CCollision_Manager::COLLISION_MINION, m_pOBBCom, &pHit))
-            {
-                if (!Is_RedTarget(pHit))
-                    return;
+            if (HasHitTarget(pHitR))
+                return;
 
-                if (HasHitTarget(pHit))
-                    return;
+            RegisterHitTarget(pHitR);
 
-                RegisterHitTarget(pHit);
+            if (auto pEnemy = dynamic_cast<CEnemy*>(pHitR))
+                pEnemy->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
+            else if (auto pMinion = dynamic_cast<CMinion*>(pHitR))
+                pMinion->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
 
-                if (auto pEnemy = dynamic_cast<CEnemy*>(pHit))
-                    pEnemy->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
-                else if (auto pMinion = dynamic_cast<CMinion*>(pHit))
-                    pMinion->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
-
-                Spawn_Effect(pHit);
-            }
-
-            return;
+            Spawn_Effect(pHitR);
         }
 
         return;
     }
 
-    // ? Q가 아닌 경우(W/R/BASE 직선 등)는 건물도 포함 가능
     if (CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_ENEMY, m_pOBBCom, &pHit) ||
         CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_MINION, m_pOBBCom, &pHit) ||
         CCollision_Manager::GetInstance()->CollisionwithGroup(CCollision_Manager::COLLISION_BUILDING, m_pOBBCom, &pHit))
@@ -317,10 +366,6 @@ void CEzrealProjectile::Collision_Check()
         m_bDead = true;
         Dead_Effect();
     }
-
-   
-
-
 }
 
 void CEzrealProjectile::Dead_Effect()
@@ -377,10 +422,10 @@ void CEzrealProjectile::Spawn_Effect(CActor* pHitObj)
     const _tchar* pHitDat = nullptr;
     switch (m_ProjectileDesc.eProjType)
     {
-    case Q:  pHitDat = TEXT("Ezreal_Q_Hit.dat"); break;
-    case R:  pHitDat = TEXT("Ezreal_R_Hit.dat"); break;
-    case BASE: pHitDat = TEXT("Ezreal_Base_Hit"); break;
-    default: pHitDat = TEXT("Ezreal_Base_HitD.dat"); break;
+    case Q:    pHitDat = TEXT("Ezreal_Q_Hit.dat"); break;
+    case R:    pHitDat = TEXT("Ezreal_R_Hit.dat"); break;
+    case BASE: pHitDat = TEXT("Ezreal_Base_Hit");  break;
+    default:   pHitDat = TEXT("Ezreal_Base_HitD.dat"); break;
     }
 
     CEffect::PlayEffectAtLocation(pHitDat, mWorld);
@@ -414,8 +459,6 @@ void CEzrealProjectile::Update_Projectile(_float fTimeDelta)
     // BASE만 추적, 나머지는 직선
     if (m_ProjectileDesc.eProjType == BASE && m_ProjectileDesc.pTarget && !m_ProjectileDesc.pTarget->Get_Dead())
     {
-        // ? 단, 타겟이 레드가 아니면 추적하지 말고 그냥 직선으로 가게 하거나(원하면)
-        // 여기서는 "타겟이 레드가 아니면 직선으로" 처리
         if (!Is_RedTarget(m_ProjectileDesc.pTarget))
             vDir = m_ProjectileDesc.vTargetDir;
         else
@@ -455,7 +498,7 @@ void CEzrealProjectile::Update_Projectile(_float fTimeDelta)
         }
     }
 
-    // 회전
+    // 투사체 자체는 기존 로직 유지(너가 쓰던 Look기준)
     _vector vLook = vDir;
     _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
     _vector vRight = XMVector3Cross(vUp, vLook);
@@ -470,17 +513,22 @@ void CEzrealProjectile::Update_Projectile(_float fTimeDelta)
     m_pTransformCom->Set_State(CTransform::STATE_UP, vUp);
     m_pTransformCom->Set_State(CTransform::STATE_LOOK, vLook);
 
-    // FX follow
-    _matrix ownerWorld = m_pTransformCom->Get_WorldMatrix();
+    // ===============================
+    // FX follow: "쏘는 방향" 기준 회전 포함해서 넘긴다
+    // (툴 rotation은 이 기준(local)으로 먹는다)
+    // ===============================
+    _matrix fxOwner = MakeFxWorld_DirXForward(vNext, vDir);
+    // +Z forward 메쉬면:
+    // _matrix fxOwner = MakeFxWorld_DirZForward(vNext, vDir);
+
     for (auto& fx : m_pEffects)
-        if (fx) fx->Set_WorldPosition(ownerWorld);
+        if (fx) fx->Set_WorldPosition(fxOwner);
 }
 
 void CEzrealProjectile::ReUse_Setting(void* pArg)
 {
     __super::ReUse_Setting(pArg);
 
-    // 시작점/사거리
     m_vStartPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
     m_vStartPos = XMVectorSetW(m_vStartPos, 1.f);
 
@@ -495,12 +543,18 @@ void CEzrealProjectile::ReUse_Setting(void* pArg)
     default: m_fMaxDistance = 0.f; break;
     }
 
-    // ? R 히트리스트 반드시 초기화 (재사용하면 안 맞는 버그/터지는 버그 방지)
     m_iRHitCount = 0;
     ZeroMemory(m_RHitList, sizeof(m_RHitList));
 
-    // ? 날아가는 FX 재생 (풀에선 안 만들었고, 여기서 만든다)
-    _matrix projWorld = m_pTransformCom->Get_WorldMatrix();
+    ApplyInitialDirection();
+
+    // ===============================
+    // FX 재생도 "발사 방향" 회전 포함해서 생성
+    // ===============================
+    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+    _matrix fxWorld = MakeFxWorld_DirXForward(vPos, m_ProjectileDesc.vTargetDir);
+    // +Z forward 메쉬면:
+    // _matrix fxWorld = MakeFxWorld_DirZForward(vPos, m_ProjectileDesc.vTargetDir);
 
     const _tchar* pFlyDat = TEXT("Ezreal_Base.dat");
     switch (m_ProjectileDesc.eProjType)
@@ -508,12 +562,36 @@ void CEzrealProjectile::ReUse_Setting(void* pArg)
     case BASE: pFlyDat = TEXT("Ezreal_Base.dat"); break;
     case Q:    pFlyDat = TEXT("Ezreal_Q.dat");    break;
     case W:    pFlyDat = TEXT("Ezreal_W.dat");    break;
-    case R:    pFlyDat = TEXT("Ezreal_R.dat");          break;
+    case R:    pFlyDat = TEXT("Ezreal_R.dat");    break;
     }
 
-    m_pEffects = CEffect::PlayEffectAtLocation(pFlyDat, projWorld);
+    m_pEffects = CEffect::PlayEffectAtLocation(pFlyDat, fxWorld);
     for (auto& fx : m_pEffects)
         if (fx) fx->Set_AttachObject(this);
+}
+
+void CEzrealProjectile::ApplyInitialDirection()
+{
+    _vector vLook = m_ProjectileDesc.vTargetDir;
+    vLook = XMVectorSetY(vLook, 0.f);
+
+    if (XMVectorGetX(XMVector3LengthSq(vLook)) < 1e-6f)
+        vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+    vLook = XMVector3Normalize(vLook);
+
+    _vector vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+    _vector vRight = XMVector3Cross(vUp, vLook);
+
+    if (XMVectorGetX(XMVector3LengthSq(vRight)) < 1e-6f)
+        vRight = XMVectorSet(1.f, 0.f, 0.f, 0.f);
+
+    vRight = XMVector3Normalize(vRight);
+    vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight));
+
+    m_pTransformCom->Set_State(CTransform::STATE_RIGHT, vRight);
+    m_pTransformCom->Set_State(CTransform::STATE_UP, vUp);
+    m_pTransformCom->Set_State(CTransform::STATE_LOOK, vLook);
 }
 
 CEzrealProjectile* CEzrealProjectile::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -546,3 +624,5 @@ void CEzrealProjectile::Free()
 {
     __super::Free();
 }
+
+

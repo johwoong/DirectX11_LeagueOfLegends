@@ -3,8 +3,10 @@
 
 #include "Level_Loading.h"
 
-
-
+float g_fSoundVolume = 0.0f;
+float g_fSoundNatureVolume = 0.0f;
+bool g_bIsSoundOn;
+bool g_bEnd = false;
 CLevel_Logo::CLevel_Logo(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
 {
@@ -15,12 +17,15 @@ HRESULT CLevel_Logo::Initialize()
 	if (FAILED(Ready_Layer_BackGround(TEXT("Layer_BackGround"))))
 		return E_FAIL;
 
-
+	//CGameInstance::GetInstance()->PlayBGM(const_cast<TCHAR*>(L"dd.wav"),g_fSoundVolume);
     return S_OK;
 }
 
 void CLevel_Logo::Update(_float fTimeDelta)
 {
+	__super::Update(fTimeDelta);
+	g_fSoundVolume = 1.f;
+	m_pGameInstance->SetChannelVolume(SOUND_BGM, g_fSoundVolume);
 	if (GetKeyState(VK_SPACE) & 0x8000)
 	{
 		if (FAILED(m_pGameInstance->Open_Level(LEVEL_LOADING, CLevel_Loading::Create(m_pDevice, m_pContext, LEVEL_GAMEPLAY))))

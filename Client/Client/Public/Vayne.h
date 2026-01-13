@@ -52,7 +52,8 @@ public: /*For.State*/
 public:	/*For Navigation*/
 	virtual void Check_Navigation() override;
 	// 🔹 미니언처럼 경로 따라 이동
-
+protected:
+	virtual void OnRespawned() override;
 private:
 	bool  m_bJustAttacked = false;
 public:

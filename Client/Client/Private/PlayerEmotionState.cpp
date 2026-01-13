@@ -50,13 +50,97 @@ CPlayerState* CPlayerEmotionState::HandleInput(void)
 
 CPlayerState* CPlayerEmotionState::Update(_float fTimeDelta)
 {
-    // 이모션은 계속 반복 재생
+    const float kInterp = 0.1f;
+
+    // ===== Teemo만 시퀀스 처리 =====
+    if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO)
+    {
+        switch (m_eTeemoPhase)
+        {
+        case TEEMO_PHASE::JOKE_IN:
+        {
+            const bool bEnd = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, false, nullptr, kInterp);
+            if (bEnd)
+            {
+                m_eTeemoPhase = TEEMO_PHASE::JOKE_SPAM;
+                m_fPhaseAcc = 0.f;
+                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::JOKE_SPAM);
+            }
+            break;
+        }
+        case TEEMO_PHASE::JOKE_SPAM:
+        {
+            // 루프 재생
+            m_pOwner->Get_Model()->Play_Animation(fTimeDelta, true, nullptr, kInterp);
+
+            // 일정 시간만 스팸 재생 후 OUT
+            m_fPhaseAcc += fTimeDelta;
+            if (m_fPhaseAcc >= m_fJokeSpamDuration)
+            {
+                m_eTeemoPhase = TEEMO_PHASE::JOKE_OUT;
+                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::JOKE_OUT);
+            }
+            break;
+        }
+        case TEEMO_PHASE::JOKE_OUT:
+        {
+            const bool bEnd = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, false, nullptr, kInterp);
+            if (bEnd)
+            {
+                // Idle로 돌아갈 때 Idle_In 먼저 재생
+                m_pOwner->Set_PlayTeemoIdleIn(true);
+                return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
+            }
+            break;
+        }
+
+        case TEEMO_PHASE::LAUGH:
+        {
+            const bool bEnd = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, false, nullptr, kInterp);
+            if (bEnd)
+            {
+                m_eTeemoPhase = TEEMO_PHASE::LAUGH_TOIDLE;
+                m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::LAUGH_TOIDLE);
+            }
+            break;
+        }
+        case TEEMO_PHASE::LAUGH_TOIDLE:
+        {
+            const bool bEnd = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, false, nullptr, kInterp);
+            if (bEnd)
+            {
+                m_pOwner->Set_PlayTeemoIdleIn(true);
+                return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
+            }
+            break;
+        }
+
+        case TEEMO_PHASE::TAUNT:
+        {
+            // 너 말대로 TAUNT는 크게 상관 없다고 했으니
+            // 그냥 한 번 재생하고 Idle 복귀로 해둠(원하면 true 루프로 바꿔도 됨)
+            const bool bEnd = m_pOwner->Get_Model()->Play_Animation(fTimeDelta, false, nullptr, kInterp);
+            if (bEnd)
+                return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
+            break;
+        }
+
+        default:
+            // 안전: 그냥 루프
+            m_pOwner->Get_Model()->Play_Animation(fTimeDelta, true, nullptr, kInterp);
+            break;
+        }
+
+        return nullptr;
+    }
+
+    // ===== Teemo 아닌 애들은 기존처럼 루프 =====
     m_bIsAnimationFinished =
         m_pOwner->Get_Model()->Play_Animation(
             fTimeDelta,
-            true,      // ← 루프 재생
+            true,
             nullptr,
-            0.1f
+            kInterp
         );
 
     return nullptr;
@@ -89,17 +173,39 @@ void CPlayerEmotionState::Enter(void)
         }
         break;
 
-    case CPlayer::VI:
+    case CPlayer::LEESIN:
         switch (m_eType)
         {
         case EMOTE_JOKE:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVi::ANIM::DANCE);
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::JOKE);
             break;
         case EMOTE_LAUGH:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVi::ANIM::LAUGH);
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::LAUGH);
             break;
         case EMOTE_TAUNT:
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CVi::ANIM::TAUNT);
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::TAUNT);
+            break;
+        }
+        break;
+    case CPlayer::TEEMO:
+        m_fPhaseAcc = 0.f;
+        m_eTeemoPhase = TEEMO_PHASE::NONE;
+
+        switch (m_eType)
+        {
+        case EMOTE_JOKE:
+            m_eTeemoPhase = TEEMO_PHASE::JOKE_IN;
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::JOKE_IN);
+            break;
+
+        case EMOTE_LAUGH:
+            m_eTeemoPhase = TEEMO_PHASE::LAUGH;
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::LAUGH);
+            break;
+
+        case EMOTE_TAUNT:
+            m_eTeemoPhase = TEEMO_PHASE::TAUNT;
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::TAUNT);
             break;
         }
         break;

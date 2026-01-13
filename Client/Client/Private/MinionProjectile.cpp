@@ -198,6 +198,34 @@ HRESULT CMinionProjectile::Ready_Components(void* pArg)
     return S_OK;
 }
 
+void CMinionProjectile::ReUse_Setting(void* pArg)
+{
+    __super::ReUse_Setting(pArg);
+
+    // ?? 기존 이펙트 제거
+    for (auto& fx : m_pEffects)
+        if (fx)
+            fx->Set_Dead(true);
+
+    m_pEffects.clear();
+
+    // ?? 새 이펙트 생성
+    CMinion* pOwnerMinion = dynamic_cast<CMinion*>(m_ProjectileDesc.pOwner);
+
+    const _tchar* szProjectileFx =
+        (pOwnerMinion && pOwnerMinion->Get_Team() == TEAM_BLUE)
+        ? TEXT("Minion_Blue_Projectile.dat")
+        : TEXT("Minion_Red_Projectile.dat");
+
+    _matrix world = m_pTransformCom->Get_WorldMatrix();
+
+    m_pEffects = CEffect::PlayEffectAtLocation(szProjectileFx, world);
+
+    for (auto& fx : m_pEffects)
+        if (fx)
+            fx->Set_AttachObject(this);
+}
+
 CMinionProjectile* CMinionProjectile::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
     CMinionProjectile* pInstance = new CMinionProjectile(pDevice, pContext);

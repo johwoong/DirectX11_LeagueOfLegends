@@ -180,7 +180,12 @@ protected:
 public: // Damage
 	virtual _int Take_Damage(int iDamage, CActor* DamageCauser) override;
 	void Mark_Dead();
-
+	void Respawn();
+	virtual void OnRespawned() {}
+	virtual bool IsDeadForTargeting() const override
+	{
+		return m_bDeadState;
+	}
 protected:
 	virtual HRESULT Ready_Components(void* pArg = nullptr)	PURE;
 	virtual _bool Is_AnimationLoop(_uint eAnimId)			PURE;
@@ -211,6 +216,9 @@ protected:
 	bool m_bWasChasing = false;   // 직전에 타겟을 쫓고 있었는지 여부
 	bool    m_bReachedFirstTower = false;   // ← 추가: 미드 1차 포탑(8번째 노드)까지 갔는지
 	AGGRO_DESC m_tAggro;
+	bool  m_bDeadState = false;   // ★ 죽음 상태 (애니/대기용)
+	float m_fRespawnAcc = 0.f;
+	_float3 m_vSpawnPos;
 public:
 	virtual void Free() override;
 

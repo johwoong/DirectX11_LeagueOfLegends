@@ -7,7 +7,11 @@
 #include "EzrealSkillStateE.h"
 #include "EzrealSkillStateR.h"
 #include "PlayerRecallState.h"
-
+#include "LeeSinAttackState.h"
+#include "LeeSinSkillStateQ.h"
+#include "TemooSkillStateW.h"
+#include "Temoo.h"
+#include "Champion.h"
 using namespace Player;
 
 CRunState::CRunState(CPlayer* pPlayer)
@@ -22,20 +26,24 @@ CPlayerState* CRunState::HandleInput()
     CGameInstance* GI = CGameInstance::GetInstance();
     CPickingManager* PM = CPickingManager::GetInstance();
 
+
     if (GI->Key_Down(DIK_Q))
     {
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
             return new CEzrealSkillStateQ(m_pOwner);
+
+        if (m_pOwner->Get_PlayerID() == CPlayer::LEESIN)
+            return new CLeeSinSkillStateQ(m_pOwner);
     }
 
     if (GI->Key_Down(DIK_W))
     {
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
         {
-            // 지금 달려가고 있는 목적지 (Set_TargetPosition 으로 저장해 둔 값)
-            // 인자는 생략해도 내부에서 Get_TargetPosition()을 기본으로 사용하니까 아래 한 줄이면 됨
             return new CEzrealSkillStateW(m_pOwner, CEzrealSkillStateW::CAST_RUN);
         }
+        if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO)
+            return new CTemooSkillStateW(m_pOwner);
     }
 
     if (GI->Key_Down(DIK_E))
@@ -67,8 +75,14 @@ CPlayerState* CRunState::HandleInput()
 
             if (dist <= range)
             {
-                // 이미 사거리 안 → 바로 공격
-                return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+                switch (m_pOwner->Get_PlayerID())
+                {
+                case CPlayer::EZREAL:
+                    return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+
+                case CPlayer::LEESIN:
+                    return new CLeeSinAttackState(m_pOwner);
+                }
             }
             else
             {
@@ -99,22 +113,29 @@ CPlayerState* CRunState::HandleInput()
 
 CPlayerState* CRunState::Update(_float fTimeDelta)
 {
-    // 1) 먼저 타겟이 있고, 살아있으면
     CActor* pTarget = m_pOwner->Get_AttackTarget();
+
     if (pTarget && !pTarget->Get_Dead())
     {
         _vector myPos = m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
         _vector tarPos = pTarget->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 
         float dist = GetDistanceXZ(myPos, tarPos);
-        float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange(); // ★ 아래 2번에서 설명할 통일된 사거리
+        float range = static_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();
 
-        // 사거리 안으로 들어오면 → 바로 AttackState 진입
         if (dist <= range)
-            return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+        {
+            switch (m_pOwner->Get_PlayerID())
+            {
+            case CPlayer::EZREAL:
+                return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+
+            case CPlayer::LEESIN:
+                return new CLeeSinAttackState(m_pOwner);
+            }
+        }
     }
 
-    // 2) 그 다음에 이동
     Move(fTimeDelta);
     m_pOwner->Check_Navigation();
 
@@ -123,6 +144,27 @@ CPlayerState* CRunState::Update(_float fTimeDelta)
 
     if (STATETYPE_END == m_eStateType)
         return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
+
+    if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO && !m_pOwner->IsUsingSkill())
+    {
+        CChampion* pChamp = dynamic_cast<CChampion*>(m_pOwner);
+        CModel* pModel = m_pOwner->Get_Model();
+
+        if (pChamp && pModel)
+        {
+            const bool bWOn = (pChamp->Get_MoveSpeedMul() > 1.001f);
+
+            // ★ 너 Teemo 애니 enum에 RUN_W가 실제 이름이면 그대로,
+            //   이름 다르면 여기만 바꿔.
+            const _uint animNormal = CTemoo::ANIM::RUN;
+            const _uint animWRun = CTemoo::ANIM::W;
+
+            const _uint desired = bWOn ? animWRun : animNormal;
+
+            if (pModel->Get_CurrentAnimIndex() != desired)
+                pModel->Set_CurrentAnimIndex(desired);
+        }
+    }
 
     m_pOwner->Get_Model()->Play_Animation(
         fTimeDelta,
@@ -163,6 +205,26 @@ void CRunState::Enter()
         // 평소엔 Run 애니 재생
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RUN);
         break;
+    case CPlayer::LEESIN:
+        if (m_pOwner->IsUsingSkill())
+            return;
+        // 평소엔 Run 애니 재생
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::RUN1);
+        break;
+    case CPlayer::TEEMO:
+    {
+        if (m_pOwner->IsUsingSkill())
+            return;
+
+        CChampion* pChamp = dynamic_cast<CChampion*>(m_pOwner);
+        const bool bWOn = (pChamp && pChamp->Get_MoveSpeedMul() > 1.001f);
+
+        const _uint animNormal = CTemoo::ANIM::RUN;
+        const _uint animWRun = CTemoo::ANIM::W; // 이름 다르면 여기만
+
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(bWOn ? animWRun : animNormal);
+        break;
+    }
     }
 
 }

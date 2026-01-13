@@ -19,6 +19,7 @@
 #include "LightManager.h"
 #include "Picking.h"
 #include "Font_Manager.h"
+#include "Sound_Manager.h"
 
 NS_BEGIN(Engine)
 
@@ -131,6 +132,19 @@ public: /* For.Font_Manager */
 	HRESULT Render_Font(const _tchar* pFontTag, const _tchar* pText, _fvector vPos, _fvector vColor, _float fScale = 1.f);
 #pragma endregion
 
+#pragma region Sound
+public:
+	void PlaySounds(TCHAR* pSoundKey, const _uint& eID, const float& fVolume);
+	void PlayBGM(TCHAR* pSoundKey, const float& fVolume);
+	void StopSound(const _uint& eID);
+	void StopAll();
+	void SetChannelVolume(const _uint& eID, const float& fVolume);
+	int  VolumeUp(const _uint& eID, const _float& _vol);
+	int  VolumeDown(const _uint& eID, const _float& _vol);
+	int  Pause(const _uint& eID);
+
+#pragma endregion
+
 #pragma region Picking
 public: /* For Picking */
 	_vector Get_RayPos();
@@ -141,6 +155,7 @@ public: /* For Picking */
 public: /* For.Frustum */
 	_bool isIn_WorldFrustum(_fvector vPosition, _float fRange = 0.f);
 #pragma endregion 
+
 
 	
 #pragma region Target
@@ -164,7 +179,7 @@ private:
 	class CPicking*					m_pPicking =			{ nullptr };
 	class CFrustum*					m_pFrustum		=		{ nullptr };
 	class CTarget_Manager*			m_pTarget_Manager =	    { nullptr };
-
+	class CSound_Manager*			m_pSound_Manager =		{ nullptr };
 public:
 	virtual void Free() override;
 };

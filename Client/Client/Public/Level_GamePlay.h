@@ -4,7 +4,7 @@
 #include "Level.h"
 
 NS_BEGIN(Client)
-
+class CNexus;
 class CLevel_GamePlay final : public CLevel
 {
 private:
@@ -16,8 +16,6 @@ public:
 	virtual HRESULT Initialize() override;
 	virtual void Update(_float fTimeDelta) override;
 	virtual void Late_Update(_float fTimeDelta) override;
-
-
 public:
 	HRESULT Ready_Layer_Terrian(const _tchar* pLayerTag);
 	HRESULT Ready_Lights();
@@ -29,11 +27,18 @@ public:
 	HRESULT Ready_Layer_UI(const _tchar* pLayerTag);
 	HRESULT Ready_Layer_Minion();
 	HRESULT Ready_Layer_Projectile();
+
+private:
+	void Check_GameOver_RedNexus();
+	void Start_GameOver_Victory();
 	
 
 private:
 	ID3D11Device* m_pDevice = { nullptr };
 	ID3D11DeviceContext* m_pContext = { nullptr };
+	bool   m_bGameOver = false;
+	bool   m_bVictoryUISpawned = false;
+	CNexus* m_pRedNexus = nullptr; // ★ 레드 넥서스 포인터
 
 public:
 	static CLevel_GamePlay* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

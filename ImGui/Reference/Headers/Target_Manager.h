@@ -15,6 +15,8 @@ public:
 	ID3D11DepthStencilView* Get_DepthStencilView() { return m_pOldDSV; }
 	ID3D11ShaderResourceView* Get_BackBufferCopySRV() { return m_pBackBufferSRV; }
 
+	ID3D11ShaderResourceView* Get_ShadowDepthSRV() { return m_pShadowDepthSRV; }
+
 public:
 	HRESULT Ready_ShadowDepthStencilRenderTargetView(ID3D11Device* pDevice, _uint iWinCX, _uint iWinCY);
 	HRESULT Ready_BackBufferCopyTexture(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, _uint iWinCX, _uint iWinCY);
@@ -54,7 +56,9 @@ private:
 	_uint m_ShadowCY = 0;
 	D3D11_VIEWPORT m_OldViewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE] = {};
 	UINT           m_OldNumViewports = 0;
-
+	// Target_Manager.h¿¡ Ãß°¡
+	ID3D11Texture2D* m_pShadowDepthTex = nullptr;
+	ID3D11ShaderResourceView* m_pShadowDepthSRV = nullptr;
 private:
     class CRenderTarget* Find_RenderTarget(const _tchar* pTargetTag);
     list<class CRenderTarget*>* Find_MRT(const _tchar* pMRTTag);

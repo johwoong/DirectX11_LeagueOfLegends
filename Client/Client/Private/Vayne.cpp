@@ -94,15 +94,15 @@ HRESULT CVayne::Initialize(void* pArg)
 	m_fAggroReleaseMul = 1.4f;
 
 	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
-	m_tStats.MaxHp = 5000.f;
+	m_tStats.MaxHp = 100.f;
 	m_tStats.Hp = m_tStats.MaxHp;
 	m_tStats.MoveSpeed = 4.f;
 	m_tStats.AttackRange = 8.f;
 	m_tStats.AttackDamage = 60.f;
 	m_tStats.AttackSpeed = 0.4f;
 	m_tAggro.fAttackRange = 8.f;
-	m_tAggro.fChaseRange = 10.f;   // 감지 + 추적
-	m_tAggro.fGiveUpRange = 16.f;   // 이 이상이면 완전 포기
+	m_tAggro.fChaseRange = 10.f;   
+	m_tAggro.fGiveUpRange = 16.f;   
 
 	// 라인 타입 (이 Enemy가 어느 라인 담당인지)
 	m_eLineType = LINE_MID; 
@@ -171,30 +171,26 @@ HRESULT CVayne::Initialize(void* pArg)
 
 int CVayne::Update(_float fTimeDelta)
 {
-	// 1) 이미 죽었으면 바로 리턴
-	if (m_bDead)
-		return OBJ_DEAD;
-
-	// 2) 부모 Update 호출하고, 여기 리턴값을 그대로 반영
+	// ★ 무조건 Enemy Update 먼저 태워야 함
 	int iEvent = __super::Update(fTimeDelta);
-	if (iEvent < 0)       // OBJ_DEAD(-1) 이나 OBJ_POOL(-2) 같은 값이면
+
+	// 죽어있으면 AI / State 돌리지 말고 끝
+	if (m_bDeadState)
 		return iEvent;
 
-	// 3) 살아 있는 경우에만 AI / State 진행
 	AI_Behavior(fTimeDelta);
 	Update_State(fTimeDelta);
+
+	// Q 강화 시간 처리
 	if (m_bQEmpowered && !m_bConsumeQThisAttack)
 	{
 		m_fQEmpoweredTime -= fTimeDelta;
 		if (m_fQEmpoweredTime <= 0.f)
-		{
-			m_bQEmpowered = false; // 공격 안 했으면 여기서 종료
-		}
+			m_bQEmpowered = false;
 	}
 
-	m_fTimeDeltaAcc += fTimeDelta;
+	return iEvent;
 
-	return OBJ_NOEVENT;
 }
 
 void CVayne::Late_Update(_float fTimeDelta)
@@ -276,6 +272,44 @@ void CVayne::Check_Navigation()
 
 	vPosition = XMVectorSetY(vPosition, m_fWalkingHeight);
 	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
+}
+
+void CVayne::OnRespawned()
+{
+	// 1) 상태머신은 "ChangeState"로 정상 진입시켜라 (Safe_Delete 하지마)
+	if (m_pState)
+	{
+		CVayneState* pNew = new CIdleState(this);
+		m_pState = m_pState->ChangeState(m_pState, pNew);
+	}
+	else
+	{
+		m_pState = new CIdleState(this);
+	}
+
+	// 2) 베인 전용 플래그 리셋
+	m_bJustAttacked = false;
+	m_fPostAttackMoveTime = 0.f;
+
+	m_vKitingDest = XMVectorZero();
+	m_bDoKiting = false;
+
+	m_bQEmpowered = false;
+	m_bConsumeQThisAttack = false;
+	m_fQEmpoweredTime = 0.f;
+
+	m_bSkillLock = false;
+
+	// 3) 부활 위치 기준으로 라인 경로 인덱스/목적지 재설정 (중요)
+	if (m_pTransformCom && m_pNavigationCom)
+	{
+		// 부활 위치에서 가장 가까운 노드로 destination 다시 잡기
+		RefreshLaneNodeByPosition();
+	}
+
+	// 4) 애니도 Idle로 확실히
+	if (m_pModelCom)
+		m_pModelCom->Set_CurrentAnimIndex(CVayne::ANIM::IDLE);
 }
 
 

@@ -20,7 +20,28 @@ public:
 		NONE = 0,
 		EZREAL_W,
 		LEE_SIN_Q,
+		LEE_SIN_E, 
 		VAYNE_SILVER,
+	};
+
+public:
+	struct TEEMO_POISON_DATA
+	{
+		bool    bActive = false;
+		float   fAcc = 0.f;          // 경과 시간
+		float   fDuration = 0.f;     // 총 지속 시간(3초)
+		float   fTickAcc = 0.f;      // 틱 누적
+		float   fTickInterval = 1.f; // 1초마다 한 번
+		int     iDamagePerTick = 0;  // 틱당 데미지
+		CActor* pCaster = nullptr;   // 데미지 가해자(티모)
+	};
+
+	struct TEEMO_BLIND_DATA
+	{
+		bool    bActive = false;
+		float   fAcc = 0.f;
+		float   fDuration = 0.f;
+		CActor* pCaster = nullptr;
 	};
 
 	struct MARK_DATA
@@ -36,6 +57,9 @@ public:
 		int         iHitCount = 0;   // ? 베인용 스택
 		_float3     vOffset = { 0.f, 1.1f, 0.f };
 		std::vector<CEffect*> fx;
+		vector<CEffect*> fxDown;   // QDown 같은 "추가 FX"
+		_float3 vDownOffset = _float3(0.f, 0.f, 0.f);
+
 	};
 protected:
 	CActor(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -66,6 +90,19 @@ public: // 마크용
 	bool Pop_EzrealW_Mark(CActor* pDamageCauser, int iPopDamage, const _tchar* pPopDat);
 	void Apply_VayneSilverMark(CActor* pCaster);
 public:
+	// 재적용: 시간만 리셋(스택X)
+	void Apply_TeemoPoison(CActor* pCaster, float fDuration, int iDamagePerTick, float fTickInterval = 1.f);
+	void Clear_TeemoPoison();
+	bool Has_TeemoPoison() const { return m_tTeemoPoison.bActive; }
+public:
+	void Apply_TeemoBlind(CActor* pCaster, float fDuration);
+	void Clear_TeemoBlind();
+	bool Has_TeemoBlind() const { return m_tTeemoBlind.bActive; }
+protected:
+	void Update_TeemoBlind(float dt);
+protected:
+	void Update_TeemoPoison(float dt);
+public:
 	_float3 Get_Scale() { return m_vScale; }
 	CTransform* Get_Transform() { return m_pTransformCom; }
 	CRenderer* Get_Renderer(void) { return m_pRendererCom; }
@@ -77,11 +114,11 @@ public:
 	CColider* Get_AABBCollider() { return m_pAABBCom; }
 	CColider* Get_OBBCollider() { return m_pOBBCom; }
 	CColider* Get_SphereCollider() { return m_pSphereCom; }
-
+	CActor* Get_MarkCaster(MARK_TYPE type) const;
+	void    Remove_Mark(MARK_TYPE type);
 public:
 	virtual _int Take_Damage(int iDamage, CActor* DamageCauser) { return 0; }
-
-
+	virtual bool IsDeadForTargeting() const { return m_bDead; }
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderID() { return S_OK; }
@@ -109,9 +146,13 @@ protected:
 	_float3 m_vMousePickedPos;
 	_bool m_bPicked = false;
 	_float m_fAlpha = 1.f;
+
 protected:
 	MARK_DATA m_tMark;
-
+	TEEMO_POISON_DATA m_tTeemoPoison;
+	vector<CEffect*> m_vecTeemoPoisonFX;
+	TEEMO_BLIND_DATA        m_tTeemoBlind;
+	vector<CEffect*>        m_vecTeemoBlindFX;
 public:
 	virtual void Free() override;
 

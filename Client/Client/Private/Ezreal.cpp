@@ -102,8 +102,12 @@ HRESULT CEzreal::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 	m_tStat.AttackRange = 280.f;
+	m_tStat.MaxHp = 10000.f;
+	m_tStat.Hp = m_tStat.MaxHp;
 	Set_Scale(_float3(1.1f, 1.1f, 1.1f));
 	SetSkillInfo(); 
+	Set_DeathAnim(CEzreal::ANIM::TAUNT);
+	Set_SpawnAnim(CEzreal::ANIM::RECALL_WIND_DOWN);   // 네 enum 실제 이름으로
 	return S_OK;
 }
 
@@ -143,7 +147,7 @@ HRESULT CEzreal::Ready_Components(void* pArg)
 	ZeroMemory(&ColliderDesc, sizeof(CColider::COLLIDERDESC));
 	ColliderDesc.vScale = _float3(0.02f, 0.02f, 0.02f);
 	ColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
-	ColliderDesc.vPosition = _float3(0.f, 0.3f, 0.f);
+	ColliderDesc.vPosition = _float3(0.f, 0.8f, 0.f);
 	if (FAILED(__super::Add_Components(TEXT("Com_SPHERE"), LEVEL_STATIC, TEXT("Prototype_Component_Colider_Sphere"), (CComponent**)&m_pSphereCom, &ColliderDesc)))
 		return E_FAIL;
 

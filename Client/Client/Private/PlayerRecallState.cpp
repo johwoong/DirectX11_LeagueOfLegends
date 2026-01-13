@@ -11,38 +11,19 @@ CPlayerRecallState::CPlayerRecallState(CPlayer* pPlayer)
     m_ePlayerID = m_pOwner->Get_PlayerID();
     m_bIsRecall = false;
     m_bIsAnimationFinished = false;
+    m_ePhase = PHASE_RECALL;
 }
 
-CPlayerState* CPlayerRecallState::HandleInput(void)
+CPlayerState* CPlayerRecallState::HandleInput()
 {
-    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+    CGameInstance* GI = CGameInstance::GetInstance();
 
-    if (pGameInstance->Key_Pressing(DIK_LCONTROL))
+    // Recall 도중 우클릭 → 이동 캔슬
+    if (GI->Mouse_Down(DIMK_RBUTTON))
     {
-        if (pGameInstance->Key_Down(DIK_1))
-        {
-            return new CPlayerEmotionState(m_pOwner, CPlayerEmotionState::EMOTE_JOKE);
-        }
-        if (pGameInstance->Key_Down(DIK_2))
-        {
-            return new CPlayerEmotionState(m_pOwner, CPlayerEmotionState::EMOTE_LAUGH);
-        }
-        if (pGameInstance->Key_Down(DIK_3))
-        {
-            return new CPlayerEmotionState(m_pOwner, CPlayerEmotionState::EMOTE_TAUNT);
-        }
-    }
-
-    // 우클릭 → 바로 Run 상태로 전환
-    if (pGameInstance->Mouse_Down(DIMK_RBUTTON))
-    {
-        _float3 vClickPos = {};
-
-        vClickPos = CPickingManager::GetInstance()->Get_PickingPos();
-        m_pOwner->Set_TargetPosition(vClickPos);
-
+        _float3 pos = CPickingManager::GetInstance()->Get_PickingPos();
+        m_pOwner->Set_TargetPosition(pos);
         return new CRunState(m_pOwner);
-
     }
 
     return nullptr;
@@ -50,47 +31,82 @@ CPlayerState* CPlayerRecallState::HandleInput(void)
 
 CPlayerState* CPlayerRecallState::Update(_float fTimeDelta)
 {
+    // ===============================
+    // 애니메이션 재생 (프레임당 1회)
+    // ===============================
     m_bIsAnimationFinished =
         m_pOwner->Get_Model()->Play_Animation(
             fTimeDelta,
-            false,   
+            false,
             nullptr,
             0.1f
         );
 
-    if (m_bIsAnimationFinished)
+    if (!m_bIsAnimationFinished)
+        return nullptr;
+
+    // ===============================
+    // 애니 끝났을 때 처리
+    // ===============================
+    switch (m_ePhase)
     {
-        if (m_bIsRecall)
+    case PHASE_RECALL:
+    {
+        // Ezreal: 기존 LeadOut
+        if (m_ePlayerID == CPlayer::EZREAL)
         {
-            m_pOwner->Respawon();
-            return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
+            m_ePhase = PHASE_WINDDOWN;
+            m_bIsAnimationFinished = false;
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RECALL_LEADOUT);
         }
-        m_bIsRecall = true;
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RECALL_LEADOUT);
-        
+        // LeeSin: WINDDOWN으로 자연스럽게
+        else if (m_ePlayerID == CPlayer::LEESIN)
+        {
+            m_ePhase = PHASE_WINDDOWN;
+            m_bIsAnimationFinished = false;
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::WINDDOWN);
+        }
+        break;
+    }
+
+    case PHASE_WINDDOWN:
+    {
+        // 최종 종료
+        m_pOwner->Respawon();
+        return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
+    }
     }
 
     return nullptr;
 }
 
-CPlayerState* CPlayerRecallState::Late_Update(_float fTimeDelta)
+CPlayerState* CPlayerRecallState::Late_Update(_float)
 {
     return nullptr;
 }
 
-void CPlayerRecallState::Enter(void)
+void CPlayerRecallState::Enter()
 {
     __super::Enter();
     m_eState = STATE_RECALL;
 
-    // 들어갈 때도 깔끔하게 리셋
     m_bIsRecall = false;
     m_bIsAnimationFinished = false;
+    m_ePhase = PHASE_RECALL;
 
-    m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RECALL);
+    switch (m_ePlayerID)
+    {
+    case CPlayer::EZREAL:
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RECALL);
+        break;
+
+    case CPlayer::LEESIN:
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::RECALL);
+        break;
+    }
 }
 
-void CPlayerRecallState::Exit(void)
+void CPlayerRecallState::Exit()
 {
     __super::Exit();
 }

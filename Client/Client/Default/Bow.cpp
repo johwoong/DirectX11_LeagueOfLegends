@@ -1,6 +1,7 @@
 #include "Bow.h"
 #include "GameInstance.h"
 #include "EzrealProjectile.h"
+#include "PoolManager.h"
 
 CBow::CBow(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CActor(pDevice, pContext)
@@ -139,12 +140,18 @@ int CBow::Update(_float fTimeDelta)
 			desc.iDamage = 250;
 			desc.pOwner = reinterpret_cast<CActor*>(m_tDesc.pOwner);
 			desc.pTarget = nullptr;
-
+			desc.ePoolLevel = LEVEL_GAMEPLAY;
+			desc.pPoolLayerTag = TEXT("Layer_Projectile");
 			CGameInstance* GI = CGameInstance::GetInstance();
-			if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
-				LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+			CPoolManager* PM = CPoolManager::GetInstance();
+			// 1) 풀에 있으면 재사용 (새로 생성 X)
+			if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc))
 			{
-				m_bProjectileSpawned = false;
+				if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
+					LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+				{
+					m_bProjectileSpawned = false;
+				}
 			}
 
 			break; // 이벤트 1회만

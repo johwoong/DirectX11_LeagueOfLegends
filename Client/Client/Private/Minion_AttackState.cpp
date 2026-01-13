@@ -4,6 +4,7 @@
 #include "Minion_Range.h"
 #include "Minion_ChaseState.h"
 #include "Minion_MoveState.h"
+#include "PoolManager.h"
 #include "Projectile.h"
 USING(Client);
 using namespace Minion;
@@ -67,6 +68,18 @@ CAttackState::CAttackState(class CMinion* pMinion)
 {
     m_pOwner = pMinion;
     m_bDamageApplied = false;   
+}
+
+CAttackState::~CAttackState()
+{
+    if (m_pAttackColider)
+    {
+        CCollision_Manager::GetInstance()->Collect_Collider(
+            CColider::TYPE_SPHERE,
+            m_pAttackColider);
+
+        m_pAttackColider = nullptr;
+    }
 }
 
 
@@ -187,8 +200,21 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
                     Desc.iDamage = (int)m_pOwner->Get_Stats().m_fAttackPower;
                     Desc.pOwner = m_pOwner;
                     Desc.pTarget = m_pOwner->Get_Target();
-                    if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_MinionProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &Desc)))
-                        return nullptr;
+                    Desc.ePoolLevel = LEVEL_GAMEPLAY;
+                    Desc.pPoolLayerTag = TEXT("Layer_Projectile_Minion"); // 타입별로 다르게
+                    Desc.bPrewarm = false;
+
+                    CPoolManager* PM = CPoolManager::GetInstance();
+                    CGameInstance* GI = CGameInstance::GetInstance();
+
+                    if (!PM->Reuse_Pooling_Object(
+                        LEVEL_GAMEPLAY,
+                        TEXT("Layer_Projectile_Minion"),
+                        &Desc))
+                    {
+                        if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_MinionProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile_Minion"), &Desc)))
+                            return nullptr;
+                    }
 
                     m_bDamageApplied = true;
                     m_pOwner->Reset_AttackTimer();

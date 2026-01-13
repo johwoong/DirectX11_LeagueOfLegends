@@ -2,6 +2,7 @@
 
 #include "Vayne.h"
 #include "Client_Defines.h"
+#include "PoolManager.h"
 
 NS_BEGIN(Client)
 class CVayneState

@@ -20,7 +20,8 @@ private:
     void Update_Projectile(_float fTimeDelta);
     void Dead_Effect();
     void Spawn_HitEffect(CActor* pHit);
-
+protected:
+    virtual void ReUse_Setting(void* pArg) override;
 protected:
     virtual HRESULT Ready_Components(void* pArg = nullptr) override;
 

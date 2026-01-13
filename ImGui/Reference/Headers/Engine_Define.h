@@ -70,6 +70,21 @@ using namespace std;
 enum DIMK { DIMK_LBUTTON, DIMK_RBUTTON, DIMK_WHEEL, DIMK_END };
 enum DIMM { DIMM_X, DIMM_Y, DIMM_WHEEL, DIMM_END };
 
+namespace Engine
+{
+	static const wstring	g_strTransformTag = TEXT("Com_Transform");
+	static const unsigned int g_iMaxNumBones = 512;
+
+	//const unsigned int g_iMaxWidth = 2560;
+	//const unsigned int g_iMaxHeight = 1440;
+	// const unsigned int g_iMaxWidth = 1280;
+	// const unsigned int g_iMaxHeight = 720;
+	/*const unsigned int g_iMaxWidth = 16384;
+	const unsigned int g_iMaxHeight = 9216;*/
+	const unsigned int g_iMaxWidth = 8192;
+	const unsigned int g_iMaxHeight = 4608;
+
+}
 
 #ifdef _DEBUG
 

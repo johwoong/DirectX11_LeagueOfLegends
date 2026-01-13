@@ -159,9 +159,19 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Public\Ending_UI.h" />
     <ClInclude Include="..\Public\EzrealProjectile.h" />
     <ClInclude Include="..\Public\EffectObject.h" />
+    <ClInclude Include="..\Public\GameFlow.h" />
+    <ClInclude Include="..\Public\LeeSin.h" />
+    <ClInclude Include="..\Public\LeeSinAttackState.h" />
+    <ClInclude Include="..\Public\LeeSinProjectile.h" />
+    <ClInclude Include="..\Public\LeeSinSkillStateE.h" />
+    <ClInclude Include="..\Public\LeeSinSkillStateQ.h" />
+    <ClInclude Include="..\Public\LeeSinSkillStateR.h" />
+    <ClInclude Include="..\Public\LeeSinSkillStateW.h" />
     <ClInclude Include="..\Public\MinionProjectile.h" />
+    <ClInclude Include="..\Public\MushRoom.h" />
     <ClInclude Include="..\Public\Particle_Rect.h" />
     <ClInclude Include="..\Public\Effect.h" />
     <ClInclude Include="..\Public\EffectMesh.h" />
@@ -180,11 +190,17 @@
     <ClInclude Include="..\Public\LeonaMoveState.h" />
     <ClInclude Include="..\Public\ParticleSystem.h" />
     <ClInclude Include="..\Public\Particle_Point.h" />
+    <ClInclude Include="..\Public\PlayerDeadState.h" />
     <ClInclude Include="..\Public\Projectile.h" />
     <ClInclude Include="..\Public\RenektonIdleState.h" />
     <ClInclude Include="..\Public\RenektonMoveState.h" />
     <ClInclude Include="..\Public\RenektonState.h" />
     <ClInclude Include="..\Public\StoreNpc.h" />
+    <ClInclude Include="..\Public\TeemoAttackState.h" />
+    <ClInclude Include="..\Public\TeemoProjectile.h" />
+    <ClInclude Include="..\Public\TemooSkillStateQ.h" />
+    <ClInclude Include="..\Public\TemooSkillStateR.h" />
+    <ClInclude Include="..\Public\TemooSkillStateW.h" />
     <ClInclude Include="..\Public\TurretProjectile.h" />
     <ClInclude Include="..\Public\UI_AttackRange.h" />
     <ClInclude Include="..\Public\EzrealAttackState.h" />
@@ -211,6 +227,7 @@
     <ClInclude Include="..\Public\UI_ExpBar.h" />
     <ClInclude Include="..\Public\UI_ItemInfo.h" />
     <ClInclude Include="..\Public\UI_Minion_HpBar.h" />
+    <ClInclude Include="..\Public\UI_Player_HpBar.h" />
     <ClInclude Include="..\Public\UI_SkillImage.h" />
     <ClInclude Include="..\Public\UI_SkillMenu.h" />
     <ClInclude Include="..\Public\Turret.h" />
@@ -246,6 +263,7 @@
     <ClInclude Include="..\Public\UI_Manager.h" />
     <ClInclude Include="..\Public\Vayne.h" />
     <ClInclude Include="..\Public\VayneAttackState.h" />
+    <ClInclude Include="..\Public\VayneDeadState.h" />
     <ClInclude Include="..\Public\VayneIdleState.h" />
     <ClInclude Include="..\Public\VayneMoveState.h" />
     <ClInclude Include="..\Public\VayneProjectile.h" />
@@ -257,7 +275,7 @@
     <ClInclude Include="Bow.h" />
     <ClInclude Include="LeonaState.h" />
     <ClInclude Include="Client.h" />
-    <ClInclude Include="Vi.h" />
+    <ClInclude Include="Temoo.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="PlayerIdleState.h" />
     <ClInclude Include="Resource.h" />
@@ -265,9 +283,19 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Private\Ending_UI.cpp" />
     <ClCompile Include="..\Private\EzrealProjectile.cpp" />
     <ClCompile Include="..\Private\EffectObject.cpp" />
+    <ClCompile Include="..\Private\GameFlow.cpp" />
+    <ClCompile Include="..\Private\LeeSin.cpp" />
+    <ClCompile Include="..\Private\LeeSinAttackState.cpp" />
+    <ClCompile Include="..\Private\LeeSinProjectile.cpp" />
+    <ClCompile Include="..\Private\LeeSinSkillStateE.cpp" />
+    <ClCompile Include="..\Private\LeeSinSkillStateQ.cpp" />
+    <ClCompile Include="..\Private\LeeSinSkillStateR.cpp" />
+    <ClCompile Include="..\Private\LeeSinSkillStateW.cpp" />
     <ClCompile Include="..\Private\MinionProjectile.cpp" />
+    <ClCompile Include="..\Private\MushRoom.cpp" />
     <ClCompile Include="..\Private\Particle_Point.cpp" />
     <ClCompile Include="..\Private\Particle_Rect.cpp" />
     <ClCompile Include="..\Private\Effect.cpp" />
@@ -286,10 +314,16 @@
     <ClCompile Include="..\Private\EzrealSkillStateW.cpp" />
     <ClCompile Include="..\Private\LeonaMoveState.cpp" />
     <ClCompile Include="..\Private\ParticleSystem.cpp" />
+    <ClCompile Include="..\Private\PlayerDeadState.cpp" />
     <ClCompile Include="..\Private\Projectile.cpp" />
     <ClCompile Include="..\Private\RenektonIdleState.cpp" />
     <ClCompile Include="..\Private\RenektonMoveState.cpp" />
     <ClCompile Include="..\Private\StoreNpc.cpp" />
+    <ClCompile Include="..\Private\TeemoAttackState.cpp" />
+    <ClCompile Include="..\Private\TeemoProjectile.cpp" />
+    <ClCompile Include="..\Private\TemooSkillStateQ.cpp" />
+    <ClCompile Include="..\Private\TemooSkillStateR.cpp" />
+    <ClCompile Include="..\Private\TemooSkillStateW.cpp" />
     <ClCompile Include="..\Private\TurretProjectile.cpp" />
     <ClCompile Include="..\Private\UI_AttackRange.cpp" />
     <ClCompile Include="..\Private\EzrealAttackState.cpp" />
@@ -315,6 +349,7 @@
     <ClCompile Include="..\Private\UI_ExpBar.cpp" />
     <ClCompile Include="..\Private\UI_ItemInfo.cpp" />
     <ClCompile Include="..\Private\UI_Minion_HpBar.cpp" />
+    <ClCompile Include="..\Private\UI_Player_HpBar.cpp" />
     <ClCompile Include="..\Private\UI_SkillImage.cpp" />
     <ClCompile Include="..\Private\UI_SkillMenu.cpp" />
     <ClCompile Include="..\Private\Turret.cpp" />
@@ -349,6 +384,7 @@
     <ClCompile Include="..\Private\UI_Manager.cpp" />
     <ClCompile Include="..\Private\Vayne.cpp" />
     <ClCompile Include="..\Private\VayneAttackState.cpp" />
+    <ClCompile Include="..\Private\VayneDeadState.cpp" />
     <ClCompile Include="..\Private\VayneIdleState.cpp" />
     <ClCompile Include="..\Private\VayneMoveState.cpp" />
     <ClCompile Include="..\Private\VayneProjectile.cpp" />
@@ -358,7 +394,7 @@
     <ClCompile Include="..\Private\VayneSkillStateR.cpp" />
     <ClCompile Include="Bow.cpp" />
     <ClCompile Include="Client.cpp" />
-    <ClCompile Include="Vi.cpp" />
+    <ClCompile Include="Temoo.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>

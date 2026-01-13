@@ -6,6 +6,10 @@ namespace Client
 	const unsigned int g_WinSizeY = 1080;
 	enum DIRID { DIR_STRAIGHT, DIR_BACKWARD, DIR_LEFT, DIR_RIGHT, DIR_STRAIGHT_LEFT, DIR_STRAIGHT_RIGHT, DIR_BACKWARD_LEFT, DIR_BACKWARD_RIGHT, DIR_END };
 	enum LEVEL { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
+	enum SOUND_ID {
+		SOUND_BGM, 
+		SOUND_END
+	};
 
 	// SHADER 
 	enum SHADER_RECT {SHADER_RECT_DEFAULT, SHADER_RECT_UI, SHADER_RECT_EFFECT, SHADER_RECT_GLOW};
@@ -54,7 +58,10 @@ namespace Client
 #include "Windows.h"
 extern HWND g_hWnd;
 extern HINSTANCE g_hInst;
-
+extern float	g_fSoundVolume;
+extern float	g_fSoundNatureVolume;
+extern bool		g_bIsSoundOn;
+extern bool		g_bEnd;
 using namespace Client;
 using namespace std;
 

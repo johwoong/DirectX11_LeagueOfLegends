@@ -205,6 +205,40 @@ HRESULT CTurretProjectile::Ready_Components(void* pArg)
     return S_OK;
 }
 
+void CTurretProjectile::ReUse_Setting(void* pArg)
+{
+    // 1) 부모 재사용 처리 (ProjectileDesc 갱신, 위치 초기화 등)
+    __super::ReUse_Setting(pArg);
+
+    // 2) 혹시 남아있는 이펙트 정리 (안전)
+    for (auto& fx : m_pEffects)
+    {
+        if (!fx) continue;
+        fx->Set_Dead(true);
+    }
+    m_pEffects.clear();
+
+    // 3) 팀 결정 (Initialize와 동일 로직)
+    TEAMTYPE eTeam = TEAM_RED;
+
+    if (auto pB = dynamic_cast<CBuilding*>(m_ProjectileDesc.pOwner))
+        eTeam = (TEAMTYPE)pB->Get_TeamType();
+    else if (auto pM = dynamic_cast<CMinion*>(m_ProjectileDesc.pOwner))
+        eTeam = pM->Get_Team();
+
+    const _tchar* szProjectileFx =
+        (eTeam == TEAM_BLUE) ? TEXT("Turret_Blue.dat") : TEXT("Turret_Red.dat");
+
+    // 4) 현재 위치 기준으로 이펙트 다시 생성
+    _matrix world = m_pTransformCom->Get_WorldMatrix();
+
+    m_pEffects = CEffect::PlayEffectAtLocation(szProjectileFx, world);
+
+    for (auto& fx : m_pEffects)
+        if (fx)
+            fx->Set_AttachObject(this);
+}
+
 CTurretProjectile* CTurretProjectile::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
     CTurretProjectile* pInstance = new CTurretProjectile(pDevice, pContext);

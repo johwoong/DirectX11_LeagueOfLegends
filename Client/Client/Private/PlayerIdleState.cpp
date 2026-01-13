@@ -9,6 +9,14 @@
 #include "EzrealSkillStateE.h"
 #include "EzrealSkillStateR.h"
 #include "PlayerRecallState.h"
+#include "LeeSinAttackState.h"
+#include "LeeSinSkillStateQ.h"
+#include "LeeSinSkillStateE.h"
+#include "LeeSinSkillStateR.h"
+#include "TeemoAttackState.h"
+#include "TemooSkillStateQ.h"
+#include "TemooSkillStateW.h"
+#include "TemooSkillStateR.h"
 
 using namespace Player;
 
@@ -28,21 +36,61 @@ CPlayerState* CIdleState::HandleInput()
     {
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
             return new CEzrealSkillStateQ(m_pOwner);
+
+        if (m_pOwner->Get_PlayerID() == CPlayer::LEESIN)
+            return new CLeeSinSkillStateQ(m_pOwner);
+
+        if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO)
+            return new CTemooSkillStateQ(m_pOwner);
     }
     if (GI->Key_Down(DIK_W))
     {
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
             return new CEzrealSkillStateW(m_pOwner, CEzrealSkillStateW::CAST_IDLE);
+
+        if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO)
+            return new CTemooSkillStateW(m_pOwner);
     }
     if (GI->Key_Down(DIK_E))
     {
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
             return new CEzrealSkillStateE(m_pOwner);
+        if (m_pOwner->Get_PlayerID() == CPlayer::LEESIN)
+            return new CLeeSinSkillStateE(m_pOwner);
     }
     if (GI->Key_Down(DIK_R))
     {
         if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
             return new CEzrealSkillStateR(m_pOwner);
+        if (m_pOwner->Get_PlayerID() == CPlayer::LEESIN)
+        {
+            CActor* pCand = nullptr;
+
+            // 1) 마우스가 올려진 오브젝트 우선
+            if (CGameObject* hover = PM->Get_PickedObj())
+            {
+                if (auto pEnemyChamp = dynamic_cast<CEnemy*>(hover))
+                    pCand = pEnemyChamp;
+            }
+
+            // 2) 마우스 대상 없으면 현재 타겟
+            if (!pCand)
+            {
+                if (auto pEnemyChamp = dynamic_cast<CEnemy*>(m_pOwner->Get_AttackTarget()))
+                    pCand = pEnemyChamp;
+            }
+
+            // 3) 적 챔피언이 아닐 경우 R 금지
+            if (!pCand)
+                return nullptr;
+
+            // 4) 타겟팅 상태로 만들어두고 R 상태 진입
+            m_pOwner->Set_AttackTarget(pCand);
+            return new CLeeSinSkillStateR(m_pOwner);
+        }
+
+        if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO)
+            return new CTemooSkillStateR(m_pOwner);
     }
 
 
@@ -85,8 +133,20 @@ CPlayerState* CIdleState::HandleInput()
             float range = dynamic_cast<CChampion*>(m_pOwner)->Get_WorldAttackRange();
 
             // 사거리 안 바로 공격
+            
             if (dist <= range)
-                return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+            {
+                switch (m_pOwner->Get_PlayerID())
+                {
+                case CPlayer::EZREAL:
+                    return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+
+                case CPlayer::LEESIN:
+                    return new CLeeSinAttackState(m_pOwner);
+                case CPlayer::TEEMO:
+                    return new CTemooAttackState(m_pOwner, STATE_ATTACK1);
+                }
+            }
 
             // 사거리  추격
             m_pOwner->Set_TargetPosition(enemyPos);
@@ -128,22 +188,27 @@ CPlayerState* CIdleState::Update(_float fTimeDelta)
 
 CPlayerState* CIdleState::Late_Update(_float fTimeDelta)
 {
-    if (m_bIsAnimationFinished)
-    {
-        // Ezreal IdleQ → Idle1/Idle2 전환
-        if (m_pOwner->Get_Model()->Get_CurrentAnimIndex() == CEzreal::ANIM::IDLEQ)
-        {
-            int idx = rand() % m_vecIdleAnim.size();
-            _uint eAnim = m_vecIdleAnim[idx];
-            m_pOwner->Get_Model()->Set_CurrentAnimIndex(eAnim);
-            return nullptr;
-        }
+    if (!m_bIsAnimationFinished)
+        return nullptr;
 
-        // 다른 Idle도 기존처럼 랜덤 변경
+    // ?? 방어 코드 (필수)
+    if (m_vecIdleAnim.empty())
+        return nullptr;
+
+    // Ezreal IdleQ 전용 처리
+    if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL &&
+        m_pOwner->Get_Model()->Get_CurrentAnimIndex() == CEzreal::ANIM::IDLEQ)
+    {
         int idx = rand() % m_vecIdleAnim.size();
         _uint eAnim = m_vecIdleAnim[idx];
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(eAnim);
+        return nullptr;
     }
+
+    // 일반 Idle 랜덤
+    int idx = rand() % m_vecIdleAnim.size();
+    _uint eAnim = m_vecIdleAnim[idx];
+    m_pOwner->Get_Model()->Set_CurrentAnimIndex(eAnim);
 
     return nullptr;
 }
@@ -151,6 +216,22 @@ CPlayerState* CIdleState::Late_Update(_float fTimeDelta)
 
 void CIdleState::Enter()
 {
+    if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO &&
+        m_pOwner->Get_PlayTeemoIdleIn())
+    {
+        m_pOwner->Set_PlayTeemoIdleIn(false);
+
+        // Idle_In 끝나면 랜덤 Idle로 넘어갈 목록
+        m_vecIdleAnim = {
+            CTemoo::ANIM::IDLE,
+            CTemoo::ANIM::IDLE2,
+            CTemoo::ANIM::IDLE3
+        };
+
+        // 먼저 Idle_In 재생
+        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::IDLE_IN);
+        return;
+    }
     __super::Enter();
     m_eState = STATE_ID::STATE_IDLE;
 
@@ -182,10 +263,19 @@ void CIdleState::Enter()
         };
         break;
 
-    case CPlayer::VI:
+    case CPlayer::LEESIN:
         m_vecIdleAnim = {
-            CVi::ANIM::IDLE1,
-            CVi::ANIM::IDLE2
+            CLeeSin::ANIM::IDLE1,
+            CLeeSin::ANIM::IDLE_BASE,
+            CLeeSin::ANIM::IDLE_BASE1
+        };
+        break;
+
+    case CPlayer::TEEMO:
+        m_vecIdleAnim = {
+            CTemoo::ANIM::IDLE,
+            CTemoo::ANIM::IDLE2,
+            CTemoo::ANIM::IDLE3
         };
         break;
     }

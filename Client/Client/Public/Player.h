@@ -15,7 +15,7 @@ class CPlayerState;
 class CPlayer abstract :public CActor
 { 
 public:
-	enum PLAYERID{EZREAL, VI, };
+	enum PLAYERID{EZREAL, LEESIN, TEEMO, };
 protected:
 	CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CPlayer(const CPlayer& rhs);
@@ -55,7 +55,21 @@ public: // State
 
 public: // Behavior
 	void Respawon();
-	 
+
+public:
+	bool Is_Down() const { return m_bDown; }
+	void Set_Down(bool b) { m_bDown = b; }
+
+	void Set_DeathAnim(_uint i) { m_iDeathAnim = i; }
+	void Set_SpawnAnim(_uint i) { m_iSpawnAnim = i; }
+	_uint Get_DeathAnim() const { return m_iDeathAnim; }
+	_uint Get_SpawnAnim() const { return m_iSpawnAnim; }
+
+public:
+	virtual bool IsDeadForTargeting() const override { return m_bDown; }
+public:
+	bool Is_Spawning() const { return m_bSpawning; }
+	void Set_Spawning(bool b) { m_bSpawning = b; }
 
 public: // Navigation
 	void Check_Navigation();
@@ -68,7 +82,11 @@ public:
 	void            Set_Overlimit(_bool bOverlimit) { m_bOverLimit = bOverlimit; }
 	_bool           Get_Overlimit() { return m_bOverLimit; }
 	void			Get_AuraColor();
-	
+public:
+	bool Is_LeeSinLeftAttack() const { return m_bLeeSinLeftAttack; }
+	void Toggle_LeeSinAttackSide() { m_bLeeSinLeftAttack = !m_bLeeSinLeftAttack; }
+	void Set_PlayTeemoIdleIn(bool b) { m_bPlayTeemoIdleIn = b; }
+	bool Get_PlayTeemoIdleIn() const { return m_bPlayTeemoIdleIn; }
 protected:
 	// Component
 	CModel*		m_pModelCom =		 { nullptr };
@@ -86,6 +104,13 @@ protected: // 챔피언 교체
 	_float3			m_vAuraColor;
 	_float			m_fAuraTimer = 0.f;
 
+protected:
+	bool  m_bDown = false;          
+	_uint m_iDeathAnim = 0;    
+	_uint m_iSpawnAnim = 0;  
+protected:
+	bool m_bSpawning = false;
+
 protected: // 플레이어 이동
 	_bool m_bMoving = false;
 	_float3 m_vTargetPos = { 0.f, 0.f, 0.f };
@@ -98,7 +123,9 @@ protected: // 스킬
 
 protected:
 	CActor* m_pAttackTarget = nullptr;     // 현재 평타 타겟 (추후 공격 상태에서 사용)
-
+private:
+	bool m_bLeeSinLeftAttack = true;
+	bool m_bPlayTeemoIdleIn = false;
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderResources() = 0;

@@ -11,7 +11,8 @@ NS_BEGIN(Client)
 class CPlayer;
 class CChampion;
 class CUI_SkillMenu;
-
+class CAttackRange;
+class CPlayer_HpBar;
 class CPlayerManager : public CBase
 {
 	DECLARE_SINGLETON(CPlayerManager)
@@ -43,8 +44,11 @@ private:
 	CChampion* m_pActivePlayer = nullptr; 	// 현재 조작 중인 플레이어
 	CUI_SkillMenu* m_pSkillMenu = nullptr;
 private:
+	CAttackRange* m_pAttackRange = nullptr;
+private:
 	CUI_ExpBar* m_pExpBar = nullptr;
-
+private:
+	CPlayer_HpBar* m_pPlayerHpBar = nullptr; // ★ 1개만 들고감
 public:
 	virtual void Free() override;
 

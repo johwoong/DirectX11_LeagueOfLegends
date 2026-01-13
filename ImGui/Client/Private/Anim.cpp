@@ -270,6 +270,14 @@ HRESULT CAnim::Ready_Components(void* pArg)
 		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("BowMesh"), (CComponent**)&m_pModelCom)))
 			return E_FAIL;
 		break;
+	case MODEL_TEMOO:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("Teemo"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
+	case MODEL_MUSHROOM:
+		if (FAILED(__super::Add_Components(TEXT("Com_Model"), LEVEL_GAMEPLAY, TEXT("MushRoom"), (CComponent**)&m_pModelCom)))
+			return E_FAIL;
+		break;
 	}
 
 	return S_OK;

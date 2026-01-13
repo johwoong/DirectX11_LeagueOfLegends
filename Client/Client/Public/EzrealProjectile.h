@@ -21,7 +21,7 @@ public:
 
     void Dead_Effect();
     void Spawn_Effect(CActor* pHitObj);
-
+    void ApplyInitialDirection();
 protected:
     virtual HRESULT Ready_Components(void* pArg = nullptr) override;
 

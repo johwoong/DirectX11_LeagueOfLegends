@@ -31,8 +31,20 @@ int CActor::Update(_float fTimeDelta)
 	int iEvent = __super::Update(fTimeDelta);
 
 	if (m_bDead)
-		return OBJ_DEAD; 
-	// ? 마크(이즈W/베인스택) 위치 갱신은 매 프레임 돌려야 함
+	{
+		// 죽으면 남아있는 상태 정리
+		Clear_TeemoPoison();
+		Clear_TeemoBlind();
+		return OBJ_DEAD;
+	}
+
+	// ? Teemo 독 DOT
+	Update_TeemoPoison(fTimeDelta);
+
+	// ? Teemo 실명
+	Update_TeemoBlind(fTimeDelta);
+
+	// ? 기존 마크(이즈W/베인스택 등)
 	Update_Mark(fTimeDelta);
 
 	return OBJ_NOEVENT;
@@ -62,6 +74,100 @@ _bool CActor::Is_Frustum(_float fOffset)
 	_float3 vScale = Get_Scale();
 	_float fCullingRadius = max(max(vScale.x, vScale.y), vScale.z);
 	return m_pGameInstance->isIn_WorldFrustum(m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION), fCullingRadius + fOffset);
+}
+
+void CActor::Apply_TeemoPoison(CActor* pCaster, float fDuration, int iDamagePerTick, float fTickInterval)
+{
+	// 이미 걸려있으면 "시간만 리셋" (스택X)
+	if (m_tTeemoPoison.bActive)
+	{
+		m_tTeemoPoison.fAcc = 0.f;
+		m_tTeemoPoison.fTickAcc = 0.f;
+		m_tTeemoPoison.fDuration = fDuration;
+		return;
+	}
+
+	m_tTeemoPoison.bActive = true;
+	m_tTeemoPoison.fAcc = 0.f;
+	m_tTeemoPoison.fDuration = fDuration;
+	m_tTeemoPoison.fTickAcc = 0.f;
+	m_tTeemoPoison.fTickInterval = (fTickInterval <= 0.f) ? 1.f : fTickInterval;
+	m_tTeemoPoison.iDamagePerTick = iDamagePerTick;
+	m_tTeemoPoison.pCaster = pCaster;
+
+	// =========================
+	// ? 독 버프 이펙트 생성 (1회)
+	// =========================
+	const _tchar* pPoisonDat = TEXT("Temoo_Poision.dat"); // 너 툴에서 만들 파일명
+	_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	vPos += XMVectorSet(0.f, 1.0f, 0.f, 0.f);
+	vPos = XMVectorSetW(vPos, 1.f);
+
+	_matrix mWorld = XMMatrixIdentity();
+	mWorld.r[3] = vPos;
+
+	m_vecTeemoPoisonFX = CEffect::PlayEffectAtLocation(pPoisonDat, mWorld);
+	for (auto& fx : m_vecTeemoPoisonFX)
+		if (fx) fx->Set_AttachObject(this);
+}
+
+void CActor::Update_TeemoPoison(float dt)
+{
+	if (!m_tTeemoPoison.bActive)
+		return;
+
+	if (m_bDead)
+	{
+		Clear_TeemoPoison();
+		return;
+	}
+
+	// ? 독 이펙트 위치 추적(대상 따라가게)
+	if (!m_vecTeemoPoisonFX.empty())
+	{
+		_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos += XMVectorSet(0.f, 1.0f, 0.f, 0.f);
+		vPos = XMVectorSetW(vPos, 1.f);
+
+		_matrix mWorld = XMMatrixIdentity();
+		mWorld.r[3] = vPos;
+
+		for (auto& fx : m_vecTeemoPoisonFX)
+			if (fx) fx->Set_WorldPosition(mWorld);
+	}
+
+	m_tTeemoPoison.fAcc += dt;
+	m_tTeemoPoison.fTickAcc += dt;
+
+	while (m_tTeemoPoison.fTickAcc >= m_tTeemoPoison.fTickInterval)
+	{
+		m_tTeemoPoison.fTickAcc -= m_tTeemoPoison.fTickInterval;
+
+		if (m_tTeemoPoison.iDamagePerTick > 0)
+			Take_Damage(m_tTeemoPoison.iDamagePerTick, m_tTeemoPoison.pCaster);
+
+		if (m_bDead)
+		{
+			Clear_TeemoPoison();
+			return;
+		}
+	}
+
+	if (m_tTeemoPoison.fAcc >= m_tTeemoPoison.fDuration)
+	{
+		Clear_TeemoPoison();
+		return;
+	}
+}
+
+void CActor::Clear_TeemoPoison()
+{
+	// ? 독 FX 제거
+	for (auto& fx : m_vecTeemoPoisonFX)
+		if (fx) fx->Set_Dead(true);
+	m_vecTeemoPoisonFX.clear();
+
+	m_tTeemoPoison = TEEMO_POISON_DATA{};
 }
 
 void CActor::SetUp_BillBoard()
@@ -101,24 +207,59 @@ void CActor::Apply_Mark(MARK_TYPE eType, CActor* pCaster, float fDuration,
 	m_tMark.pCaster = pCaster;
 	m_tMark.vOffset = vOffset;
 
-	if (!pMarkDat)
-		return;
-
-	_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
-	vPos += XMVectorSet(vOffset.x, vOffset.y, vOffset.z, 0.f);
-	vPos = XMVectorSetW(vPos, 1.f);
-
-	_matrix world = Get_Transform()->Get_WorldMatrix();
-	world.r[3] = vPos;
-
-	auto fxList = CEffect::PlayEffectAtLocation(pMarkDat, world);
-
-	for (auto& fx : fxList)
+	// ===== (1) 메인 마크 FX =====
+	if (pMarkDat)
 	{
-		if (!fx) continue;
+		_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos += XMVectorSet(vOffset.x, vOffset.y, vOffset.z, 0.f);
+		vPos = XMVectorSetW(vPos, 1.f);
 
-		fx->Set_AttachObject(this);   // ? 이거 추가
-		m_tMark.fx.push_back(fx);
+		_matrix world = Get_Transform()->Get_WorldMatrix();
+		world.r[3] = vPos;
+
+		auto fxList = CEffect::PlayEffectAtLocation(pMarkDat, world);
+		for (auto& fx : fxList)
+		{
+			if (!fx) continue;
+
+			// 기존대로 붙여도 되고(회전/추적 필요하면)
+			fx->Set_AttachObject(this);
+			fx->Set_WorldPosition(world);
+
+			// ★ 여기 핵심: 마크가 들고 있을 거면 참조 잡아둬야 안 터짐
+			Safe_AddRef(fx);
+			m_tMark.fx.push_back(fx);
+		}
+	}
+
+	// ===== (2) 리신 Q면 QDown도 마크에 종속으로 생성 =====
+	if (eType == MARK_TYPE::LEE_SIN_Q)
+	{
+		// 너가 원하는 발밑 높이로 튜닝
+		m_tMark.vDownOffset = _float3(0.f, 0.03f, 0.f);
+
+		_vector vDown = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vDown += XMVectorSet(m_tMark.vDownOffset.x, m_tMark.vDownOffset.y, m_tMark.vDownOffset.z, 0.f);
+		vDown = XMVectorSetW(vDown, 1.f);
+
+		_matrix downWorld = XMMatrixIdentity();   // ★ 회전 없이 위치만
+		downWorld.r[3] = vDown;
+
+		const _tchar* pDownDat = TEXT("LeeSin_QMark_Down.dat");
+		auto downList = CEffect::PlayEffectAtLocation(pDownDat, downWorld);
+
+		for (auto& fx : downList)
+		{
+			if (!fx) continue;
+
+			// 바닥 FX는 보통 Attach 안 하는 게 안전(회전 섞임/누수 방지)
+			// fx->Set_AttachObject(this);
+
+			fx->Set_WorldPosition(downWorld);
+
+			Safe_AddRef(fx);
+			m_tMark.fxDown.push_back(fx);
+		}
 	}
 }
 
@@ -190,22 +331,64 @@ CColider* CActor::Get_Collider()
 		return nullptr;
 }
 
+CActor* CActor::Get_MarkCaster(MARK_TYPE type) const
+{
+	if (!m_tMark.bActive) return nullptr;
+	if (m_tMark.eType != type) return nullptr;
+	return m_tMark.pCaster;
+}
+
+void CActor::Remove_Mark(MARK_TYPE type)
+{
+	if (!m_tMark.bActive) return;
+	if (m_tMark.eType != type) return;
+	Clear_Mark();
+}
+
 void CActor::Update_Mark(float dt)
 {
 	if (!m_tMark.bActive)
 		return;
 
+	// ★ 먼저: 죽었거나 PreDead인 FX는 바로 빼줘야 Set_WorldPosition에서 안 터짐
+	auto PruneFx = [](std::vector<CEffect*>& v)
+		{
+			for (auto& fx : v)
+			{
+				if (!fx) continue;
+
+				// PreDead/Dead면 더 이상 만지지 말고 참조 해제
+				if (fx->Get_PreDead() || fx->Get_Dead())
+				{
+					fx->Set_AttachObject(nullptr);
+					Safe_Release(fx);
+					fx = nullptr;
+				}
+			}
+			v.erase(std::remove(v.begin(), v.end(), nullptr), v.end());
+		};
+
+	PruneFx(m_tMark.fx);
+	PruneFx(m_tMark.fxDown);
+
 	m_tMark.fAcc += dt;
 
-	// ===== 베인 스택 시간 초과 =====
+	// ===== 시간 만료 처리 =====
 	if (m_tMark.eType == MARK_TYPE::VAYNE_SILVER &&
 		m_tMark.fAcc >= m_tMark.fDuration)
 	{
-		Clear_Mark();   // 스택 리셋
+		Clear_Mark();
 		return;
 	}
 
-	// 기존 위치 추적
+	if (m_tMark.eType == MARK_TYPE::LEE_SIN_Q &&
+		m_tMark.fAcc >= m_tMark.fDuration)
+	{
+		Clear_Mark();
+		return;
+	}
+
+	// ===== 위치 추적 =====
 	_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
 	vPos += XMVectorSet(m_tMark.vOffset.x, m_tMark.vOffset.y, m_tMark.vOffset.z, 0.f);
 	vPos = XMVectorSetW(vPos, 1.f);
@@ -215,6 +398,20 @@ void CActor::Update_Mark(float dt)
 
 	for (auto& fx : m_tMark.fx)
 		if (fx) fx->Set_WorldPosition(world);
+
+	// ===== QDown 위치 추적(리신Q만) =====
+	if (m_tMark.eType == MARK_TYPE::LEE_SIN_Q)
+	{
+		_vector vDown = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vDown += XMVectorSet(m_tMark.vDownOffset.x, m_tMark.vDownOffset.y, m_tMark.vDownOffset.z, 0.f);
+		vDown = XMVectorSetW(vDown, 1.f);
+
+		_matrix downWorld = XMMatrixIdentity();
+		downWorld.r[3] = vDown;
+
+		for (auto& fx : m_tMark.fxDown)
+			if (fx) fx->Set_WorldPosition(downWorld);
+	}
 }
 
 void CActor::Apply_VayneSilverMark(CActor* pCaster)
@@ -242,13 +439,13 @@ void CActor::Apply_VayneSilverMark(CActor* pCaster)
 		{
 			Take_Damage(60, pCaster);
 
-			// ?? Burst FX는 "마크와 분리"해서 붙인다
 			auto burstFx = CEffect::PlayEffectAtLocation(TEXT("Vayne_WBurst.dat"), world);
 			for (auto& fx : burstFx)
 			{
 				if (!fx) continue;
-				fx->Set_AttachObject(this);   // 따라가긴 함
-				// ? m_tMark.fx에 절대 넣지 마라
+
+				// ? 절대 Attach 하지 마라
+				fx->Set_WorldPosition(world);   // 위치만 한 번 고정
 			}
 
 			// ?? 마크만 정리
@@ -297,14 +494,102 @@ void CActor::Apply_VayneSilverMark(CActor* pCaster)
 
 }
 
-void CActor::Clear_Mark()
+void CActor::Apply_TeemoBlind(CActor* pCaster, float fDuration)
 {
-	if (!m_tMark.bActive)
+	// 이미 걸려있으면 시간만 리셋
+	if (m_tTeemoBlind.bActive)
+	{
+		m_tTeemoBlind.fAcc = 0.f;
+		m_tTeemoBlind.fDuration = fDuration;
+		m_tTeemoBlind.pCaster = pCaster;
+		return;
+	}
+
+	m_tTeemoBlind.bActive = true;
+	m_tTeemoBlind.fAcc = 0.f;
+	m_tTeemoBlind.fDuration = fDuration;
+	m_tTeemoBlind.pCaster = pCaster;
+
+	// ? 실명 버프 FX (대상 머리 위에 붙이기)
+	const _tchar* pBlindDat = TEXT("Temoo_Blind.dat"); // 네 툴에서 만들 것
+	_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	vPos += XMVectorSet(0.f, 1.15f, 0.f, 0.f);
+	vPos = XMVectorSetW(vPos, 1.f);
+
+	_matrix mWorld = XMMatrixIdentity();
+	mWorld.r[3] = vPos;
+
+	m_vecTeemoBlindFX = CEffect::PlayEffectAtLocation(pBlindDat, mWorld);
+	for (auto& fx : m_vecTeemoBlindFX)
+		if (fx) fx->Set_AttachObject(this);
+}
+
+void CActor::Update_TeemoBlind(float dt)
+{
+	if (!m_tTeemoBlind.bActive)
 		return;
 
-	for (auto& fx : m_tMark.fx)
+	if (m_bDead)
+	{
+		Clear_TeemoBlind();
+		return;
+	}
+
+	// ? FX 위치 추적
+	if (!m_vecTeemoBlindFX.empty())
+	{
+		_vector vPos = Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+		vPos += XMVectorSet(0.f, 1.15f, 0.f, 0.f);
+		vPos = XMVectorSetW(vPos, 1.f);
+
+		_matrix mWorld = XMMatrixIdentity();
+		mWorld.r[3] = vPos;
+
+		for (auto& fx : m_vecTeemoBlindFX)
+			if (fx) fx->Set_WorldPosition(mWorld);
+	}
+
+	m_tTeemoBlind.fAcc += dt;
+
+	if (m_tTeemoBlind.fAcc >= m_tTeemoBlind.fDuration)
+	{
+		Clear_TeemoBlind();
+		return;
+	}
+}
+
+void CActor::Clear_TeemoBlind()
+{
+	for (auto& fx : m_vecTeemoBlindFX)
 		if (fx) fx->Set_Dead(true);
-	m_tMark.fx.clear();
+	m_vecTeemoBlindFX.clear();
+
+	m_tTeemoBlind = TEEMO_BLIND_DATA{};
+}
+
+void CActor::Clear_Mark()
+{
+	// bActive가 false여도 혹시 남아있으면 정리(안전)
+	if (m_tMark.fx.empty() && m_tMark.fxDown.empty() && !m_tMark.bActive)
+		return;
+
+	auto KillAndRelease = [](std::vector<CEffect*>& v)
+		{
+			for (auto& fx : v)
+			{
+				if (!fx) continue;
+
+				fx->Set_AttachObject(nullptr);
+				fx->Set_Dead(true);
+
+				Safe_Release(fx);
+				fx = nullptr;
+			}
+			v.clear();
+		};
+
+	KillAndRelease(m_tMark.fx);
+	KillAndRelease(m_tMark.fxDown);
 
 	m_tMark = MARK_DATA{};
 }

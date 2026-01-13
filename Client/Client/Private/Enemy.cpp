@@ -125,14 +125,12 @@ static bool IsEnemyValidTargetForAI(CActor* pA)
 	if (!pA)
 		return false;
 
-	// 기본적으로 Actor의 m_bDead 체크
 	if (pA->Get_Dead())
 		return false;
 
 	// 블루팀 미니언만
 	if (auto pMinion = dynamic_cast<CMinion*>(pA))
 	{
-		// ?? 이미 죽었거나 죽는 중인 미니언은 타겟 아님
 		if (pMinion->IsDeadOrDying())
 			return false;
 
@@ -154,10 +152,24 @@ static bool IsEnemyValidTargetForAI(CActor* pA)
 		return true;
 	}
 
+	// ★ 챔피언은 "ActivePlayer"만 유효 + 죽었으면 무효
 	if (auto pChamp = dynamic_cast<CChampion*>(pA))
 	{
 		if (pChamp->Get_Dead())
 			return false;
+
+		CChampion* pActive = nullptr;
+		if (CPlayerManager::GetInstance())
+			pActive = CPlayerManager::GetInstance()->Get_ActivePlayer();
+
+		// 플레이어가 바뀐 경우(비활성 챔피언)는 타겟 금지
+		if (!pActive || pChamp != pActive)
+			return false;
+
+		// 있으면 더 강하게: 다운/부활중 같은 것도 타겟 금지
+		if (pChamp->IsDeadForTargeting())
+			return false;
+
 		return true;
 	}
 
@@ -204,7 +216,7 @@ HRESULT CEnemy::Initialize(void* pArg)
 		vPosition = XMVectorSetW(vPosition, 1.f);
 		m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPosition);
 		Set_Scale(ModelDesc.vScale);
-
+		m_vSpawnPos = ModelDesc.vPosition; // ★ 스폰 위치 저장
 		if (ModelDesc.m_fAngle != 0)
 			m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(ModelDesc.m_fAngle));
 	}
@@ -232,15 +244,29 @@ HRESULT CEnemy::Initialize(void* pArg)
 
 int CEnemy::Update(_float fTimeDelta)
 {
-	if (m_bDead)
-		return OBJ_DEAD;
+	// ===== 죽은 상태 처리 =====
+	if (m_bDeadState)
+	{
+		m_fRespawnAcc += fTimeDelta;
 
-	// ★ 모든 Enemy 스킬 타이머 공통 증가
+		// 죽음 애니 재생
+		if (m_pModelCom)
+			m_pModelCom->Play_Animation(fTimeDelta, false, nullptr, 0.1f);
+
+		if (m_fRespawnAcc >= 5.f)
+		{
+			Respawn();
+		}
+
+		return OBJ_NOEVENT;
+	}
+
+	// ===== 살아있을 때 기존 로직 =====
 	Tick_SkillTimers(fTimeDelta);
 
 	__super::Update(fTimeDelta);
 	Update_Collider();
-	
+
 	CPickingManager::GetInstance()->Out_PickingGroup(this);
 	return OBJ_NOEVENT;
 }
@@ -259,6 +285,8 @@ void CEnemy::Late_Update(_float fTimeDelta)
 
 	CPickingManager::GetInstance()->Add_PickingGroup(this);
 }
+
+
 
 HRESULT CEnemy::Render()
 {
@@ -610,6 +638,56 @@ void CEnemy::Compute_CurrentIndex()
 	m_pNavigationCom->Compute_CurrentIndex_byXZ(vPos);
 }
 
+void CEnemy::Respawn()
+{
+	// 1) 기본 스탯
+	m_tStats.Hp = m_tStats.MaxHp;
+
+	// 2) 위치
+	_vector vPos = XMVectorSet(m_vSpawnPos.x, m_vSpawnPos.y, m_vSpawnPos.z, 1.f);
+	m_pTransformCom->Set_State(CTransform::STATE_TRANSLATION, vPos);
+
+	// 3) 네비
+	Compute_CurrentIndex();
+	Check_Navigation();
+
+	// 4) AI 공통 리셋
+	m_pTarget = nullptr;
+	m_bWasChasing = false;
+	m_eNextSkill = SKILL_NONE;
+
+	for (int i = 0; i < SKILL_END; ++i)
+		m_tSkill[i].fTimer = 0.f;
+
+	// ★ 이거 안 리셋되면 “1차 포탑 도착한 상태”로 판단해서 멈추는 경우 생김
+	m_bReachedFirstTower = false;
+
+	// 5) 상태 플래그
+	m_bDeadState = false;
+	m_fRespawnAcc = 0.f;
+
+	// 6) 충돌 복구
+	CCollision_Manager::GetInstance()->Add_CollisionGroup(
+		CCollision_Manager::COLLISION_ENEMY, this);
+
+	// 7) HPBar 다시 살림
+	if (m_pHpBar)
+	{
+		m_pHpBar->Set_Owner(this);
+		m_pHpBar->Set_Visible(true);
+	}
+
+	// 8) Enemy별 추가 리셋
+	OnRespawned();
+
+	// 9) ★ 라인 이동 재개 핵심:
+	//    "가까운 노드"가 아니라 "다음 노드"를 목적지로 잡아줘야 바로 출발한다.
+	if (m_pTransformCom && m_pNavigationCom)
+	{
+		RefreshLaneNodeByPosition(); // 아래 함수도 수정본으로 교체해야 함
+	}
+}
+
 _float3 CEnemy::Get_EnemyLaneDest(LINE_TYPE eLine)
 {
 	Load_EnemyDest();   
@@ -641,55 +719,73 @@ const vector<_float3>& CEnemy::Get_EnemyLanePath(LINE_TYPE eLine)
 void CEnemy::RefreshLaneNodeByPosition()
 {
 	const auto& path = Get_EnemyLanePath(m_eLineType);
-	if (path.empty() || !m_pTransformCom)
-		return;
-	_vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
-	_float3 myPos;
-	XMStoreFloat3(&myPos, XMVectorSetY(vMy, 0.f));
-
-	int pathSize = (int)path.size();
-	if (pathSize <= 0)
+	if (!m_pTransformCom || !m_pNavigationCom || path.empty())
 		return;
 
-	if (m_iLaneNodeIndex < 0)
-		m_iLaneNodeIndex = 0;
-	if (m_iLaneNodeIndex >= pathSize)
-		m_iLaneNodeIndex = pathSize - 1;
+	const int pathSize = (int)path.size();
 
-	// 경로를 지났으면 다음 경로로 
-	while (m_iLaneNodeIndex < pathSize - 1)
+	// 포인트가 1개면 그거라도 목적지로
+	if (pathSize == 1)
 	{
-		const _float3& n0 = path[m_iLaneNodeIndex];
-		const _float3& n1 = path[m_iLaneNodeIndex + 1];
-
-		_float3 seg = { n1.x - n0.x, 0.f, n1.z - n0.z };      
-		_float3 rel = { myPos.x - n0.x, 0.f, myPos.z - n0.z };       
-
-		float segLenSq = seg.x * seg.x + seg.z * seg.z;
-		if (segLenSq < 0.0001f)
-		{
-			++m_iLaneNodeIndex;
-			continue;
-		}
-
-		float dot = seg.x * rel.x + seg.z * rel.z;
-
-		if (dot >= 0.f)
-		{
-			++m_iLaneNodeIndex;
-			continue;
-		}
-		else
-		{
-			break;
-		}
+		m_iLaneNodeIndex = 0;
+		_vector vDst = XMLoadFloat3(&path[0]);
+		m_pTransformCom->Set_Destination(vDst, m_pNavigationCom);
+		return;
 	}
 
-	if (m_iLaneNodeIndex >= pathSize)
-		m_iLaneNodeIndex = pathSize - 1;
+	_vector vMy = m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION);
+	vMy = XMVectorSetY(vMy, 0.f);
 
-	const _float3& dst = path[m_iLaneNodeIndex];
-	_vector vDst = XMLoadFloat3(&dst);
+	_float3 myPos{};
+	XMStoreFloat3(&myPos, vMy);
+
+	// 세그먼트 시작 인덱스 i (i ~ i+1 구간)
+	int i = m_iLaneNodeIndex;
+
+	// m_iLaneNodeIndex는 "목적지 노드 인덱스"로 쓰는 중이라,
+	// 세그먼트 시작은 (목적지-1) 기준이 더 안전함.
+	i = i - 1;
+
+	if (i < 0) i = 0;
+	if (i > pathSize - 2) i = pathSize - 2;
+
+	// 내가 이미 세그먼트 끝(n1)을 지나쳤으면 다음 세그먼트로
+	while (i < pathSize - 2)
+	{
+		const _float3& n0 = path[i];
+		const _float3& n1 = path[i + 1];
+
+		_float3 seg = { n1.x - n0.x, 0.f, n1.z - n0.z };
+		_float3 rel = { myPos.x - n0.x, 0.f, myPos.z - n0.z };
+
+		float segLenSq = seg.x * seg.x + seg.z * seg.z;
+		if (segLenSq < 1e-6f)
+		{
+			++i;
+			continue;
+		}
+
+		float dot = seg.x * rel.x + seg.z * rel.z; // projection numerator
+		float t = dot / segLenSq;                  // 0~1 구간이면 세그먼트 내부
+
+		// ★ 기존(dot >= 0) 이게 문제였음: 세그먼트 시작만 넘어도 계속 인덱스가 밀려버림
+		if (t >= 1.f)
+		{
+			++i;    // n1을 지나침 → 다음 세그먼트
+			continue;
+		}
+
+		break;
+	}
+
+	// 목적지는 "다음 노드(i+1)"
+	int nextIdx = i + 1;
+	if (nextIdx < 0) nextIdx = 0;
+	if (nextIdx >= pathSize) nextIdx = pathSize - 1;
+
+	m_iLaneNodeIndex = nextIdx;
+
+	_vector vDst = XMLoadFloat3(&path[m_iLaneNodeIndex]);
 	m_pTransformCom->Set_Destination(vDst, m_pNavigationCom);
 }
 
@@ -928,23 +1024,29 @@ _int CEnemy::Take_Damage(int iDamage, CActor* DamageCauser)
 
 void CEnemy::Mark_Dead()
 {
-	if (m_bDead)
+	if (m_bDeadState)
 		return;
 
-	m_bDead = true;
+	m_bDeadState = true;
+	m_fRespawnAcc = 0.f;
 
-	CPlayerManager* pPM = CPlayerManager::GetInstance();
-	if (pPM)
-	{
-		CChampion* pChampion = pPM->Get_ActivePlayer();
-		if (pChampion && pChampion->Get_AttackTarget() == this)
-		{
-			pChampion->Set_AttackTarget(nullptr);
-		}
-	}
+	// 타겟 제거
+	m_pTarget = nullptr;
 
-	CCollision_Manager::GetInstance()->Out_CollisionGroup(CCollision_Manager::COLLISION_ENEMY, this);
+	if (m_pHpBar)
+		m_pHpBar->Set_Visible(false);
+
+	// 충돌 제거
+	CCollision_Manager::GetInstance()->Out_CollisionGroup(
+		CCollision_Manager::COLLISION_ENEMY, this);
+
 	CPickingManager::GetInstance()->Out_PickingGroup(this);
+
+	// 죽음 애니
+	if (m_pModelCom)
+		m_pModelCom->Set_CurrentAnimIndex(CVayne::ANIM::DEATH);
+
+	Clear_TeemoPoison();
 }
 
 

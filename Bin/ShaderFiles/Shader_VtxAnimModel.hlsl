@@ -183,9 +183,12 @@ PS_OUT_SHADOW PS_SHADOWDEPTH(PS_IN In)
 {
     PS_OUT_SHADOW Out = (PS_OUT_SHADOW) 0;
 
-    // ? D3D NDC depth: z/w -> [0,1]
-    float depth01 = In.vProjPos.z / In.vProjPos.w;
-    Out.vLightDepth = float4(depth01, depth01, depth01, 1.f);
+    // DX 기준 shadow depth = z / w (0~1)
+    float depth = In.vProjPos.z / In.vProjPos.w;
+    depth = saturate(depth);
+
+    // 디버그 보기 좋게 RGB에도 복제
+    Out.vLightDepth = float4(depth, depth, depth, 1.f);
     return Out;
 }
 PS_OUT PS_DISSOLVE(PS_IN In)

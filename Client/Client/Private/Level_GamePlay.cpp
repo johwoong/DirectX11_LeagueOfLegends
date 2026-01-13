@@ -10,7 +10,8 @@
 #include "MinionManager.h"
 #include "Projectile.h"
 #include "Collision_Manager.h"
-
+#include "Nexus.h"
+#include "GameFlow.h"
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
 {
@@ -18,6 +19,11 @@ CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pCo
 
 HRESULT CLevel_GamePlay::Initialize()
 {
+	// ★ 재진입 대비 초기화
+	m_bGameOver = false;
+	m_bVictoryUISpawned = false;
+	m_pRedNexus = nullptr;
+	CGameFlow::GetInstance()->Set_GameOver(false);
 	if (FAILED(__super::Initialize()))
 		return E_FAIL;
 
@@ -44,16 +50,6 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 
 	CGameObject* pObj = nullptr;
-
-	if (FAILED(m_pGameInstance->Add_GameObject_Out(
-		TEXT("Prototype_GameObject_UI_AttackRange"), // 새 프로토타입
-		LEVEL_GAMEPLAY,
-		TEXT("Layer_Effect"),                     // UI말고 이펙트 레이어 추천
-		pObj,
-		pActiveChampion)))                        // owner로 챔피언 넘김
-	{
-		return E_FAIL;
-	}
 
 
 	CAttackRange* pRange = dynamic_cast<CAttackRange*>(pObj);
@@ -94,20 +90,66 @@ HRESULT CLevel_GamePlay::Initialize()
 
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
-	__super::Update(fTimeDelta);
-	// ★ 미니언 웨이브/스폰 처리
-	CMinionManager::GetInstance()->Update(fTimeDelta);
-	CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
-	if (!pPlayer)
+	// ===========================
+   // ★ GameOver면 "월드 전체 dt=0"으로 동결
+   // ===========================
+	const float fWorldDT = (m_bGameOver) ? 0.f : fTimeDelta;
+
+	__super::Update(fWorldDT);
+
+	if (!m_bGameOver)
+	{
+		// 월드가 정상일 때만 시스템 업데이트
+		CMinionManager::GetInstance()->Update(fTimeDelta);
+
+		// 넥서스 파괴 체크
+		Check_GameOver_RedNexus();
+
+		// 챔피언 교체 (원래대로 유지)
+		if (GetAsyncKeyState(VK_F4) & 0x0001)
+			CPlayerManager::GetInstance()->ChangeChampion();
+
 		return;
-	if (GetAsyncKeyState(VK_F4) & 0x0001)
-		CPlayerManager::GetInstance()->ChangeChampion();
+	}
+
+	// ===========================
+	// ★ GameOver 상태: 넥서스 죽음 연출만 계속 + UI 1회
+	// ===========================
+	const float unscaled = CGameFlow::GetInstance()->Get_UnscaledDT();
+
+	if (m_pRedNexus)
+		m_pRedNexus->Tick_GameOverSequence(unscaled);
+
+	if (!m_bVictoryUISpawned)
+	{
+		m_bVictoryUISpawned = true;
+		m_pGameInstance->Add_GameObject(
+			TEXT("Prototype_GameObject_EndingUI"),
+			LEVEL_GAMEPLAY, TEXT("Layer_UI"), nullptr);
+	}
 }
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 {
-	__super::Late_Update(fTimeDelta);
+	const float fWorldDT = (m_bGameOver) ? 0.f : fTimeDelta;
+	__super::Late_Update(fWorldDT);
 }
+
+void CLevel_GamePlay::Check_GameOver_RedNexus()
+{
+	if (m_bGameOver)
+		return;
+
+	if (m_pRedNexus && m_pRedNexus->IsDestroyed())
+		Start_GameOver_Victory();
+}
+
+void CLevel_GamePlay::Start_GameOver_Victory()
+{
+	m_bGameOver = true;
+	CGameFlow::GetInstance()->Set_GameOver(true);
+}
+
 
 HRESULT CLevel_GamePlay::Ready_Layer_Terrian(const _tchar* pLayerTag)
 {
@@ -126,24 +168,23 @@ HRESULT CLevel_GamePlay::Ready_Lights()
 
 	LIGHTDESC LightDesc{};
 	LightDesc.eTYPE = LIGHTDESC::TYPE_DIRECTIONAL;
-	LightDesc.vDirection = _float4(1.f, -1.f, 1.f, 0.f);
-	LightDesc.vDiffuse = _float4(1.1f, 1.1f, 1.1f, 1.f);   // 직광 밝기
-	LightDesc.vAmbient = _float4(0.55f, 0.55f, 0.55f, 1.f); // 전체 기본 밝기
-	LightDesc.vSpecular = _float4(0.25f, 0.25f, 0.25f, 1.f); // 번쩍임 억제
+
+	// ★ 발 바로 아래로 떨어지게: 수직 하향(Top-Down)
+	LightDesc.vDirection = _float4(0.f, -1.f, 0.f, 0.f);
+
+	LightDesc.vDiffuse = _float4(1.1f, 1.1f, 1.1f, 1.f);
+	LightDesc.vAmbient = _float4(0.55f, 0.55f, 0.55f, 1.f);
+	LightDesc.vSpecular = _float4(0.25f, 0.25f, 0.25f, 1.f);
 
 	if (FAILED(m_pGameInstance->Add_Light(m_pDevice, m_pContext, LightDesc)))
 		return E_FAIL;
 
-	// =========================
-	// Shadow Light View
-	// =========================
-	_float4 vLightEye, vLightAt;
-	XMStoreFloat4(&vLightEye, XMVectorSet(0.f, 30.f, -20.f, 1.f));
-	XMStoreFloat4(&vLightAt, XMVectorSet(0.f, 0.f, 0.f, 1.f));
+	_float4 vLightEye = _float4(36.f, 300.f, 200.f, 1.f);
+	_float4 vLightAt = _float4(36.f, 0.f, 200.f, 1.f);
 
 	m_pGameInstance->Set_ShadowLightView(vLightEye, vLightAt);
-	// ? 라이트 Ortho (값은 일단 크게)
-	m_pGameInstance->Set_ShadowLightProj_Ortho(30.f, 30.f, 0.1f, 100.f);
+	m_pGameInstance->Set_ShadowLightProj_Ortho(400.f, 400.f, 1.f, 1000.f);
+
 	return S_OK;
 
 }
@@ -198,8 +239,15 @@ HRESULT CLevel_GamePlay::Ready_Layer_Building(const _tchar* pLayerTag)
 		else if (!wcscmp(pModelTag, TEXT("Nexus_Red_NonAnim")))
 		{
 			BuildDesc.eTeamType = CBuilding::RED;
-			if (FAILED(m_pGameInstance->Add_GameObject(TEXT("Prototype_GameObject_Nexus"), LEVEL_GAMEPLAY, pLayerTag, &BuildDesc)))
+
+			// ★ 레드 넥서스 포인터 확보 필수
+			CGameObject* pObj = nullptr;
+			if (FAILED(m_pGameInstance->Add_GameObject_Out(
+				TEXT("Prototype_GameObject_Nexus"),
+				LEVEL_GAMEPLAY, pLayerTag, pObj, &BuildDesc)))
 				return E_FAIL;
+
+			m_pRedNexus = dynamic_cast<CNexus*>(pObj);
 		}
 		else if (!wcscmp(pModelTag, TEXT("Inhibitor_Blue_NonAnim")))
 		{
@@ -441,7 +489,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Projectile()
 	d.ePoolLevel = LEVEL_GAMEPLAY;
 	d.pPoolLayerTag = TEXT("Layer_Projectile");
 
-	d.bPrewarm = true;          // ? 핵심!
+	d.bPrewarm = true;   
 
 	for (int i = 0; i < PROJ_POOL_COUNT; ++i)
 	{

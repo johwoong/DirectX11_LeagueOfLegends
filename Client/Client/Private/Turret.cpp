@@ -6,6 +6,7 @@
 #include "Minion.h"
 #include "PlayerManager.h"
 #include "Champion.h"
+#include "PoolManager.h"
 
 static float GetDistanceXZ(_vector a, _vector b)
 {
@@ -215,12 +216,23 @@ _int CTurret::Update(_float fTimeDelta)
             Desc.iDamage = (int)m_tStats.fAttackDamage;
             Desc.pOwner = this;
             Desc.pTarget = m_pTarget;
+            Desc.ePoolLevel = LEVEL_GAMEPLAY;
+            Desc.pPoolLayerTag = TEXT("Layer_Projectile_Turret"); // 타입별로 다르게
+            Desc.bPrewarm = false;
+            CPoolManager* PM = CPoolManager::GetInstance();
+            CGameInstance* GI = CGameInstance::GetInstance();
 
-            CGameInstance::GetInstance()->Add_GameObject(
-                TEXT("Prototype_GameObject_TurretProjectile"),
+            if (!PM->Reuse_Pooling_Object(
                 LEVEL_GAMEPLAY,
-                TEXT("Layer_Projectile"),
-                &Desc);
+                TEXT("Layer_Projectile_Turret"),
+                &Desc))
+            {
+                CGameInstance::GetInstance()->Add_GameObject(
+                    TEXT("Prototype_GameObject_TurretProjectile"),
+                    LEVEL_GAMEPLAY,
+                    TEXT("Layer_Projectile_Turret"),
+                    &Desc);
+            }
         }
     }
 

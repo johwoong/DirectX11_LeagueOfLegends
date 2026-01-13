@@ -48,7 +48,15 @@ HRESULT CLeona::Initialize(void* pArg)
 	m_pState = m_pState->ChangeState(m_pState, pState);
 	m_eEnemyType = LEONA;
 	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
-	m_tStats.Hp = 100;
+	m_tStats.MaxHp = 500.f;
+	m_tStats.Hp = m_tStats.MaxHp;
+	m_tStats.MoveSpeed = 4.f;
+	m_tStats.AttackRange = 8.f;
+	m_tStats.AttackDamage = 60.f;
+	m_tStats.AttackSpeed = 0.4f;
+	m_tAggro.fAttackRange = 8.f;
+	m_tAggro.fChaseRange = 10.f;   // 감지 + 추적
+	m_tAggro.fGiveUpRange = 16.f;   // 이 이상이면 완전 포기
 	return S_OK;
 }
 

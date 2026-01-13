@@ -149,9 +149,17 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
                     ProjDesc.pTarget = target;
                     ProjDesc.vTargetPosition = target->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
                     ProjDesc.vTargetDir = XMVector3Normalize(ProjDesc.vTargetPosition - ProjDesc.vInitPositon);
+                    ProjDesc.ePoolLevel = LEVEL_GAMEPLAY;
+                    ProjDesc.pPoolLayerTag = TEXT("Layer_Projectile");
 
-                    if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &ProjDesc)))
-                        return nullptr;
+                    CPoolManager* PM = CPoolManager::GetInstance();
+
+                    // 1) 풀에 있으면 재사용 (새로 생성 X)
+                    if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &ProjDesc))
+                    {
+                        if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &ProjDesc)))
+                            return nullptr;
+                    }
 
                     m_bProjectileSpawned = true;
                 }

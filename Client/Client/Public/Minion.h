@@ -156,7 +156,8 @@ public:
     virtual HRESULT Render() override;
     virtual HRESULT Render_ShadowDepth() override;
     virtual HRESULT Render_EdgeDetection() override;
-
+protected:
+        _bool m_bRequestPool = false;   // ¡Ú Ãß°¡
 public:
     virtual _bool Is_AnimationLoop(_uint eAnim) = 0;
     virtual _float Check_CullingRadius();

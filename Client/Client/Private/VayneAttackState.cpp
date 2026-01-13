@@ -95,6 +95,9 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
         {
             m_bProjectileSpawned = true;
 
+            if (m_pOwner->Has_TeemoBlind())
+                break;
+
             CTransform* pTr = m_pOwner->Get_Transform();
             _vector vSpawn = pTr->Get_State(CTransform::STATE_TRANSLATION);
             vSpawn += XMVectorSet(0.f, 1.0f, 0.f, 0.f);
@@ -110,7 +113,9 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
             tag.vInitPositon = vSpawn;
             tag.vTargetDir = vDir;
             tag.pOwner = m_pOwner;
-
+            tag.ePoolLevel = LEVEL_GAMEPLAY;
+            tag.pPoolLayerTag = TEXT("Layer_Projectile_Vayne"); // 타입별로 다르게
+            tag.bPrewarm = false;
             // =========================
             // 강화 평타
             // =========================
@@ -127,8 +132,20 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
                 tag.fVelocity = 25.f;
             }
 
-            if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_VayneProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &tag)))
-                return nullptr;
+            CPoolManager* PM = CPoolManager::GetInstance();
+            CGameInstance* GI = CGameInstance::GetInstance();
+
+            if (!PM->Reuse_Pooling_Object(
+                LEVEL_GAMEPLAY,
+                TEXT("Layer_Projectile_Vayne"),
+                &tag))
+            {
+                GI->Add_GameObject(
+                    TEXT("Prototype_GameObject_VayneProjectile"),
+                    LEVEL_GAMEPLAY,
+                    TEXT("Layer_Projectile_Vayne"),
+                    &tag);
+            }
         }
     }
 

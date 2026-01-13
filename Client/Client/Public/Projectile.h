@@ -81,7 +81,8 @@ protected:
 protected:
 	LEVEL        m_ePoolLevel = LEVEL_GAMEPLAY;
 	const _tchar* m_pPoolLayerTag = nullptr;
-
+protected:
+	std::wstring m_PoolLayerTagStr;   // ★ 태그 수명 보장용
 public:
 	virtual void Free() override;
 };

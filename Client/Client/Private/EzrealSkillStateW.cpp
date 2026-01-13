@@ -108,11 +108,17 @@ CPlayerState* CEzrealSkillStateW::Update(_float fDeltaTime)
                     desc.iDamage = 80;          // W는 보통 딜 낮게(원하면 90/100)
                     desc.pOwner = m_pOwner;
                     desc.pTarget = nullptr;
-
-                    if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
-                        LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+                    desc.ePoolLevel = LEVEL_GAMEPLAY;
+                    desc.pPoolLayerTag = TEXT("Layer_Projectile");
+                    CPoolManager* PM = CPoolManager::GetInstance();
+                    if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc))
                     {
-                        m_bProjectileSpawned = false;
+                        // 2) 풀에 없을 때만 새로 생성
+                        if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),
+                            LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc)))
+                        {
+                            m_bProjectileSpawned = false;
+                        }
                     }
                 }
             }

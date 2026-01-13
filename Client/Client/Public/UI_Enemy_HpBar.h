@@ -26,7 +26,9 @@ public:
 private:
     virtual HRESULT Ready_Components(void* pArg) override;
     virtual HRESULT SetUp_ShaderResources() override;
-
+public:
+    void Set_Visible(bool b) { m_bVisible = b; }
+    bool Is_Visible() const { return m_bVisible; }
 private:
     void Update_Position_And_Scale();
 public:
@@ -43,7 +45,8 @@ private:
     CVIBuffer_Rect* m_pVIBufferCom = nullptr;
     CTexture* m_pTextureCom = nullptr;        // 실제 HP 바 텍스처
     CTexture* m_pFrameTextureCom = nullptr;   // 프레임 텍스처
-
+private:
+    bool m_bVisible = true;
 
 public:
     static CEnemy_HpBar* Create(ID3D11Device*, ID3D11DeviceContext*);

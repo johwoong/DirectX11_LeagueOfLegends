@@ -113,7 +113,7 @@ public:
 	void TurnVelocityLerp();
 	void NoisePowerLerp();
 	void DistortionPowerLerp();
-
+	virtual void Set_WorldPosition(_matrix mWorldMatrix);
 private:
 	virtual HRESULT Ready_Components(void* pArg = nullptr) override;
 	virtual HRESULT SetUp_ShaderResources() override;

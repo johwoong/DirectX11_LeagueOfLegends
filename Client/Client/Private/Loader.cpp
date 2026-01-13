@@ -20,6 +20,8 @@
 #include "UI_Minion_HpBar.h"
 #include "UI_Enemy_HpBar.h"
 #include "UI_Building_HpBar.h"
+#include "UI_Player_HpBar.h"
+#include "Ending_UI.h"
 
 // Effect
 #include "EffectTexture.h"
@@ -32,7 +34,8 @@
 
 // Champion
 #include "Ezreal.h"
-#include "Vi.h"
+#include "LeeSin.h"
+#include "Temoo.h"
 
 // Enemy
 #include "Vayne.h"
@@ -45,6 +48,9 @@
 #include "MinionProjectile.h"
 #include "TurretProjectile.h"
 #include "VayneProjectile.h"
+#include "LeeSinProjectile.h"
+#include "TeemoProjectile.h"
+#include "MushRoom.h"
 
 // Building
 #include "Nexus.h"
@@ -124,6 +130,8 @@ HRESULT CLoader::Loading_For_Logo()
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었슴니다."));
 	m_fProgress = 100.f;
 	m_isFinished = true;
+
+
 	return S_OK;
 }
 
@@ -208,13 +216,26 @@ HRESULT CLoader::Loading_For_Prtotype()
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_BuildingHpBar"),
 		CBuilding_HpBar::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_PlayerHpBar"),
+		CPlayer_HpBar::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_EndingUI"),
+		CEnding_UI::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 #pragma endregion 
 #pragma region Champion
 	/*For.Prototype_GameObject_Champion*/
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Ezreal"),
 		CEzreal::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
-
+	/*For.Prototype_GameObject_Champion*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_LeeSin"),
+		CLeeSin::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	/*For.Prototype_GameObject_Champion*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_Teemo"),
+		CTemoo::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 #pragma endregion
 
 #pragma region Enemy
@@ -253,6 +274,18 @@ HRESULT CLoader::Loading_For_Prtotype()
 	/*For.Prototype_GameObject_VayneProjectile*/
 	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_VayneProjectile"),
 		CVayneProjectile::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	/*For.Prototype_GameObject_LeeSinProjectile*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_LeeSinProjectile"),
+		CLeeSinProjectile::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	/*For.Prototype_GameObject_TemooProjectile*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_TemooProjectile"),
+		CTemooProjectile::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	/*For.Prototype_GameObject_TemooMushroom*/
+	if (FAILED(m_pGameInstnace->Add_Prototype(TEXT("Prototype_GameObject_TemooMushroom"),
+		CMushRoom::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 #pragma endregion
 
@@ -365,9 +398,14 @@ HRESULT CLoader::Loading_For_GamePlay()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Ezreal"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Ezreal/Ezreal.dat"))))
 		return E_FAIL;
-	// 바이
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Vi"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Vi/Vi.dat"))))
+	// 리신
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("LeeSin"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/LeeSin/LeeSin.dat"))))
+		return E_FAIL;
+
+	// 티모
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Teemo"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Teemo/Teemo.dat"))))
 		return E_FAIL;
 
 	// 베인
@@ -404,6 +442,11 @@ HRESULT CLoader::Loading_For_GamePlay()
 	// 화살
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("BowMesh"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/Bow/Bow.dat"))))
+		return E_FAIL;
+
+	// 버섯
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("MushRoom"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../../Bin/Bin_Data/Anim/Champion/MushRoom/MushRoom.dat"))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("건물 로딩 중"));
@@ -521,24 +564,55 @@ HRESULT CLoader::Loading_For_GameUI()
 		return E_FAIL;
 #pragma endregion
 
-#pragma region Vi_SkillImage
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Vi_Icon"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vi_circle.dds"), 1))))
+#pragma region LeeSin_SkillImage
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSin_Icon"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesin_circle_11.dds"), 1))))
 		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_Passive"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vipassive.dds"), 1))))
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_Passive"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/blindmonkpassive.dds"), 1))))
 		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_Q"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/viq.dds"), 1))))
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_Q_1"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesinq1.dds"), 1))))
 		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_W"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/viw.dds"), 1))))
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_Q_2"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesinq2.dds"), 1))))
 		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_E"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vie.dds"), 1))))
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_W_1"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesinw1.dds"), 1))))
 		return E_FAIL;
-	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_ViSkill_R"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Vi/vir.dds"), 1))))
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_W_2"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesinw2.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_E_1"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesine1.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_E_2"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesine2.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_LeeSinSkill_R"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/LeeSin/leesinr.dds"), 1))))
+		return E_FAIL;
+
+#pragma endregion
+
+#pragma region Teemo_SkillImage
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Teemo_Icon"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Teemo/teemo_circle_0.asu_teemo.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_TemooSkill_Passive"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Teemo/teemopassive.asu_teemo.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_TemooSkill_Q"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Teemo/teemo_q.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_TemooSkill_W"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Teemo/teemow.asu_teemo.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_TemooSkill_E"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Teemo/teemoe.asu_teemo.dds"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_TemooSkill_R"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/SkillImage/Teemo/teemo_r.dds"), 1))))
 		return E_FAIL;
 #pragma endregion
 
@@ -565,6 +639,11 @@ HRESULT CLoader::Loading_For_GameUI()
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/EnemyHpBar.dds"), 1))))
 		return E_FAIL;
 
+	// Player HpBar
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_PlayerHpBar_HpBar"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/PlayerHpBar.dds"), 1))))
+		return E_FAIL;
+
 	// Building Frame
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Building_HpBar_Frame"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/BuildingHpBarFrame.dds"), 1))))
@@ -574,6 +653,17 @@ HRESULT CLoader::Loading_For_GameUI()
 	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Building_HpBar"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/HpBar/BuildingHpBar.dds"), 1))))
 		return E_FAIL;
+#pragma endregion
+	// Ending Image
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Ending"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Ending/eog_base.dds"), 1))))
+		return E_FAIL;
+	// Ending  Text
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_EndingText"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/UI/Ending/Texture.dds"), 1))))
+		return E_FAIL;
+#pragma region
+
 #pragma endregion
 	return S_OK;
 }
@@ -1065,6 +1155,197 @@ HRESULT CLoader::Loading_ForEffectTexture()
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Vayne/vayne_base_w_ring_glow.dds"), 1))))
 		return E_FAIL;
 #pragma endregion
+
+#pragma region LeeSin
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_moon_sight_indicator"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_moon_sight_indicator.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("glowflare"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/glowflare.png"), 1))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_flare-rainbow_yellow_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_flare-rainbow_yellow_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_fire_mult"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_fire_mult.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_q_swipekick_03"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_q_swipekick_03.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_q_swipekick_02"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_q_swipekick_02.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_q_swipe_dissolve_02"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_q_swipe_dissolve_02.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_q_swipe_dissolve_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_q_swipe_dissolve_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_fire_ash_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_fire_ash_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_alphastrike_prison__ball__p-rgba"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_alphastrike_prison__ball__p-rgba.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_sonicwave"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_sonicwave.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_galaxysphere_streaks"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_galaxysphere_streaks.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_p_armfire"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_p_armfire.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_color-firefade"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_color-firefade.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_shield_decal"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_shield_decal.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_flare-sun_29"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_flare-sun_29.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_glow_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_glow_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_shockwave"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_shockwave.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_distort-ripples"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_distort-ripples.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_speedcolor"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_speedcolor.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_trailgrey"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_trailgrey.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_fireswirl"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_fireswirl.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_flame_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_flame_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_ring_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_ring_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_shield_ring_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_shield_ring_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11__moon_sight_06"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11__moon_sight_06.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_radial_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_radial_01.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_ring_02"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_ring_02.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_red_orange_lightbar_02"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_red_orange_lightbar_02.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_blast_nova_bunny_04"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_blast_nova_bunny_04.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_splat_05"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_splat_05.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_glow-soft"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_glow-soft.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("leesin_skin11_z_erosion_01"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/LeeSin/leesin_skin11_z_erosion_01.png"), 1))))
+		return E_FAIL;
+	
+#pragma endregion 
+
+#pragma region Teemo
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_e_dart_motionblur.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_e_dart_motionblur.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_ba_mis_cap"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_ba_mis_cap.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_trail_mult.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_trail_mult.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_trail01.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_trail01.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_mis_erode.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_mis_erode.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_generic_noisemulti01.asu_teemo.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_generic_noisemulti01.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_energymote_01.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_energymote_01.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_emote_distortion_gradient.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_emote_distortion_gradient.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_emote_distortion.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_emote_distortion.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_tar_flash.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_tar_flash.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_smoketrail.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_smoketrail.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_small_mote.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_small_mote.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_posion_smoke_cloud.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_posion_smoke_cloud.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_mis_cap_mult.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_mis_cap_mult.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_global_poison_splat.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_global_poison_splat.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_global_poison_smoke.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_global_poison_smoke.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_global_poison_mult_v3.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_global_poison_mult_v3.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_glowsoft.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_glowsoft.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_ba_mis_core_add"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_ba_mis_core_add.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_e_global_poison_bubble.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_e_global_poison_bubble.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_q_dart_motionblur_2.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_q_dart_motionblur_2.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_q_trail.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_q_trail.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_q_blind_icon_01.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_q_blind_icon_01.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_wisps_white_01.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_wisps_white_01.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_w_mis_cap.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_w_mis_cap.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_w_leaf.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_w_leaf.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_w_buf2_pierce_mult.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_w_buf2_pierce_mult.asu_teemo.png"), 1))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstnace->Add_Prototype(LEVEL_STATIC, TEXT("teemo_base_w_buf2_pierce.asu_teemo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../../Bin/Resources/Textures/Effect/Champion/Teemo/teemo_base_w_buf2_pierce.asu_teemo.png"), 1))))
+		return E_FAIL;
+#pragma endregion 
 	return S_OK;
 }
 

@@ -8,7 +8,7 @@ class CAttackState :
 {
 public:
     CAttackState(class CMinion* pMinion);
-
+    ~CAttackState();
 public:
     virtual CMinionState* AI_Behaviour(_float fTimeDelta) override;
     virtual CMinionState* Update(_float fTimeDelta)       override;

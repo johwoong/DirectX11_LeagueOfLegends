@@ -112,12 +112,24 @@ CVayneState* CVayneSkillStateE::Update(_float fTimeDelta)
             tag.vTargetDir = vDir;
             tag.pOwner = m_pOwner;
             tag.fDeadTime = 0.4f;
+            tag.ePoolLevel = LEVEL_GAMEPLAY;
+            tag.pPoolLayerTag = TEXT("Layer_Projectile_Vayne"); // 타입별로 다르게
+            tag.bPrewarm = false;
 
-            CGameInstance::GetInstance()->Add_GameObject(
-                TEXT("Prototype_GameObject_VayneProjectile"),
+            CPoolManager* PM = CPoolManager::GetInstance();
+            CGameInstance* GI = CGameInstance::GetInstance();
+
+            if (!PM->Reuse_Pooling_Object(
                 LEVEL_GAMEPLAY,
-                TEXT("Layer_Projectile"),
-                &tag);
+                TEXT("Layer_Projectile_Vayne"),
+                &tag))
+            {
+                GI->Add_GameObject(
+                    TEXT("Prototype_GameObject_VayneProjectile"),
+                    LEVEL_GAMEPLAY,
+                    TEXT("Layer_Projectile_Vayne"),
+                    &tag);
+            }
 
             m_bProjectileSpawned = true;
             break;

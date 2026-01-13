@@ -29,9 +29,6 @@ HRESULT CEnemy_HpBar::Initialize(void* pArg)
     __super::Initialize(pArg);
     Ready_Components(pArg);
 
-    //if (m_pOwner)
-    //    m_pOwner->Set_HpBar(this);
-
     return S_OK;
 }
 
@@ -90,14 +87,18 @@ HRESULT CEnemy_HpBar::Ready_Components(void* pArg)
 
 int CEnemy_HpBar::Update(_float fDelta)
 {
-    if (m_bDead)
-        return OBJ_DEAD;   // 풀에 들어가 있는 상태
-
-    // ★ 주인이 없거나, 주인이 완전히 Dead 상태면 나도 풀로 돌려보냄
-    if (!m_pOwner || m_pOwner->Get_Dead())
-    {
+    // owner 자체가 없어지면 그때만 진짜 제거
+    if (!m_pOwner)
         return OBJ_DEAD;
+
+    // owner가 죽음상태면 "숨김"만 (절대 OBJ_DEAD로 보내지마)
+    if (m_pOwner->IsDeadForTargeting())
+    {
+        m_bVisible = false;
+        return OBJ_NOEVENT;
     }
+
+    m_bVisible = true;
 
     Update_Position_And_Scale();
     return __super::Update(fDelta);
@@ -107,6 +108,7 @@ void CEnemy_HpBar::Update_Position_And_Scale()
 {
     if (!m_pOwner)
         return;
+
 
     // 1) 위치
     _vector pos = m_pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
@@ -145,9 +147,8 @@ void CEnemy_HpBar::Update_Position_And_Scale()
 
 void CEnemy_HpBar::Late_Update(_float fDelta)
 {
-    if (m_bDead) return;
+    if (!m_bVisible) return;
     if (!m_pOwner) return;
-    if (m_pOwner->Get_Dead()) return;
 
     if (!m_pOwner->Is_Frustum(1.f))
         return;
@@ -171,6 +172,8 @@ HRESULT CEnemy_HpBar::SetUp_ShaderResources()
 
 HRESULT CEnemy_HpBar::Render()
 {
+    if (!m_bVisible)
+        return S_OK;
     if (m_bDead)
         return S_OK;
 
@@ -299,14 +302,11 @@ HRESULT CEnemy_HpBar::Render()
 void CEnemy_HpBar::Set_Owner(CEnemy* pOwner)
 {
     m_pOwner = pOwner;
+    if (!m_pOwner) return;
 
-    if (!m_pOwner)
-        return;       // 끊을 때는 여기서 바로 종료
+    m_bVisible = !m_pOwner->IsDeadForTargeting();
 
-    //m_pOwner->Set_HpBar(this);
-
-    // HPBar가 기준으로 사용할 MaxHp 스냅샷
-    m_fMaxHp = m_pOwner->Get_Stats().Hp;
+    m_fMaxHp = m_pOwner->Get_Stats().MaxHp;
     if (m_fMaxHp <= 0.f)
         m_fMaxHp = 1.f;
 }
@@ -338,5 +338,4 @@ CGameObject* CEnemy_HpBar::Clone(void* pArg)
 void CEnemy_HpBar::Free()
 {
     __super::Free();
-
 }

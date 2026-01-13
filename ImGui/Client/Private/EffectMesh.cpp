@@ -1,6 +1,58 @@
 #include "EffectMesh.h"
 #include "GameInstance.h"
 #include "Imgui_Manager.h"
+
+void CEffectMesh::Set_WorldPosition(_matrix mWorldMatrix)
+{
+	// ===== OwnerWorld에서 스케일 제거 =====
+	mWorldMatrix.r[0] = XMVector3Normalize(mWorldMatrix.r[0]);
+	mWorldMatrix.r[1] = XMVector3Normalize(mWorldMatrix.r[1]);
+	mWorldMatrix.r[2] = XMVector3Normalize(mWorldMatrix.r[2]);
+
+	// ? 이미 시작한 이후(Attach로 매 프레임 들어오는 케이스)면
+	// "회전은 유지"하고 위치만 따라가게 한다.
+	if (m_bCanStart) // 또는 너가 가진 "이미 월드 세팅 됨" 플래그로 바꿔도 됨
+	{
+		_matrix cur = m_pTransformCom->Get_WorldMatrix();
+
+		// owner 위치 + 툴에서 준 local offset을 월드로 반영
+		_vector vLocalOffset = XMVectorSet(
+			m_tMeshEffectDesc.vPosition.x,
+			m_tMeshEffectDesc.vPosition.y,
+			m_tMeshEffectDesc.vPosition.z,
+			0.f);
+
+		// owner 기준 오프셋(원하면 Look/Right/Up 기준으로 변환해서 더 정확히 할 수 있음)
+		cur.r[3] = mWorldMatrix.r[3] + vLocalOffset;
+
+		m_pTransformCom->Set_WorldMatrix(cur);
+		return;
+	}
+
+	// ===== Local: 툴에서 설정한 값(초기 1회만) =====
+	_matrix mScaleLocal = XMMatrixScaling(
+		m_tMeshEffectDesc.vScale.x,
+		m_tMeshEffectDesc.vScale.y,
+		m_tMeshEffectDesc.vScale.z);
+
+	_matrix mRotLocal = XMMatrixRotationRollPitchYaw(
+		XMConvertToRadians(m_tMeshEffectDesc.vRotation.x),
+		XMConvertToRadians(m_tMeshEffectDesc.vRotation.y),
+		XMConvertToRadians(m_tMeshEffectDesc.vRotation.z));
+
+	_matrix mTransLocal = XMMatrixTranslation(
+		m_tMeshEffectDesc.vPosition.x,
+		m_tMeshEffectDesc.vPosition.y,
+		m_tMeshEffectDesc.vPosition.z);
+
+	_matrix mLocal = mScaleLocal * mRotLocal * mTransLocal;
+
+	_matrix mFix = XMMatrixRotationX(XMConvertToRadians(-90.f));
+
+	_matrix mFinal = mLocal * mFix * mWorldMatrix;
+	m_pTransformCom->Set_WorldMatrix(mFinal);
+}
+
 CEffectMesh::CEffectMesh(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CEffect(pDevice, pContext)
 {
@@ -20,7 +72,7 @@ HRESULT CEffectMesh::Initialize(void* pArg)
 {
 	if (FAILED(Ready_Components(pArg)))
 		return E_FAIL;
-
+	Set_WorldPosition(XMMatrixIdentity());
 	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_RIGHT, m_tMeshEffectDesc.vScale.x);
 	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_UP, m_tMeshEffectDesc.vScale.y);
 	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_LOOK, m_tMeshEffectDesc.vScale.z);

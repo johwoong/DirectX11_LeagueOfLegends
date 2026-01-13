@@ -26,8 +26,7 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
-{    
+                     _In_ int       nCmdShow){    
 #ifdef _DEBUG
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif // _DEBUG
@@ -160,10 +159,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }      
 
-   SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);    // 테두리, 타이틀바 제거
-   SetWindowPos(hWnd, HWND_TOP,
-       0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
-       SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+   //SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);    // 테두리, 타이틀바 제거
+   //SetWindowPos(hWnd, HWND_TOP,
+   //    0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+   //    SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);

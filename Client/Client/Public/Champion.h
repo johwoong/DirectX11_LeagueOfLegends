@@ -3,7 +3,6 @@
 #include "UI_AttackRange.h"
 // 챔피언의 스탯을 관리한다.
 NS_BEGIN(Client)
-
 class CChampion abstract : public CPlayer
 {
 	struct ChampionStat
@@ -66,7 +65,7 @@ public:
 
 public:
 	float Get_AttackRange() const { return m_tStat.AttackRange; }
-
+	ChampionStat Get_Stat() const { return m_tStat; }
 	void Set_AttackRangeObj(CAttackRange* pRange) { m_pAttackRange = pRange; }
 	CAttackRange* Get_AttackRangeObj() const { return m_pAttackRange; }
 	float Get_WorldAttackRange() const
@@ -94,6 +93,15 @@ public:
 public:
 	virtual _bool Picking(_float3* PickingPoint)override;
 	virtual void PickingTrue() override;
+public:
+	void Apply_MoveSpeedBuff(_float fMul, _float fDuration);
+	void Apply_MoveSpeedBuff(_float fMul, _float fDuration, const _tchar* pFxDat);
+	_float Get_MoveSpeedMul() const { return m_fMoveSpeedMul; }
+private:
+	void Kill_MoveSpeedBuffFX();              // ★ 리신처럼 Detach->Dead
+	void Play_MoveSpeedBuffFX(const _tchar* dat);
+	void Update_MoveSpeedBuffFX();            // ★ 매 프레임 follow 갱신
+
 public: // State
 	virtual _bool Is_AnimationLoop(_uint eAnimId) = 0;
 	virtual void Ready_Animation_Event() PURE;
@@ -104,11 +112,22 @@ protected:
 public:
 	const SkillInfo* Get_Skills() const { return m_Skills; }
 	const wstring& Get_ChampionIconTag() const { return m_ChampionIconTag; }
+	virtual _int Take_Damage(int iDamage, CActor* DamageCauser) override;
+
+	void Revive_Full(); 
+	void Set_HP(float hp) { m_tStat.Hp = hp; }
+	float Get_HP() const { return m_tStat.Hp; }
+	float Get_MaxHP() const { return m_tStat.MaxHp; }
+
 protected:
 	SkillInfo m_Skills[5];
 	wstring m_ChampionIconTag;
 	ChampionStat m_tStat{};
 	CAttackRange* m_pAttackRange = nullptr;
+	_float m_fMoveSpeedMul = 1.f;
+	_float m_fMoveSpeedBuffRemain = 0.f;
+	vector<CEffect*> m_MoveSpeedFX;      // ★ CEffect*로 유지
+	_float3 m_vMoveSpeedFXOffset = { 0.f, 0.8f, 0.f }; // ★ 위치 튜닝
 protected:
 	virtual HRESULT Ready_Components(void* pArg) = 0;
 	virtual HRESULT SetUp_ShaderResources();

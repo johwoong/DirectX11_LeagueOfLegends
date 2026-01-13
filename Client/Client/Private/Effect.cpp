@@ -51,202 +51,270 @@ HRESULT CEffect::Render()
 
 vector<class CEffect*> CEffect::PlayEffectAtLocation(const _tchar* wcEffectName, _matrix mWorldMatrix)
 {
-	vector<CEffect*> m_pEffects;
-	CEffect* pEffect = nullptr;
+	vector<CEffect*> outEffects;
 
-	/* Load Effect File. */
+	// 1) 파일 열기
 	HANDLE hFileEffect = nullptr;
 	_tchar LoadPathEffect[MAX_PATH] = TEXT("../../../Bin/Data/EffectData/");
 	wcscat_s(LoadPathEffect, MAX_PATH, wcEffectName);
 
-	hFileEffect = CreateFile(LoadPathEffect, GENERIC_READ, NULL, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
+	hFileEffect = CreateFile(LoadPathEffect, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (hFileEffect == INVALID_HANDLE_VALUE)
-		return m_pEffects;
+		return outEffects;
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	pGameInstance->AddRef();
 
 	DWORD dwByte = 0;
+
+	// 2) 이펙트 개수 읽기
 	_uint iEffectsCount = 0;
-
-	/* Read how many Effects there are in this File. */
-	ReadFile(hFileEffect, &iEffectsCount, sizeof(_uint), &dwByte, nullptr);
-
-	while (true)
+	if (!ReadFile(hFileEffect, &iEffectsCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint))
 	{
-		if (!dwByte)
+		pGameInstance->Release();
+		CloseHandle(hFileEffect);
+		return outEffects;
+	}
+
+	// 3) 개수만큼 순차 파싱 (파일 포맷은 "타입+desc+커브들..." 이므로, 스폰 실패해도 끝까지 읽어야 함)
+	for (_uint i = 0; i < iEffectsCount; ++i)
+	{
+		CEffect::EFFECT_TYPE eType = CEffect::TYPE_END;
+		if (!ReadFile(hFileEffect, &eType, sizeof(CEffect::EFFECT_TYPE), &dwByte, nullptr) || dwByte != sizeof(CEffect::EFFECT_TYPE))
 			break;
 
-		/* For every Effect in this File: */
-		for (_uint i = 0; i < iEffectsCount; i++)
+		CEffect* pEffect = nullptr;
+		bool bSpawned = false;
+
+		CEffectTexture::TEXTUREEFFECTDESC tTextureEffectDesc{};
+		CEffectMesh::MESHEFFECTDESC      tMeshEffectDesc{};
+		PARTICLEDESC                     tParticleDesc{};
+
+		// 3-1) 타입별 desc 읽고 스폰 시도 (성공 여부만 bSpawned에 저장)
+		switch (eType)
 		{
-			/* Read Effect Type. */
-			CEffect::EFFECT_TYPE eType;
-			ReadFile(hFileEffect, &eType, sizeof(CEffect::EFFECT_TYPE), &dwByte, nullptr);
-
-			if (!dwByte)
-				break;
-
-			CEffectTexture::TEXTUREEFFECTDESC tTextureEffectDesc;
-			CEffectMesh::MESHEFFECTDESC tMeshEffectDesc;
-			PARTICLEDESC tParticleDesc;
-
-			switch (eType)
+		case CEffect::TYPE_TEXTURE:
+		{
+			if (!ReadFile(hFileEffect, &tTextureEffectDesc, sizeof(CEffectTexture::TEXTUREEFFECTDESC), &dwByte, nullptr) ||
+				dwByte != sizeof(CEffectTexture::TEXTUREEFFECTDESC))
 			{
-			case CEffect::EFFECT_TYPE::TYPE_TEXTURE:
-			{
-				ReadFile(hFileEffect, &tTextureEffectDesc, sizeof(CEffectTexture::TEXTUREEFFECTDESC), &dwByte, nullptr);
-
-				if (!dwByte)
-					break;
-				pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_EffectTexture"), pGameInstance->Get_CurrentLevelIndex(), TEXT("Layer_Effects"), (CGameObject*&)pEffect, &tTextureEffectDesc);
-				pEffect->Set_EffectType(CEffect::EFFECT_TYPE::TYPE_TEXTURE);
-				break;
-			}
-			case CEffect::EFFECT_TYPE::TYPE_MESH:
-			{
-				ReadFile(hFileEffect, &tMeshEffectDesc, sizeof(CEffectMesh::MESHEFFECTDESC), &dwByte, nullptr);
-
-				if (!dwByte)
-					break;
-
-				pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_EffectMesh"), pGameInstance->Get_CurrentLevelIndex(), TEXT("Layer_Effects"), (CGameObject*&)pEffect, &tMeshEffectDesc);
-				pEffect->Set_EffectType(CEffect::EFFECT_TYPE::TYPE_MESH);
-				break;
-			}
-			case CEffect::EFFECT_TYPE::TYPE_PARTICLE:
-			{
-				ReadFile(hFileEffect, &tParticleDesc, sizeof(PARTICLEDESC), &dwByte, nullptr);
-
-				if (!dwByte)
-					break;
-
-				pGameInstance->Add_GameObject_Out(TEXT("Prototype_GameObject_ParticleSystem"), pGameInstance->Get_CurrentLevelIndex(), TEXT("Layer_Effects"), (CGameObject*&)pEffect, &tParticleDesc);
-				pEffect->Set_EffectType(CEffect::EFFECT_TYPE::TYPE_PARTICLE);
-				break;
-			}
+				// 파일이 깨졌거나 끝
+				goto END_PARSE;
 			}
 
-			/* COLOR */
-			_uint iColorCurvesCount = 0;
-			ReadFile(hFileEffect, &iColorCurvesCount, sizeof(_uint), &dwByte, nullptr);
+			HRESULT hr = pGameInstance->Add_GameObject_Out(
+				TEXT("Prototype_GameObject_EffectTexture"),
+				pGameInstance->Get_CurrentLevelIndex(),
+				TEXT("Layer_Effects"),
+				(CGameObject*&)pEffect,
+				&tTextureEffectDesc);
+
+			if (SUCCEEDED(hr) && pEffect)
+			{
+				pEffect->Set_EffectType(CEffect::TYPE_TEXTURE);
+				bSpawned = true;
+			}
+			break;
+		}
+		case CEffect::TYPE_MESH:
+		{
+			if (!ReadFile(hFileEffect, &tMeshEffectDesc, sizeof(CEffectMesh::MESHEFFECTDESC), &dwByte, nullptr) ||
+				dwByte != sizeof(CEffectMesh::MESHEFFECTDESC))
+			{
+				goto END_PARSE;
+			}
+
+			HRESULT hr = pGameInstance->Add_GameObject_Out(
+				TEXT("Prototype_GameObject_EffectMesh"),
+				pGameInstance->Get_CurrentLevelIndex(),
+				TEXT("Layer_Effects"),
+				(CGameObject*&)pEffect,
+				&tMeshEffectDesc);
+
+			if (SUCCEEDED(hr) && pEffect)
+			{
+				pEffect->Set_EffectType(CEffect::TYPE_MESH);
+				bSpawned = true;
+			}
+			break;
+		}
+		case CEffect::TYPE_PARTICLE:
+		{
+			if (!ReadFile(hFileEffect, &tParticleDesc, sizeof(PARTICLEDESC), &dwByte, nullptr) ||
+				dwByte != sizeof(PARTICLEDESC))
+			{
+				goto END_PARSE;
+			}
+
+			HRESULT hr = pGameInstance->Add_GameObject_Out(
+				TEXT("Prototype_GameObject_ParticleSystem"),
+				pGameInstance->Get_CurrentLevelIndex(),
+				TEXT("Layer_Effects"),
+				(CGameObject*&)pEffect,
+				&tParticleDesc);
+
+			if (SUCCEEDED(hr) && pEffect)
+			{
+				pEffect->Set_EffectType(CEffect::TYPE_PARTICLE);
+				bSpawned = true;
+			}
+			break;
+		}
+		default:
+			// 알 수 없는 타입이면 더 파싱 불가
+			goto END_PARSE;
+		}
+
+		// 3-2) 커브들 읽기 (스폰 실패해도 파일 포인터 맞추려고 "무조건" 읽어야 함)
+
+		// COLOR
+		_uint iColorCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iColorCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<array<_float, 5>> ColorCurves;
-			array<_float, 5> ColorCurve;
-			for (_uint j = 0; j < iColorCurvesCount; j++)
+			ColorCurves.reserve(iColorCurvesCount);
+			array<_float, 5> ColorCurve{};
+			for (_uint j = 0; j < iColorCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &ColorCurve, sizeof(array<_float, 5>), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &ColorCurve, sizeof(array<_float, 5>), &dwByte, nullptr) || dwByte != sizeof(array<_float, 5>))
+					goto END_PARSE;
 				ColorCurves.push_back(ColorCurve);
 			}
-			if (!ColorCurves.empty())
+			if (bSpawned && pEffect && !ColorCurves.empty())
 				pEffect->Set_ColorCurves(ColorCurves);
+		}
 
-			/* ALPHA */
-			_uint iAlphaCurvesCount = 0;
-			ReadFile(hFileEffect, &iAlphaCurvesCount, sizeof(_uint), &dwByte, nullptr);
-			/* Read Alpha Curves. */
+		// ALPHA
+		_uint iAlphaCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iAlphaCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<_float3> AlphaCurves;
-			_float3 AlphaCurve;
-			for (_uint j = 0; j < iAlphaCurvesCount; j++)
+			AlphaCurves.reserve(iAlphaCurvesCount);
+			_float3 AlphaCurve{};
+			for (_uint j = 0; j < iAlphaCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &AlphaCurve, sizeof(_float3), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &AlphaCurve, sizeof(_float3), &dwByte, nullptr) || dwByte != sizeof(_float3))
+					goto END_PARSE;
 				AlphaCurves.push_back(AlphaCurve);
 			}
-			if (!AlphaCurves.empty())
+			if (bSpawned && pEffect && !AlphaCurves.empty())
 				pEffect->Set_AlphaCurves(AlphaCurves);
+		}
 
-			/* SIZE */
-			_uint iSizeCurvesCount = 0;
-			ReadFile(hFileEffect, &iSizeCurvesCount, sizeof(_uint), &dwByte, nullptr);
+		// SIZE
+		_uint iSizeCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iSizeCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<_float3> SizeCurves;
-			_float3 SizeCurve;
-			for (_uint j = 0; j < iSizeCurvesCount; j++)
+			SizeCurves.reserve(iSizeCurvesCount);
+			_float3 SizeCurve{};
+			for (_uint j = 0; j < iSizeCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &SizeCurve, sizeof(_float3), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &SizeCurve, sizeof(_float3), &dwByte, nullptr) || dwByte != sizeof(_float3))
+					goto END_PARSE;
 				SizeCurves.push_back(SizeCurve);
 			}
-			if (!SizeCurves.empty())
+			if (bSpawned && pEffect && !SizeCurves.empty())
 				pEffect->Set_SizeCurves(SizeCurves);
+		}
 
-			/* SCALE */
-			_uint iScaleCurvesCount = 0;
-			ReadFile(hFileEffect, &iScaleCurvesCount, sizeof(_uint), &dwByte, nullptr);
+		// SCALE
+		_uint iScaleCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iScaleCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<array<_float, 5>> ScaleCurves;
-			array<_float, 5> ScaleCurve;
-			for (_uint j = 0; j < iScaleCurvesCount; j++)
+			ScaleCurves.reserve(iScaleCurvesCount);
+			array<_float, 5> ScaleCurve{};
+			for (_uint j = 0; j < iScaleCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &ScaleCurve, sizeof(array<_float, 5>), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &ScaleCurve, sizeof(array<_float, 5>), &dwByte, nullptr) || dwByte != sizeof(array<_float, 5>))
+					goto END_PARSE;
 				ScaleCurves.push_back(ScaleCurve);
 			}
-			if (!ScaleCurves.empty())
+			if (bSpawned && pEffect && !ScaleCurves.empty())
 				pEffect->Set_ScaleCurves(ScaleCurves);
+		}
 
-			/* VELOCITY */
-			_uint iVelocityCurvesCount = 0;
-			ReadFile(hFileEffect, &iVelocityCurvesCount, sizeof(_uint), &dwByte, nullptr);
+		// VELOCITY
+		_uint iVelocityCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iVelocityCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<_float3> VelocityCurves;
-			_float3 VelocityCurve;
-			for (_uint j = 0; j < iVelocityCurvesCount; j++)
+			VelocityCurves.reserve(iVelocityCurvesCount);
+			_float3 VelocityCurve{};
+			for (_uint j = 0; j < iVelocityCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &VelocityCurve, sizeof(_float3), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &VelocityCurve, sizeof(_float3), &dwByte, nullptr) || dwByte != sizeof(_float3))
+					goto END_PARSE;
 				VelocityCurves.push_back(VelocityCurve);
 			}
-			if (!VelocityCurves.empty())
+			if (bSpawned && pEffect && !VelocityCurves.empty())
 				pEffect->Set_VelocityCurves(VelocityCurves);
+		}
 
-			/* TURN VELOCITY */
-			_uint iTurnVelocityCurvesCount = 0;
-			ReadFile(hFileEffect, &iTurnVelocityCurvesCount, sizeof(_uint), &dwByte, nullptr);
+		// TURN VELOCITY
+		_uint iTurnVelocityCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iTurnVelocityCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<_float3> TurnVelocityCurves;
-			_float3 TurnVelocityCurve;
-			for (_uint j = 0; j < iTurnVelocityCurvesCount; j++)
+			TurnVelocityCurves.reserve(iTurnVelocityCurvesCount);
+			_float3 TurnVelocityCurve{};
+			for (_uint j = 0; j < iTurnVelocityCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &TurnVelocityCurve, sizeof(_float3), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &TurnVelocityCurve, sizeof(_float3), &dwByte, nullptr) || dwByte != sizeof(_float3))
+					goto END_PARSE;
 				TurnVelocityCurves.push_back(TurnVelocityCurve);
 			}
-			if (!TurnVelocityCurves.empty())
+			if (bSpawned && pEffect && !TurnVelocityCurves.empty())
 				pEffect->Set_TurnVelocityCurves(TurnVelocityCurves);
+		}
 
-			/* NOISE POWER */
-			_uint iNoisePowerCurvesCount = 0;
-			ReadFile(hFileEffect, &iNoisePowerCurvesCount, sizeof(_uint), &dwByte, nullptr);
-			/* Read Noise Power Curves. */
+		// NOISE POWER
+		_uint iNoisePowerCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iNoisePowerCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<_float3> NoisePowerCurves;
-			_float3 NoisePowerCurve;
-			for (_uint j = 0; j < iNoisePowerCurvesCount; j++)
+			NoisePowerCurves.reserve(iNoisePowerCurvesCount);
+			_float3 NoisePowerCurve{};
+			for (_uint j = 0; j < iNoisePowerCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &NoisePowerCurve, sizeof(_float3), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &NoisePowerCurve, sizeof(_float3), &dwByte, nullptr) || dwByte != sizeof(_float3))
+					goto END_PARSE;
 				NoisePowerCurves.push_back(NoisePowerCurve);
 			}
-			if (!NoisePowerCurves.empty())
+			if (bSpawned && pEffect && !NoisePowerCurves.empty())
 				pEffect->Set_NoisePowerCurves(NoisePowerCurves);
+		}
 
-			/* DISTORT POWER */
-			_uint iDistortPowerCurvesCount = 0;
-			ReadFile(hFileEffect, &iDistortPowerCurvesCount, sizeof(_uint), &dwByte, nullptr);
+		// DISTORT POWER
+		_uint iDistortPowerCurvesCount = 0;
+		if (!ReadFile(hFileEffect, &iDistortPowerCurvesCount, sizeof(_uint), &dwByte, nullptr) || dwByte != sizeof(_uint)) goto END_PARSE;
+		{
 			vector<_float3> DistortPowerCurves;
-			_float3 DistortPowerCurve;
-			for (_uint j = 0; j < iDistortPowerCurvesCount; j++)
+			DistortPowerCurves.reserve(iDistortPowerCurvesCount);
+			_float3 DistortPowerCurve{};
+			for (_uint j = 0; j < iDistortPowerCurvesCount; ++j)
 			{
-				ReadFile(hFileEffect, &DistortPowerCurve, sizeof(_float3), &dwByte, nullptr);
+				if (!ReadFile(hFileEffect, &DistortPowerCurve, sizeof(_float3), &dwByte, nullptr) || dwByte != sizeof(_float3))
+					goto END_PARSE;
 				DistortPowerCurves.push_back(DistortPowerCurve);
 			}
-			if (!DistortPowerCurves.empty())
+			if (bSpawned && pEffect && !DistortPowerCurves.empty())
 				pEffect->Set_DistortPowerCurves(DistortPowerCurves);
+		}
 
-			/* Change Effect Position. */
-			if (pEffect)
-			{
-				pEffect->Set_WorldPosition(mWorldMatrix);
-				m_pEffects.push_back(pEffect);
-			}
+		// 3-3) 성공했을 때만 월드세팅 + 벡터에 등록
+		if (bSpawned && pEffect)
+		{
+			pEffect->Set_WorldPosition(mWorldMatrix);
+			outEffects.push_back(pEffect);
 		}
 	}
-	
+
+END_PARSE:
 	pGameInstance->Release();
 	CloseHandle(hFileEffect);
-
-	return m_pEffects;
+	return outEffects;
 }
 
 

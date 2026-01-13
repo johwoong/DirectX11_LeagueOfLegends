@@ -97,6 +97,10 @@ HRESULT CMinion::Initialize(void* pArg)
 
 int CMinion::Update(_float fTimeDelta)
 {
+    // ★ 풀 요청이면 매니저가 OBJ_POOL 처리
+    if (m_bRequestPool)
+        return OBJ_POOL;
+
     if (m_bDead)
         return OBJ_POOL;
 
@@ -330,6 +334,29 @@ CActor* CMinion::Check_FiledTarget()
         return nullptr;
     }
 
+    // ★ 0.5) "플레이어 타겟"이면 무조건 ActivePlayer만 유효
+    if (CChampion* pChamp = dynamic_cast<CChampion*>(m_pTarget))
+    {
+        CChampion* pActive = nullptr;
+        if (CPlayerManager::GetInstance())
+            pActive = CPlayerManager::GetInstance()->Get_ActivePlayer();
+
+        // (1) 플레이어가 바뀐 경우 → 즉시 타겟 해제
+        if (!pActive || pChamp != pActive)
+        {
+            m_pTarget = nullptr;
+            return nullptr;
+        }
+
+        // (2) 플레이어가 죽었거나 타겟 불가 상태면 해제
+        // 네 프로젝트에 IsDeadForTargeting() 있으면 그걸 쓰는게 제일 정확함.
+        if (pChamp->Get_Dead() || pChamp->IsDeadForTargeting())
+        {
+            m_pTarget = nullptr;
+            return nullptr;
+        }
+    }
+
     // 1) 타겟이 미니언인 경우
     if (CMinion* pMin = dynamic_cast<CMinion*>(m_pTarget))
     {
@@ -341,24 +368,22 @@ CActor* CMinion::Check_FiledTarget()
     }
     else if (CBuilding* pBuild = dynamic_cast<CBuilding*>(m_pTarget))
     {
-        // 1) 죽었으면 해제
         if (pBuild->Get_Dead())
         {
             m_pTarget = nullptr;
             return nullptr;
         }
 
-        // 2) 아군 빌딩이면 타겟 자격 없음
         if (pBuild->Get_TeamType() == m_eTeam)
         {
             m_pTarget = nullptr;
             return nullptr;
         }
     }
-    // 3) 그 외(챔피언 등)
     else
     {
-        if (m_pTarget->Get_Dead())
+        // 기타 Actor (Enemy 등)
+        if (m_pTarget->IsDeadForTargeting())
         {
             m_pTarget = nullptr;
             return nullptr;
@@ -642,7 +667,7 @@ void CMinion::ReUse_Setting(void* pArg)
 {
     if (!pArg)
         return;
-
+    Clear_TeemoPoison();
     MINION_SPAWNDESC* d = (MINION_SPAWNDESC*)pArg;
 
     m_eTeam = d->eTeam;
@@ -730,35 +755,33 @@ void CMinion::Set_Picked()
 
 void CMinion::Mark_Dead()
 {
-    if (m_bDead)
+    if (m_bDead || m_bRequestPool)
         return;
 
-    // ?? 충돌 그룹에서 제거
+    // 충돌 그룹에서 제거
     CCollision_Manager::GetInstance()->Out_CollisionGroup(
         CCollision_Manager::COLLISION_MINION, this);
 
+    // HP UI 반환
     if (m_pHpBar)
     {
         m_pHpBar->ReturnToPool();
         m_pHpBar = nullptr;
     }
 
-    CPoolManager* pool = CPoolManager::GetInstance();
-    if (pool)
-    {
-        const _tchar* tag = nullptr;
-
-        if (m_eTeam == TEAM_BLUE)
-            tag = (m_eMinionType == MINION_MELEE) ? TEXT("Layer_Minion_Blue_Melee") : TEXT("Layer_Minion_Blue_Range");
-        else
-            tag = (m_eMinionType == MINION_MELEE) ? TEXT("Layer_Minion_Red_Melee") : TEXT("Layer_Minion_Red_Range");
-
-        if (tag)
-            pool->Add_Pooling_Object(LEVEL_GAMEPLAY, tag, this);
-    }
-
+    // 상태 정리
     m_bDead = true;
     m_bDying = false;
+
+    Clear_TeemoPoison();
+    Clear_TeemoBlind();
+    Remove_Mark(MARK_TYPE::EZREAL_W);
+    Remove_Mark(MARK_TYPE::LEE_SIN_Q);
+    Remove_Mark(MARK_TYPE::LEE_SIN_E);
+    Remove_Mark(MARK_TYPE::VAYNE_SILVER);
+
+    // ★ 여기서 Pool에 넣지 말고, 다음 Update에서 OBJ_POOL로 보내기
+    m_bRequestPool = true;
 }
 
 float CMinion::Get_DesiredAttackDist(CActor* pTarget) const

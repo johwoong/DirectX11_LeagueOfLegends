@@ -3,7 +3,32 @@
 
 void CEffectMesh::Set_WorldPosition(_matrix mWorldMatrix)
 {
-	// ===== Local: 툴에서 설정한 값 =====
+	// ===== OwnerWorld에서 스케일 제거 =====
+	mWorldMatrix.r[0] = XMVector3Normalize(mWorldMatrix.r[0]);
+	mWorldMatrix.r[1] = XMVector3Normalize(mWorldMatrix.r[1]);
+	mWorldMatrix.r[2] = XMVector3Normalize(mWorldMatrix.r[2]);
+
+	// ? 이미 시작한 이후(Attach로 매 프레임 들어오는 케이스)면
+	// "회전은 유지"하고 위치만 따라가게 한다.
+	if (m_bCanStart) // 또는 너가 가진 "이미 월드 세팅 됨" 플래그로 바꿔도 됨
+	{
+		_matrix cur = m_pTransformCom->Get_WorldMatrix();
+
+		// owner 위치 + 툴에서 준 local offset을 월드로 반영
+		_vector vLocalOffset = XMVectorSet(
+			m_tMeshEffectDesc.vPosition.x,
+			m_tMeshEffectDesc.vPosition.y,
+			m_tMeshEffectDesc.vPosition.z,
+			0.f);
+
+		// owner 기준 오프셋(원하면 Look/Right/Up 기준으로 변환해서 더 정확히 할 수 있음)
+		cur.r[3] = mWorldMatrix.r[3] + vLocalOffset;
+
+		m_pTransformCom->Set_WorldMatrix(cur);
+		return;
+	}
+
+	// ===== Local: 툴에서 설정한 값(초기 1회만) =====
 	_matrix mScaleLocal = XMMatrixScaling(
 		m_tMeshEffectDesc.vScale.x,
 		m_tMeshEffectDesc.vScale.y,
@@ -21,16 +46,8 @@ void CEffectMesh::Set_WorldPosition(_matrix mWorldMatrix)
 
 	_matrix mLocal = mScaleLocal * mRotLocal * mTransLocal;
 
-	// ===== Fix 회전 =====
 	_matrix mFix = XMMatrixRotationX(XMConvertToRadians(-90.f));
 
-	// ===== ?? OwnerWorld에서 스케일 제거 =====
-	mWorldMatrix.r[0] = XMVector3Normalize(mWorldMatrix.r[0]); // Right
-	mWorldMatrix.r[1] = XMVector3Normalize(mWorldMatrix.r[1]); // Up
-	mWorldMatrix.r[2] = XMVector3Normalize(mWorldMatrix.r[2]); // Look
-	// r[3] (위치)는 그대로 둔다
-
-	// ===== Final =====
 	_matrix mFinal = mLocal * mFix * mWorldMatrix;
 	m_pTransformCom->Set_WorldMatrix(mFinal);
 }
@@ -67,16 +84,32 @@ HRESULT CEffectMesh::Initialize(void* pArg)
 
 int CEffectMesh::Update(_float fTimeDelta)
 {
-
+	// 0) 외부에서 Set_Dead(true) 맞았으면 바로 삭제 루트
 	if (m_bDead)
 		return OBJ_DEAD;
-	else if (m_bPreDead)
-		m_bDead = true;
 
+	// 1) PreDead면 다음 프레임 기다릴 이유 없음 -> 바로 제거
+	if (m_bPreDead)
+	{
+		m_bDead = true;
+		return OBJ_DEAD;
+	}
+
+	// 2) Attach된 FX(투사체 따라가는 FX)는 lifetime으로 자동 삭제 금지
+	//    + lifetime=0 같은 데이터도 안전하게 처리 (0은 "무한" 취급)
+	const bool bAttached = (m_pAttachObject != nullptr);
+
+	if (m_tMeshEffectDesc.fLifetime <= 0.f)
+		m_tMeshEffectDesc.fLifetime = 999999.f; // 0이면 무한으로 간주 (분모 0도 방지)
+
+	// 3) StartAfter 처리
 	if (!m_bCanStart)
 	{
-		if (m_tMeshEffectDesc.fStartAfter == 0)
+		if (m_tMeshEffectDesc.fStartAfter <= 0.f)
+		{
 			m_bCanStart = true;
+			m_fTimer = 0.f;
+		}
 		else
 		{
 			if (m_fTimer < m_tMeshEffectDesc.fStartAfter)
@@ -89,32 +122,43 @@ int CEffectMesh::Update(_float fTimeDelta)
 		}
 	}
 
-	if (m_bCanStart)
+	if (!m_bCanStart)
+		return OBJ_NOEVENT;
+
+	// 4) lifetime 만료 처리
+	//    - Attach 안 된 FX만 lifetime으로 자동 종료
+	if (!bAttached)
 	{
 		if (m_fTimer >= m_tMeshEffectDesc.fLifetime)
-			m_bPreDead = true;
-		else
 		{
-			m_pTransformCom->Change_RotationSpeed(m_tMeshEffectDesc.fTurnVelocity);
-
-			_vector vTurnAxis = XMVectorSet(m_tMeshEffectDesc.vTurn.x, m_tMeshEffectDesc.vTurn.y, m_tMeshEffectDesc.vTurn.z, 0.f);
-			if (!XMVector3Equal(vTurnAxis, XMVectorSet(0.f, 0.f, 0.f, 0.f)))
-				m_pTransformCom->Turn(vTurnAxis, fTimeDelta);
-
-			ColorLerp();
-			ScaleLerp();
-			AlphaLerp();
-			TurnVelocityLerp();
-			NoisePowerLerp();
-			DistortionPowerLerp();
-
-			m_pTransformCom->Set_Scale(CTransform::STATE::STATE_RIGHT, m_tMeshEffectDesc.vScale.x);
-			m_pTransformCom->Set_Scale(CTransform::STATE::STATE_UP, m_tMeshEffectDesc.vScale.y);
-			m_pTransformCom->Set_Scale(CTransform::STATE::STATE_LOOK, m_tMeshEffectDesc.vScale.z);
-
-			m_fTimer += fTimeDelta;
+			m_bPreDead = true;
+			return OBJ_NOEVENT;
 		}
 	}
+
+	// 5) 정상 업데이트
+	m_pTransformCom->Change_RotationSpeed(m_tMeshEffectDesc.fTurnVelocity);
+
+	_vector vTurnAxis = XMVectorSet(m_tMeshEffectDesc.vTurn.x, m_tMeshEffectDesc.vTurn.y, m_tMeshEffectDesc.vTurn.z, 0.f);
+	if (!XMVector3Equal(vTurnAxis, XMVectorSet(0.f, 0.f, 0.f, 0.f)))
+		m_pTransformCom->Turn(vTurnAxis, fTimeDelta);
+
+	ColorLerp();
+	ScaleLerp();
+	AlphaLerp();
+	TurnVelocityLerp();
+	NoisePowerLerp();
+	DistortionPowerLerp();
+
+	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_RIGHT, m_tMeshEffectDesc.vScale.x);
+	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_UP, m_tMeshEffectDesc.vScale.y);
+	m_pTransformCom->Set_Scale(CTransform::STATE::STATE_LOOK, m_tMeshEffectDesc.vScale.z);
+
+	m_fTimer += fTimeDelta;
+
+	// Attach된 FX는 타이머 무한 증가 방지(선택)
+	if (bAttached && m_fTimer > 999999.f)
+		m_fTimer = 0.f;
 
 	return OBJ_NOEVENT;
 }

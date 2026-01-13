@@ -1,5 +1,6 @@
 #include "MainApp.h"
 #include "GameInstance.h"
+#include "GameFlow.h"
 
 #include "Level_Loading.h"
 #include "PickingManager.h"
@@ -13,6 +14,7 @@
 #include "UI_LoadingBar.h"
 #include "UI_Text.h"
 #include "Cursor_UI.h"
+
 
 USING(Client)
 
@@ -67,15 +69,28 @@ void CMainApp::Update(_float fTimeDelta)
 	if (nullptr == m_pGameInstance)
 		return;
 
+	if (m_pGameInstance->Key_Up(DIK_BACKSLASH))
+		g_fSoundVolume = 0.f;
+
+	// 1) 언스케일 dt 저장 (월드 멈춰도 죽음연출 등은 굴릴 용도)
+	CGameFlow::GetInstance()->Set_UnscaledDT(fTimeDelta);
+
+	// 2) UI는 계속 돌아가게 (승리 UI 등)
 	m_pUIManager->Update_UI(fTimeDelta);
 
-	/* 내 게임의 반복적인 갱신  */
-	m_pGameInstance->Update_Engine(fTimeDelta);
-	CPickingManager::GetInstance()->Picking();
+	// 3) 게임오버면 월드 dt=0
+	const _float fWorldDT = (CGameFlow::GetInstance()->Is_GameOver()) ? 0.f : fTimeDelta;
+
+	// 4) 엔진 업데이트 (여기 dt=0 들어가면 월드 전체 정지)
+	m_pGameInstance->Update_Engine(fWorldDT);
+
+	// 5) 입력도 끊고 싶으면 게임오버 때 막기
+	if (!CGameFlow::GetInstance()->Is_GameOver())
+		CPickingManager::GetInstance()->Picking();
+
 	CCursorManager::GetInstance()->Update();
-	//#ifdef _DEBUG
+
 	m_fTimeAcc += fTimeDelta;
-	//#endif // _DEBUG
 }
 
 HRESULT CMainApp::Render()
@@ -222,4 +237,5 @@ void CMainApp::Free()
 	CGameInstance::Release_Engine();
 	Safe_Release(m_pUIManager);
 	CCollision_Manager::GetInstance()->DestroyInstance();
+	CGameFlow::GetInstance()->DestroyInstance();
 }
