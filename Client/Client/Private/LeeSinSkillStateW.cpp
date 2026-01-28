@@ -18,13 +18,11 @@ CLeeSinSkillStateW::CLeeSinSkillStateW(CPlayer* pPlayer, CActor* pTarget)
 void CLeeSinSkillStateW::Enter()
 {
     __super::Enter();
-
     if (!m_pOwner)
     {
         m_bFinished = true;
         return;
     }
-
     // ? W2인지 먼저 체크
     m_bRecast = m_pOwner->Can_WRecast();
 

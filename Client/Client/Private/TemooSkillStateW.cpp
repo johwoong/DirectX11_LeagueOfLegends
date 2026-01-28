@@ -76,14 +76,13 @@ void CTemooSkillStateW::Apply_WBuff_And_SpawnFX()
 
     if (CChampion* pChamp = dynamic_cast<CChampion*>(m_pOwner))
     {
-        pChamp->Apply_MoveSpeedBuff(m_fSpeedMul, m_fDuration, TEXT("Temoo_W.dat"));
+        pChamp->Apply_MoveSpeedBuff(m_fSpeedMul, m_fDuration, TEXT("Alphen_Boost_Wind_1.dat"));
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"06_teemo_movequick_OBA_1.wav"), SOUND_PLAYER, 0.4f);
     }
 }
 
 void CTemooSkillStateW::Spawn_TemooW_Effect()
 {
-    // ★ 너가 이미 쓰던 “follow + dat” 방식 그대로 사용.
-    //    파일만 Temoo_W.dat 로 바꾸면 됨.
 
     struct EFFECT_SPAWN_DESC
     {
@@ -99,11 +98,10 @@ void CTemooSkillStateW::Spawn_TemooW_Effect()
     desc.pFollow = m_pOwner;             // ★ 티모에 붙임
     desc.fDeadTime = m_fDuration;          // ★ 버프 지속시간과 같이 꺼짐
     desc.bFollow = true;
-    desc.vOffset = { 0.f, 0.8f, 0.f };
+    desc.vOffset = { 0.f, 0.f, 0.f };
 
     CPoolManager* PM = CPoolManager::GetInstance();
     CGameInstance* GI = CGameInstance::GetInstance();
-
     // ★ 너 프로젝트에서 Effect가 실제로 생성되는 태그랑 반드시 일치해야 함
     const _tchar* LAYER = TEXT("Layer_Effect");
     const _tchar* PROTO = TEXT("Prototype_GameObject_Effect");

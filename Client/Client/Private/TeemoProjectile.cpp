@@ -155,6 +155,19 @@ void CTemooProjectile::Collision_Check()
             }
 
             Spawn_Effect(pHit);
+            const int pick = rand() % 3;
+            switch (pick)
+            {
+            case 0:
+                m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"02_teemo_basicatk_OML_1.wav"), SOUND_EFFECT, 0.8f);
+                break;
+            case 1:
+                m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"01_teemo_basicatk_OH_2.wav"), SOUND_EFFECT, 0.8f);
+                break;
+            case 2:
+                m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"03_teemo_basicatk_OML_3.wav"), SOUND_EFFECT, 0.8f);
+                break;
+            }
             m_bDead = true;
             Dead_Effect();
         };

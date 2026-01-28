@@ -358,6 +358,9 @@
     <ClInclude Include="..\Public\GameFlow.h">
       <Filter>00..MainApp\Flow</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\UI_TextImage.h">
+      <Filter>02. GameObjects\00. Actor\02. UI\14. UI_TextImage</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -652,6 +655,9 @@
     </Filter>
     <Filter Include="00..MainApp\Flow">
       <UniqueIdentifier>{e5f32391-f27e-4525-92fe-47b74929ff68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObjects\00. Actor\02. UI\14. UI_TextImage">
+      <UniqueIdentifier>{7bbddb1e-ecdb-4e0f-b21c-a1a2bae2c9f9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -984,6 +990,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\GameFlow.cpp">
       <Filter>00..MainApp\Flow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_TextImage.cpp">
+      <Filter>02. GameObjects\00. Actor\02. UI\14. UI_TextImage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

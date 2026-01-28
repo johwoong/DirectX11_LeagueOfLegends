@@ -110,6 +110,10 @@ CPlayerState* CEzrealSkillStateW::Update(_float fDeltaTime)
                     desc.pTarget = nullptr;
                     desc.ePoolLevel = LEVEL_GAMEPLAY;
                     desc.pPoolLayerTag = TEXT("Layer_Projectile");
+                    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+
+                    pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealWSound.wav"), SOUND_PLAYER, 0.4f);
                     CPoolManager* PM = CPoolManager::GetInstance();
                     if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc))
                     {

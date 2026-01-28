@@ -1,6 +1,7 @@
 #include "MinionManager.h"
 #include "PoolManager.h"
 #include "GameInstance.h"
+#include "UI_TextImage.h"
 
 IMPLEMENT_SINGLETON(CMinionManager)
 
@@ -84,7 +85,17 @@ void CMinionManager::ForceSpawnWave()
     m_bWaveInProgress = false;
     m_PendingSpawns.clear();
     m_fWaveElapsed = 0.f;
+    CUI_TextImage::TEXTIMAGEDESC ui{};
+    ui.eType = CUI_TextImage::TEXT_TYPE::MINION_HAS_SPAWNED;
+    ui.fLifeTime = 2.8f;
+    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+    pGameInstance->AddRef();
+    pGameInstance->Add_GameObject(
+        TEXT("Prototype_GameObject_UI_TextImage"),
+        LEVEL_GAMEPLAY, TEXT("Layer_UI"), &ui);
 
+    pGameInstance->PlaySounds(const_cast<TCHAR*>(L"MinionCreate.wav"), SOUND_SISTER, g_fSoundVolume);
+    pGameInstance->Release();
     SpawnWave();
 }
 

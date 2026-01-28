@@ -146,16 +146,15 @@ int CMinion_Melee::Update(_float fTimeDelta)
     {
         if (CMinionState* pNew = m_pState->AI_Behaviour(fTimeDelta))
         {
-            Safe_Delete(m_pState);
-            m_pState = pNew;
-            m_pState->Enter();
+            m_pState = m_pState->ChangeState(m_pState, pNew); // Exit 포함
         }
 
-        if (CMinionState* pNew = m_pState->Update(fTimeDelta))
+        if (m_pState)
         {
-            Safe_Delete(m_pState);
-            m_pState = pNew;
-            m_pState->Enter();
+            if (CMinionState* pNew = m_pState->Update(fTimeDelta))
+            {
+                m_pState = m_pState->ChangeState(m_pState, pNew); // Exit 포함
+            }
         }
     }
 

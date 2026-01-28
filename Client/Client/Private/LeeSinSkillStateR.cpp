@@ -76,12 +76,7 @@ void CLeeSinSkillStateR::Enter()
         return;
     }
 
-    // =========================================================
-    // (선택) 리신이 타겟을 바라보게(차는 방향 정렬)
-    // 너 프로젝트에서 LOOK이 뒤집혀 있어서,
-    // Enemy 코드 패턴대로 "myPos - targetPos"로 LOOK 세팅
-    // (Update_RCollider에서 -LOOK을 쓰니까 정방향이 맞아짐)
-    // =========================================================
+
     {
         CTransform* pTr = m_pLeeSin->Get_Transform();
         _vector myPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
@@ -119,6 +114,17 @@ void CLeeSinSkillStateR::Enter()
     _uint animList[3] = { CLeeSin::ANIM::R_A, CLeeSin::ANIM::R_B, CLeeSin::ANIM::R_C };
     int r = rand() % 3;
     m_pLeeSin->Get_Model()->Set_CurrentAnimIndex(animList[r]);
+    const int pick = rand() % 2;
+    switch (pick)
+    {
+    case 0:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinRSound2.wav"), SOUND_PLAYERTALK, 0.4f);
+        break;
+    case 1:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinRSoundTalk.wav"), SOUND_PLAYERTALK, 0.4f);
+        break;
+
+    }
 }
 
 void CLeeSinSkillStateR::Exit()

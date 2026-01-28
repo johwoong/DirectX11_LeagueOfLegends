@@ -279,7 +279,7 @@ void CEzrealProjectile::Collision_Check()
         {
             if (!Is_RedTarget(pHit))
                 return;
-
+            m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealQHitSound.wav"), SOUND_EFFECT, 0.5f);
             if (auto pEnemy = dynamic_cast<CEnemy*>(pHit))
                 pEnemy->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
             else if (auto pMinion = dynamic_cast<CMinion*>(pHit))

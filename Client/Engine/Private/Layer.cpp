@@ -75,10 +75,11 @@ void CLayer::Update(_float fTimeDelta)
     {
         if ((*iter) != nullptr)
         {
-              int iEvent = (*iter)->Update(fTimeDelta);
+            int iEvent = (*iter)->Update(fTimeDelta);
+
             if (iEvent == OBJ_DEAD)
             {
-                Safe_Release(*iter);
+                // ★ 핵심: Update 중 절대 Safe_Release 하지 마라
                 iter = m_GameObjects.erase(iter);
             }
             else if (iEvent == OBJ_POOL)
@@ -86,7 +87,13 @@ void CLayer::Update(_float fTimeDelta)
                 iter = m_GameObjects.erase(iter);
             }
             else
-                iter++;
+            {
+                ++iter;
+            }
+        }
+        else
+        {
+            ++iter;
         }
     }
 }

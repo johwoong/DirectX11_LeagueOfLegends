@@ -13,7 +13,6 @@ public:
     };
 	
 
-
 public:
 	CModel* Get_Model() { return m_pModelCom; }
 	CTransform* Get_Transform() { return m_pTransformCom; }
@@ -30,7 +29,8 @@ public:
 	virtual _bool Is_AnimationLoop(_uint eAnimId) override;
 	virtual void Ready_Animation_Event() override;
 	virtual HRESULT SetUp_ShaderID() override;
-
+public:
+	void Play_VayneSFX(const TCHAR* key, _uint ch, float vol = 0.7f);
 private:
 	CVayne(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CVayne(const CVayne& rhs);
@@ -69,6 +69,8 @@ public:
 	float m_fQEmpoweredTime = 0.f;
 	const float Q_EMPOWER_DURATION = 3.0f; // 베인 원본 느낌
 	bool m_bSkillLock = false;
+private:
+	bool m_bDeathSoundPlayed = false;
 private:
 	virtual HRESULT Ready_Components(void* pArg) override;
 

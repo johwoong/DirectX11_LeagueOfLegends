@@ -48,7 +48,8 @@ void CLeeSin::Play_WShieldEffect(const _tchar* pDat)
 	vPos += XMVectorSet(0.f, 1.f, 0.f, 0.f); // ★ 추가
 	vPos = XMVectorSetW(vPos, 1.f);
 	world.r[3] = vPos;
-
+	CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinWSound.wav"), SOUND_PLAYERTALK, 0.4f);
+	CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinWShiledSound.wav"), SOUND_PLAYER, 0.4f);
 	auto fxList = CEffect::PlayEffectAtLocation(pDat, world);
 	for (auto& fx : fxList)
 	{
@@ -188,7 +189,7 @@ HRESULT CLeeSin::Initialize(void* pArg)
 		return E_FAIL;
 	m_tStat.AttackRange = 80.f; 
 	m_tStat.AttackDamage = 100.f;
-	m_tStat.MaxHp = 160.f;
+	m_tStat.MaxHp = 10000.f;
 	m_tStat.Hp = m_tStat.MaxHp;
 	Set_Scale(_float3(0.017f, 0.017f, 0.017f));
 	SetSkillInfo();
@@ -239,14 +240,12 @@ void CLeeSin::Consume_WRecast(bool bUsed)
 {
 	m_bWRecastReady = false;
 	m_fWRecastAcc = 0.f;
-
+	
 	if (!bUsed)
 		return;
 
 	// ? W2 사용 시: 실드 "버블 이펙트"만 제거
 	Clear_WShieldEffect();
-
-
 }
 
 void CLeeSin::Apply_WEmpower(int stacks, float duration)
@@ -255,7 +254,8 @@ void CLeeSin::Apply_WEmpower(int stacks, float duration)
 	m_iWEmpowerStacks = max(1, stacks);
 	m_fWEmpowerDuration = max(0.01f, duration);
 	m_fWEmpowerAcc = 0.f;
-
+	CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinWSound2.wav"), SOUND_PLAYER, 0.4f);
+	CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"527148964.wav"), SOUND_PLAYER, 0.4f);
 	// ★ 강화 시작 FX (양손)
 	Play_WEmpowerEffect(TEXT("LeeSinAttackUp.dat"));
 }

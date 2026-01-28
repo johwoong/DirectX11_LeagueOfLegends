@@ -215,6 +215,20 @@ void CTemooAttackState::Spawn_TemooProjectile(CActor* pTarget)
 
     CPoolManager* PM = CPoolManager::GetInstance();
 
+    const int pick = rand() % 3;
+    switch (pick)
+    {
+    case 0:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"13_teemo_basicattack_oc_1.wav"), SOUND_PLAYER, 0.8f);
+        break;
+    case 1:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"14_teemo_basicattack_oc_2.wav"), SOUND_PLAYER, 0.8f);
+        break;
+    case 2:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"15_teemo_basicattack_oc_3.wav"), SOUND_PLAYER, 0.8f);
+        break;
+    }
+
     // 풀 재사용 우선
     if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_TemooProjectile"), &ProjDesc))
     {

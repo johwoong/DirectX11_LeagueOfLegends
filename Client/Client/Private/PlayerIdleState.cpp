@@ -166,14 +166,110 @@ CPlayerState* CIdleState::HandleInput()
 
 CPlayerState* CIdleState::Update(_float fTimeDelta)
 {
+    if (m_pOwner && m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
+    {
+        // 스킬 중이면 대사 타이머 리셋(스킬 끝나자마자 말하지 않게)
+        if (m_pOwner->IsUsingSkill())
+        {
+            m_fNoTalkAcc = 0.f;
+            float t = (rand() % 1000) / 1000.f;
+            m_fTalkTimer = 5.f + 3.f * t; // 다시 5~8초 뒤
+        }
+        else
+        {
+            m_fNoTalkAcc += fTimeDelta;
+            m_fTalkTimer -= fTimeDelta;
+
+            if (m_fTalkTimer <= 0.f && m_fNoTalkAcc >= 5.f)
+            {
+                // ? 파일명 오타 조심: EzrealkTalk.wav -> EzrealTalk.wav 로 고쳐라
+                static const TCHAR* talks[] =
+                {
+                    TEXT("EzrealTalk.wav"),
+                    TEXT("EzrealTalk1.wav"),
+                    TEXT("EzrealTalk2.wav"),
+                    TEXT("EzrealTalk3.wav"),
+                };
+
+                int tidx = rand() % (int)(sizeof(talks) / sizeof(talks[0]));
+                CGameInstance::GetInstance()->PlaySounds((TCHAR*)talks[tidx], SOUND_PLAYER, 0.85f);
+
+                // 다음은 10~18초 뒤
+                float t = (rand() % 1000) / 1000.f;
+                m_fTalkTimer = 10.f + 8.f * t;
+            }
+        }
+    }
+    else if (m_pOwner && m_pOwner->Get_PlayerID() == CPlayer::LEESIN)
+    {
+        // 스킬 중이면 대사 타이머 리셋(스킬 끝나자마자 말하지 않게)
+        if (m_pOwner->IsUsingSkill())
+        {
+            m_fNoTalkAcc = 0.f;
+            float t = (rand() % 1000) / 1000.f;
+            m_fTalkTimer = 5.f + 3.f * t; // 다시 5~8초 뒤
+        }
+        else
+        {
+            m_fNoTalkAcc += fTimeDelta;
+            m_fTalkTimer -= fTimeDelta;
+
+            if (m_fTalkTimer <= 0.f && m_fNoTalkAcc >= 5.f)
+            {
+                static const TCHAR* talks[] =
+                {
+                    TEXT("LeeSinTalk1.wav"),
+                    TEXT("LeeSinTalk3.wav"),
+                    TEXT("LeeSinTalk5.wav"),
+                    TEXT("LeeSinTalk4.wav"),
+                };
+
+                int tidx = rand() % (int)(sizeof(talks) / sizeof(talks[0]));
+                CGameInstance::GetInstance()->PlaySounds((TCHAR*)talks[tidx], SOUND_PLAYER, 0.85f);
+
+                float t = (rand() % 1000) / 1000.f;
+                m_fTalkTimer = 10.f + 8.f * t;
+            }
+        }
+    }
+    else if (m_pOwner && m_pOwner->Get_PlayerID() == CPlayer::TEEMO)
+    {
+        // 스킬 중이면 대사 타이머 리셋(스킬 끝나자마자 말하지 않게)
+        if (m_pOwner->IsUsingSkill())
+        {
+            m_fNoTalkAcc = 0.f;
+            float t = (rand() % 1000) / 1000.f;
+            m_fTalkTimer = 5.f + 3.f * t; // 다시 5~8초 뒤
+        }
+        else
+        {
+            m_fNoTalkAcc += fTimeDelta;
+            m_fTalkTimer -= fTimeDelta;
+
+            if (m_fTalkTimer <= 0.f && m_fNoTalkAcc >= 5.f)
+            {
+                static const TCHAR* talks[] =
+                {
+                    TEXT("TemooTalkSound1.wav"),
+                    TEXT("TemooTalkSound2.wav"),
+                    TEXT("TemooTalkSound3.wav"),
+                };
+
+                int tidx = rand() % (int)(sizeof(talks) / sizeof(talks[0]));
+                CGameInstance::GetInstance()->PlaySounds((TCHAR*)talks[tidx], SOUND_PLAYER, 0.85f);
+
+                float t = (rand() % 1000) / 1000.f;
+                m_fTalkTimer = 10.f + 8.f * t;
+            }
+        }
+    }
+    // -------------------------
+    // 기존 애니 재생 로직
+    // -------------------------
     _uint curAnim = m_pOwner->Get_Model()->Get_CurrentAnimIndex();
 
-    // ? Ezreal IdleQ일 때만 애니메이션 속도 빠르게
-    if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL &&
-        curAnim == CEzreal::ANIM::IDLEQ)
-    {
-        fTimeDelta *= 2.f; 
-    }
+    if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL && curAnim == CEzreal::ANIM::IDLEQ)
+        fTimeDelta *= 2.f;
 
     m_bIsAnimationFinished =
         m_pOwner->Get_Model()->Play_Animation(
@@ -221,72 +317,70 @@ void CIdleState::Enter()
     {
         m_pOwner->Set_PlayTeemoIdleIn(false);
 
-        // Idle_In 끝나면 랜덤 Idle로 넘어갈 목록
         m_vecIdleAnim = {
             CTemoo::ANIM::IDLE,
             CTemoo::ANIM::IDLE2,
             CTemoo::ANIM::IDLE3
         };
 
-        // 먼저 Idle_In 재생
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(CTemoo::ANIM::IDLE_IN);
-        return;
     }
-    __super::Enter();
-    m_eState = STATE_ID::STATE_IDLE;
-
-    m_vecIdleAnim.clear();
-
-    // Ezreal 후딜 IdleQ
-    if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL &&
-        m_pOwner->Get_PlayIdleQ())
+    else
     {
-        m_pOwner->Set_PlayIdleQ(false);
+        __super::Enter();
+        m_eState = STATE_ID::STATE_IDLE;
 
-        // Idle 이후 랜덤 돌아갈 Idle 목록 미리 넣기
-        m_vecIdleAnim = {
-            CEzreal::ANIM::IDLE01,
-            CEzreal::ANIM::IDLE2
-        };
+        m_vecIdleAnim.clear();
 
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::IDLEQ);
-        return;
+        if (m_pOwner->Get_PlayerID() == CPlayer::EZREAL &&
+            m_pOwner->Get_PlayIdleQ())
+        {
+            m_pOwner->Set_PlayIdleQ(false);
+
+            m_vecIdleAnim = {
+                CEzreal::ANIM::IDLE01,
+                CEzreal::ANIM::IDLE2
+            };
+
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::IDLEQ);
+        }
+        else
+        {
+            switch (m_pOwner->Get_PlayerID())
+            {
+            case CPlayer::EZREAL:
+                m_vecIdleAnim = { CEzreal::ANIM::IDLE01, CEzreal::ANIM::IDLE2 };
+                break;
+
+            case CPlayer::LEESIN:
+                m_vecIdleAnim = { CLeeSin::ANIM::IDLE1, CLeeSin::ANIM::IDLE_BASE, CLeeSin::ANIM::IDLE_BASE1 };
+                break;
+
+            case CPlayer::TEEMO:
+                m_vecIdleAnim = { CTemoo::ANIM::IDLE, CTemoo::ANIM::IDLE2, CTemoo::ANIM::IDLE3 };
+                break;
+            }
+
+            int idx = rand() % (int)m_vecIdleAnim.size();
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(m_vecIdleAnim[idx]);
+        }
     }
 
-    // ===== 기존 Idle 랜덤 로직 =====
-    switch (m_pOwner->Get_PlayerID())
+    // =========================
+    // ? Idle 진입 후 5~8초 뒤 대사 1번 "무조건"
+    // =========================
+    m_fNoTalkAcc = 0.f;
+
     {
-    case CPlayer::EZREAL:
-        m_vecIdleAnim = {
-            CEzreal::ANIM::IDLE01,
-            CEzreal::ANIM::IDLE2
-        };
-        break;
-
-    case CPlayer::LEESIN:
-        m_vecIdleAnim = {
-            CLeeSin::ANIM::IDLE1,
-            CLeeSin::ANIM::IDLE_BASE,
-            CLeeSin::ANIM::IDLE_BASE1
-        };
-        break;
-
-    case CPlayer::TEEMO:
-        m_vecIdleAnim = {
-            CTemoo::ANIM::IDLE,
-            CTemoo::ANIM::IDLE2,
-            CTemoo::ANIM::IDLE3
-        };
-        break;
+        float t = (rand() % 1000) / 1000.f;
+        m_fTalkTimer = 5.f + 3.f * t; // 5~8초
     }
-
-    int idx = rand() % m_vecIdleAnim.size();
-    m_pOwner->Get_Model()->Set_CurrentAnimIndex(m_vecIdleAnim[idx]);
-    
 }
 
 
 void CIdleState::Exit()
 {
-	__super::Exit();
+    __super::Exit();
+    m_fNoTalkAcc = 0.f;
+    // m_fTalkTimer는 Enter에서 다시 세팅하니까 굳이 건드릴 필요 없음
 }

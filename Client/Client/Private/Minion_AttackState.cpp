@@ -6,8 +6,56 @@
 #include "Minion_MoveState.h"
 #include "PoolManager.h"
 #include "Projectile.h"
+#include <random>
 USING(Client);
 using namespace Minion;
+
+static bool ShouldPlayMinionSfx(CMinion* pOwner)
+{
+    if (!pOwner) return false;
+
+    CGameInstance* GI = CGameInstance::GetInstance();
+    if (!GI) return false;
+
+    // 카메라 위치 얻는 함수가 프로젝트에 있을 확률이 높음
+    // (없으면 아래 주석 참고해서 네가 쓰는 함수로 바꿔)
+    _float4 vCam = GI->Get_CamPosition(); // <-- 여기 프로젝트 함수명 맞춰서 수정
+    _vector cam = XMLoadFloat4(&vCam);
+
+    _vector pos = pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+
+    _vector d = pos - cam;
+    d = XMVectorSetY(d, 0.f);
+
+    float dist = XMVectorGetX(XMVector3Length(d));
+
+    const float MAX_SFX_DIST = 30.f;
+    if (dist > MAX_SFX_DIST)
+        return false;
+
+   if (!pOwner->Is_Frustum(10.f)) return false;  // 이런 형태로 있으면 사용
+
+    return true;
+}
+
+static float GetMinionSfxVolumeByDistance(CMinion* pOwner, float baseVol)
+{
+    if (!pOwner) return baseVol;
+
+    CGameInstance* GI = CGameInstance::GetInstance();
+    if (!GI) return baseVol;
+
+    _float4 vCam = GI->Get_CamPosition(); // <-- 여기도 함수명 맞춰서
+    _vector cam = XMLoadFloat4(&vCam);
+
+    _vector pos = pOwner->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+
+    _vector d = pos - cam;
+    d = XMVectorSetY(d, 0.f);
+
+    float dist = XMVectorGetX(XMVector3Length(d));
+    return baseVol;
+}
 
 static float GetAttackAnimSpeedMul(CMinion* pOwner)
 {
@@ -27,6 +75,49 @@ static float GetAttackAnimSpeedMul(CMinion* pOwner)
     if (mul > 3.0f) mul = 3.0f;
 
     return mul;
+}
+
+// 공격 사운드 랜덤
+static void PlayRandomMinionAttackSfx(CMinion* pOwner)
+{
+    if (!pOwner) return;
+
+    // ★ 카메라에 가까운 애들만
+    if (!ShouldPlayMinionSfx(pOwner))
+        return;
+     
+    CGameInstance* GI = CGameInstance::GetInstance();
+    if (!GI) return;
+
+    thread_local mt19937 rng{ std::random_device{}() };
+
+    float vol = 0.03f;
+    vol = GetMinionSfxVolumeByDistance(pOwner, vol); // ★ 거리 감쇠
+
+    if (pOwner->Get_MinType() == MINION_MELEE)
+    {
+        uniform_int_distribution<int> dist(2, 4);
+        int pick = dist(rng);
+
+        switch (pick)
+        {
+        case 2: GI->PlaySounds(const_cast<TCHAR*>(L"MeleeMinionAttack2.wav"), SOUND_MINION, vol); break;
+        case 3: GI->PlaySounds(const_cast<TCHAR*>(L"MeleeMinionAttack3.wav"), SOUND_MINION, vol); break;
+        default: GI->PlaySounds(const_cast<TCHAR*>(L"MeleeMinionAttack4.wav"), SOUND_MINION, vol); break;
+        }
+    }
+    else
+    {
+        uniform_int_distribution<int> dist(1, 3);
+        int pick = dist(rng);
+
+        switch (pick)
+        {
+        case 1: GI->PlaySounds(const_cast<TCHAR*>(L"MinionRangeAttack1.wav"), SOUND_MINION, vol); break;
+        case 2: GI->PlaySounds(const_cast<TCHAR*>(L"MinionRangeAttack2.wav"), SOUND_MINION, vol); break;
+        default: GI->PlaySounds(const_cast<TCHAR*>(L"MinionRangeAttack3.wav"), SOUND_MINION, vol); break;
+        }
+    }
 }
 
 static void SpawnRangeProjectile(CMinion* pOwner)
@@ -218,6 +309,7 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
 
                     m_bDamageApplied = true;
                     m_pOwner->Reset_AttackTimer();
+                    PlayRandomMinionAttackSfx(m_pOwner);
                 }
             }
         }
@@ -252,6 +344,7 @@ CMinionState* CAttackState::Update(_float fTimeDelta)
 
                 m_bDamageApplied = true;       // 한 번만 때리게
                 m_pOwner->Reset_AttackTimer(); // 쿨타임 리셋
+                PlayRandomMinionAttackSfx(m_pOwner);
             }
         }
     }

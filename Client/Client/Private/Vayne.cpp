@@ -237,13 +237,24 @@ void CVayne::LateUpdate_State(_float fTimeDelta)
 _int CVayne::Take_Damage(int iDamage, CActor* DamageCauser)
 {
 	_int iHp = __super::Take_Damage(iDamage, DamageCauser);
+
+	// =========================
+	// ?? 사망 순간 (딱 1번)
+	// =========================
 	if (iHp <= 0)
+	{
+		if (!m_bDeathSoundPlayed)
+		{
+			Play_VayneSFX(TEXT("VayneDeath.wav"), SOUND_VAYNE, 0.5f);
+			m_bDeathSoundPlayed = true;
+		}
 		return iHp;
+	}
 
 	if (!m_pState || dynamic_cast<CReturnState*>(m_pState))
 		return iHp;
 
-	// 1) 포탑(혹은 건물)에게 맞은 경우 → 무조건 도망
+	// 1) 포탑에게 맞으면 도망
 	if (auto pBuilding = dynamic_cast<CBuilding*>(DamageCauser))
 	{
 		CVayneState* pNew = new CReturnState(this);
@@ -251,7 +262,7 @@ _int CVayne::Take_Damage(int iDamage, CActor* DamageCauser)
 		return iHp;
 	}
 
-	// 2) 플레이어나 기타 경우 → 확률로 도망
+	// 2) 챔피언에게 맞으면 확률 도망
 	if (auto pChamp = dynamic_cast<CChampion*>(DamageCauser))
 	{
 		int roll = rand() % 100;
@@ -276,40 +287,7 @@ void CVayne::Check_Navigation()
 
 void CVayne::OnRespawned()
 {
-	// 1) 상태머신은 "ChangeState"로 정상 진입시켜라 (Safe_Delete 하지마)
-	if (m_pState)
-	{
-		CVayneState* pNew = new CIdleState(this);
-		m_pState = m_pState->ChangeState(m_pState, pNew);
-	}
-	else
-	{
-		m_pState = new CIdleState(this);
-	}
-
-	// 2) 베인 전용 플래그 리셋
-	m_bJustAttacked = false;
-	m_fPostAttackMoveTime = 0.f;
-
-	m_vKitingDest = XMVectorZero();
-	m_bDoKiting = false;
-
-	m_bQEmpowered = false;
-	m_bConsumeQThisAttack = false;
-	m_fQEmpoweredTime = 0.f;
-
-	m_bSkillLock = false;
-
-	// 3) 부활 위치 기준으로 라인 경로 인덱스/목적지 재설정 (중요)
-	if (m_pTransformCom && m_pNavigationCom)
-	{
-		// 부활 위치에서 가장 가까운 노드로 destination 다시 잡기
-		RefreshLaneNodeByPosition();
-	}
-
-	// 4) 애니도 Idle로 확실히
-	if (m_pModelCom)
-		m_pModelCom->Set_CurrentAnimIndex(CVayne::ANIM::IDLE);
+	return;
 }
 
 
@@ -356,6 +334,11 @@ HRESULT CVayne::SetUp_ShaderID()
 	m_eShaderID = SHADER_ANIMDEFAULT;
 
 	return S_OK;
+}
+
+void CVayne::Play_VayneSFX(const TCHAR* key, _uint ch, float vol)
+{
+	m_pGameInstance->PlaySounds((TCHAR*)key, ch, vol);
 }
 
 CVayne* CVayne::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

@@ -12,6 +12,7 @@
 #include "Collision_Manager.h"
 #include "Nexus.h"
 #include "GameFlow.h"
+#include "UI_TextImage.h"
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
 {
@@ -19,11 +20,13 @@ CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pCo
 
 HRESULT CLevel_GamePlay::Initialize()
 {
-	// ★ 재진입 대비 초기화
 	m_bGameOver = false;
 	m_bVictoryUISpawned = false;
 	m_pRedNexus = nullptr;
 	CGameFlow::GetInstance()->Set_GameOver(false);
+	// ★ 웰컴(10초) 초기화
+	m_fWelcomeAcc = 0.f;
+	m_bWelcomePlayed = false;
 	if (FAILED(__super::Initialize()))
 		return E_FAIL;
 
@@ -84,21 +87,42 @@ HRESULT CLevel_GamePlay::Initialize()
 
 	if (FAILED(CMinionManager::GetInstance()->Initialize(LEVEL_GAMEPLAY)))
 		return E_FAIL;
+	CGameInstance::GetInstance()->PlayBGM(const_cast<TCHAR*>(L"SummonerBackGroundSound.wav"),g_fSoundVolume);
 
     return S_OK;
 }
 
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
-	// ===========================
-   // ★ GameOver면 "월드 전체 dt=0"으로 동결
-   // ===========================
+	g_fSoundVolume = 0.2F;
+	m_pGameInstance->SetChannelVolume(SOUND_BGM, g_fSoundVolume);
 	const float fWorldDT = (m_bGameOver) ? 0.f : fTimeDelta;
 
 	__super::Update(fWorldDT);
 
 	if (!m_bGameOver)
 	{
+		if (!m_bWelcomePlayed)
+		{
+			// "정확히 10초"를 원하면 fTimeDelta 사용 (월드 시간 기준)
+			m_fWelcomeAcc += fTimeDelta;
+
+			if (m_fWelcomeAcc >= 10.f)
+			{
+				m_bWelcomePlayed = true;
+
+				CUI_TextImage::TEXTIMAGEDESC ui{};
+				ui.eType = CUI_TextImage::TEXT_TYPE::WELCOME_SUMMONERS_RIFT;
+				ui.fLifeTime = 2.8f;
+
+				m_pGameInstance->Add_GameObject(
+					TEXT("Prototype_GameObject_UI_TextImage"),
+					LEVEL_GAMEPLAY, TEXT("Layer_UI"), &ui);
+
+				m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"SummoersWelCome.wav"), SOUND_SISTER, g_fSoundVolume);
+			}
+		}
+
 		// 월드가 정상일 때만 시스템 업데이트
 		CMinionManager::GetInstance()->Update(fTimeDelta);
 
@@ -148,6 +172,7 @@ void CLevel_GamePlay::Start_GameOver_Victory()
 {
 	m_bGameOver = true;
 	CGameFlow::GetInstance()->Set_GameOver(true);
+	m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"Victory.wav"), SOUND_SISTER, g_fSoundVolume);
 }
 
 

@@ -113,6 +113,7 @@ CPlayerState* CRunState::HandleInput()
 
 CPlayerState* CRunState::Update(_float fTimeDelta)
 {
+    // 기존 타겟 추적/공격 로직 유지
     CActor* pTarget = m_pOwner->Get_AttackTarget();
 
     if (pTarget && !pTarget->Get_Dead())
@@ -127,11 +128,8 @@ CPlayerState* CRunState::Update(_float fTimeDelta)
         {
             switch (m_pOwner->Get_PlayerID())
             {
-            case CPlayer::EZREAL:
-                return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
-
-            case CPlayer::LEESIN:
-                return new CLeeSinAttackState(m_pOwner);
+            case CPlayer::EZREAL: return new CEzrealAttackState(m_pOwner, STATE_ATTACK1);
+            case CPlayer::LEESIN: return new CLeeSinAttackState(m_pOwner);
             }
         }
     }
@@ -145,27 +143,78 @@ CPlayerState* CRunState::Update(_float fTimeDelta)
     if (STATETYPE_END == m_eStateType)
         return new CIdleState(m_pOwner, CIdleState::IDLE_MAIN);
 
-    if (m_pOwner->Get_PlayerID() == CPlayer::TEEMO && !m_pOwner->IsUsingSkill())
+    // =========================
+    // ? Run 대사 (Ezreal)
+    // - Run 상태 유지 중에만
+    // - 진입 후 5~8초에 1번은 무조건
+    // - 이후 12~22초 랜덤 반복
+    // =========================
+    if (m_pOwner && m_pOwner->Get_PlayerID() == CPlayer::EZREAL)
     {
-        CChampion* pChamp = dynamic_cast<CChampion*>(m_pOwner);
-        CModel* pModel = m_pOwner->Get_Model();
+        m_fRunNoTalkAcc += fTimeDelta;
+        m_fRunTalkTimer -= fTimeDelta;
 
-        if (pChamp && pModel)
+        if (m_fRunTalkTimer <= 0.f && m_fRunNoTalkAcc >= 5.f)
         {
-            const bool bWOn = (pChamp->Get_MoveSpeedMul() > 1.001f);
+            static const TCHAR* talks[] =
+            {
+                TEXT("EzrealTalk.wav"),
+                TEXT("EzrealTalk1.wav"),
+                TEXT("EzrealTalk2.wav"),
+                TEXT("EzrealTalk3.wav"),
+            };
 
-            // ★ 너 Teemo 애니 enum에 RUN_W가 실제 이름이면 그대로,
-            //   이름 다르면 여기만 바꿔.
-            const _uint animNormal = CTemoo::ANIM::RUN;
-            const _uint animWRun = CTemoo::ANIM::W;
+            int tidx = rand() % (int)(sizeof(talks) / sizeof(talks[0]));
+            CGameInstance::GetInstance()->PlaySounds((TCHAR*)talks[tidx], SOUND_PLAYER, 0.85f);
 
-            const _uint desired = bWOn ? animWRun : animNormal;
-
-            if (pModel->Get_CurrentAnimIndex() != desired)
-                pModel->Set_CurrentAnimIndex(desired);
+            float t = (rand() % 1000) / 1000.f;
+            m_fRunTalkTimer = 12.f + 10.f * t; // 12~22초
         }
     }
+    else if (m_pOwner && m_pOwner->Get_PlayerID() == CPlayer::LEESIN)
+    {
+        m_fRunNoTalkAcc += fTimeDelta;
+        m_fRunTalkTimer -= fTimeDelta;
 
+        if (m_fRunTalkTimer <= 0.f && m_fRunNoTalkAcc >= 5.f)
+        {
+            static const TCHAR* talks[] =
+            {
+                    TEXT("LeeSinTalk1.wav"),
+                    TEXT("LeeSinTalk3.wav"),
+                    TEXT("LeeSinTalk5.wav"),
+                    TEXT("LeeSinTalk4.wav"),
+            };
+
+            int tidx = rand() % (int)(sizeof(talks) / sizeof(talks[0]));
+            CGameInstance::GetInstance()->PlaySounds((TCHAR*)talks[tidx], SOUND_PLAYER, 0.85f);
+
+            float t = (rand() % 1000) / 1000.f;
+            m_fRunTalkTimer = 12.f + 10.f * t; // 12~22초
+        }
+    }
+    else if (m_pOwner && m_pOwner->Get_PlayerID() == CPlayer::TEEMO)
+    {
+        m_fRunNoTalkAcc += fTimeDelta;
+        m_fRunTalkTimer -= fTimeDelta;
+
+        if (m_fRunTalkTimer <= 0.f && m_fRunNoTalkAcc >= 5.f)
+        {
+            static const TCHAR* talks[] =
+            {
+                    TEXT("TemooTalkSound1.wav"),
+                    TEXT("TemooTalkSound2.wav"),
+                    TEXT("TemooTalkSound3.wav"),
+            };
+
+            int tidx = rand() % (int)(sizeof(talks) / sizeof(talks[0]));
+            CGameInstance::GetInstance()->PlaySounds((TCHAR*)talks[tidx], SOUND_PLAYER, 0.85f);
+
+            float t = (rand() % 1000) / 1000.f;
+            m_fRunTalkTimer = 12.f + 10.f * t; // 12~22초
+        }
+    }
+    // 기존 Run 애니 재생
     m_pOwner->Get_Model()->Play_Animation(
         fTimeDelta,
         m_pOwner->Is_AnimationLoop(m_pOwner->Get_Model()->Get_CurrentAnimIndex())
@@ -187,7 +236,7 @@ void CRunState::Enter()
 
     m_eState = STATE_RUN;
     m_eStateType = STATETYPE_START;
-    // ★ 반드시 여기에서 최신 타겟 위치로 경로 생성
+
     _float3 target = m_pOwner->Get_TargetPosition();
 
     CTransform* tr = m_pOwner->Get_Transform();
@@ -199,38 +248,46 @@ void CRunState::Enter()
     switch (m_ePlayerID)
     {
     case CPlayer::EZREAL:
-        if (m_pOwner->IsUsingSkill())
-            return;
+        if (!m_pOwner->IsUsingSkill())
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RUN);
+        break;
 
-        // 평소엔 Run 애니 재생
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CEzreal::ANIM::RUN);
-        break;
     case CPlayer::LEESIN:
-        if (m_pOwner->IsUsingSkill())
-            return;
-        // 평소엔 Run 애니 재생
-        m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::RUN1);
+        if (!m_pOwner->IsUsingSkill())
+            m_pOwner->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::RUN1);
         break;
+
     case CPlayer::TEEMO:
     {
         if (m_pOwner->IsUsingSkill())
-            return;
+            break;
 
         CChampion* pChamp = dynamic_cast<CChampion*>(m_pOwner);
         const bool bWOn = (pChamp && pChamp->Get_MoveSpeedMul() > 1.001f);
 
         const _uint animNormal = CTemoo::ANIM::RUN;
-        const _uint animWRun = CTemoo::ANIM::W; // 이름 다르면 여기만
+        const _uint animWRun = CTemoo::ANIM::W;
 
         m_pOwner->Get_Model()->Set_CurrentAnimIndex(bWOn ? animWRun : animNormal);
         break;
     }
     }
 
+    // =========================
+    // ? Run 진입 후 5~8초 뒤 대사 1번 "무조건"
+    // =========================
+    m_fRunNoTalkAcc = 0.f;
+    {
+        float t = (rand() % 1000) / 1000.f;
+        m_fRunTalkTimer = 5.f + 3.f * t; // 5~8초
+    }
+
 }
 
 void CRunState::Exit()
 {
+    m_fRunNoTalkAcc = 0.f;
+    m_fRunTalkTimer = 0.f;
 }
 
 void CRunState::Move(_float fTimeDelta)

@@ -47,7 +47,7 @@ private:
 private:
 	CVIBuffer_Terrian* m_pVIBufferCom = nullptr;
 	_bool m_bWireFrame = false;
-	TERRAIN_DEBUG_TYPE m_eDebugtype = DEBUG_SOLID;
+	TERRAIN_DEBUG_TYPE m_eDebugtype = DEBUG_NONE;
 	_bool	m_bDebugShow = true;
 public:
 	static CTerrian* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

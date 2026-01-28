@@ -48,7 +48,7 @@ HRESULT CLeona::Initialize(void* pArg)
 	m_pState = m_pState->ChangeState(m_pState, pState);
 	m_eEnemyType = LEONA;
 	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
-	m_tStats.MaxHp = 500.f;
+	m_tStats.MaxHp = 3000.f;
 	m_tStats.Hp = m_tStats.MaxHp;
 	m_tStats.MoveSpeed = 4.f;
 	m_tStats.AttackRange = 8.f;

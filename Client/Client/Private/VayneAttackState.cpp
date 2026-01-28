@@ -98,6 +98,23 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
             if (m_pOwner->Has_TeemoBlind())
                 break;
 
+            if (m_pOwner->m_bConsumeQThisAttack)
+            {
+                // Q 강화 Attack 사운드 2개 랜덤 1개 재생
+                // rand()는 이미 너 코드에서 쓰고 있으니 그대로 사용
+                const int pick = rand() % 2;
+                if (pick == 0)
+                    m_pOwner->Play_VayneSFX(TEXT("VayneQAttack1.wav"), SOUND_VAYNE, 0.75f);
+                else
+                    m_pOwner->Play_VayneSFX(TEXT("VayneQAttack2.wav"), SOUND_VAYNE, 0.75f);
+            }
+            else
+            {
+                // 일반 공격
+                m_pOwner->Play_VayneSFX(TEXT("VayneAttack.wav"), SOUND_VAYNE, 0.70f);
+            }
+
+
             CTransform* pTr = m_pOwner->Get_Transform();
             _vector vSpawn = pTr->Get_State(CTransform::STATE_TRANSLATION);
             vSpawn += XMVectorSet(0.f, 1.0f, 0.f, 0.f);
@@ -116,6 +133,7 @@ CVayneState* CAttackState::Update(_float fTimeDelta)
             tag.ePoolLevel = LEVEL_GAMEPLAY;
             tag.pPoolLayerTag = TEXT("Layer_Projectile_Vayne"); // 타입별로 다르게
             tag.bPrewarm = false;
+            tag.pTarget = pTarget;   // ★★★ 핵심
             // =========================
             // 강화 평타
             // =========================

@@ -19,7 +19,8 @@ void CVayneSkillStateE::Enter()
 
     CModel* pModel = m_pOwner->Get_Model();
     if (!pModel) return;
-
+    m_pOwner->Play_VayneSFX(TEXT("VayneETalk.wav"), SOUND_VAYNE_TALK, 0.75f);
+    m_pOwner->Play_VayneSFX(TEXT("VayneEReady.wav"), SOUND_VAYNE, 0.75f);
     // ?? E 진입 시 애니 강제 전환 (보간은 Play_Animation에서)
     pModel->Set_CurrentAnimIndex(CVayne::ANIM::E);
 }

@@ -253,6 +253,7 @@ int CMushRoom::Update(_float dt)
                 if (m_pSphereCom->Collision(targetCol))
                 {
                     Trigger_Explode(a);
+                    m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"11_teemo_ noxioustrap_obd_1.wav"), SOUND_PLAYER, 0.8f);
                     return true;
                 }
             }
@@ -307,7 +308,7 @@ void CMushRoom::Trigger_Explode(CActor* pVictim)
 
     _matrix world = m_pTransformCom->Get_WorldMatrix();
     if (m_Desc.pExplodeDat)
-        CEffect::PlayEffectAtLocation(m_Desc.pExplodeDat, world);
+        CEffect::PlayEffectAtLocation(TEXT("TeemoRBurst.dat"), world);
 
     if (pVictim)
     {

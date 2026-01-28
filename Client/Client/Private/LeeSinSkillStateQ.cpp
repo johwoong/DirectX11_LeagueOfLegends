@@ -112,7 +112,7 @@ void CLeeSinSkillStateQ::Enter_CastQ1()
     m_ePhase = PHASE::CAST_Q1;
     m_bProjectileSpawned = false;
     m_bHitApplied = false;
-
+   
     CCursorManager* CM = CCursorManager::GetInstance();
     _vector rayPos = CM->Get_RayPos();
     _vector rayDir = CM->Get_RayDir();
@@ -228,7 +228,7 @@ void CLeeSinSkillStateQ::Enter_DashQ2()
 void CLeeSinSkillStateQ::Enter_Trans()
 {
     m_ePhase = PHASE::TRANS_HIT;
-
+    CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSINQSound2.wav"), SOUND_PLAYERTALK, 0.4f);
     m_bHitApplied = false;
     m_bQ2DamageApplied = false;
 
@@ -530,7 +530,8 @@ void CLeeSinSkillStateQ::Spawn_QWaveProjectile()
 
     CPoolManager* PM = CPoolManager::GetInstance();
     CGameInstance* GI = CGameInstance::GetInstance();
-
+    CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinQSound.wav"), SOUND_PLAYERTALK, 0.4f);
+    CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinSonicWave.wav"), SOUND_PLAYER, 0.05f);
     // 1) 리신 전용 풀에서만 재사용
     if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, LAYER_LEESIN_PROJ, &desc))
     {

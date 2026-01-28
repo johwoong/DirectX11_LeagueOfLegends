@@ -20,6 +20,9 @@ private:
 private:
 	_float3 m_vTargetPos = { 0.f, 0.f, 0.f };
 	STATETYPE m_eStateType = STATETYPE_START;
+private: // ? Run ´ë»ç¿ë
+	float m_fRunNoTalkAcc = 0.f;
+	float m_fRunTalkTimer = 0.f;
 };
 NS_END
 NS_END

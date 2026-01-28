@@ -142,7 +142,7 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
                     CProjectile::PROJECTILEDESC ProjDesc;
                     ProjDesc.eCollisionGroup = PLAYER;
                     ProjDesc.fDeadTime = 10.f;        
-                    ProjDesc.fVelocity = 6.f;             
+                    ProjDesc.fVelocity = 10.f;             
                     ProjDesc.eProjType = CEzrealProjectile::BASE;
                     ProjDesc.vInitPositon = vHandVec;
                     ProjDesc.pOwner = m_pOwner;
@@ -151,12 +151,28 @@ CPlayerState* CEzrealAttackState::Update(_float fTimeDelta)
                     ProjDesc.vTargetDir = XMVector3Normalize(ProjDesc.vTargetPosition - ProjDesc.vInitPositon);
                     ProjDesc.ePoolLevel = LEVEL_GAMEPLAY;
                     ProjDesc.pPoolLayerTag = TEXT("Layer_Projectile");
-
+                    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+                    const int pick = rand() % 3;
+                    switch (pick)
+                    {
+                    case 0:
+                        pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealTalkAttack2.wav"), SOUND_PLAYERTALK, 0.4f);
+                        break;
+                    case 1:
+                        pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealkTalkAttack1.wav"), SOUND_PLAYERTALK, 0.4f);
+                        break;
+                    case 2:
+                        pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealTalkAttack.wav"), SOUND_PLAYERTALK, 0.4f);
+                        break;
+                    }
+                    pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealAttackSound.wav"), SOUND_PLAYER, 0.4f);
+                    
                     CPoolManager* PM = CPoolManager::GetInstance();
 
                     // 1) 풀에 있으면 재사용 (새로 생성 X)
                     if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &ProjDesc))
                     {
+               
                         if (FAILED(CGameInstance::GetInstance()->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"), LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &ProjDesc)))
                             return nullptr;
                     }

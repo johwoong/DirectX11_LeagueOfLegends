@@ -145,6 +145,7 @@ int CBow::Update(_float fTimeDelta)
 			CGameInstance* GI = CGameInstance::GetInstance();
 			CPoolManager* PM = CPoolManager::GetInstance();
 			// 1) 풀에 있으면 재사용 (새로 생성 X)
+			m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"Ezreal_RProjectile.wav"), SOUND_PLAYER, 0.4f);
 			if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_Projectile"), &desc))
 			{
 				if (FAILED(GI->Add_GameObject(TEXT("Prototype_GameObject_EzrealProjectile"),

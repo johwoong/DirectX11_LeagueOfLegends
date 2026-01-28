@@ -51,7 +51,7 @@ HRESULT CRenekton::Initialize(void* pArg)
 	m_eEnemyType = RENEKTON;
 
 	Set_Scale(_float3(0.012f, 0.012f, 0.012f));
-	m_tStats.MaxHp = 500.f;
+	m_tStats.MaxHp = 50000.f;
 	m_tStats.Hp = m_tStats.MaxHp;
 	return S_OK;
 }

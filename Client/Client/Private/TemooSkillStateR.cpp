@@ -178,7 +178,8 @@ void CTemooSkillStateR::Spawn_MushRoom()
     XMStoreFloat3(&desc.vPos, m_vPlacePos);
     desc.vDir = m_vCastDir;
     desc.pOwner = dynamic_cast<CActor*>(m_pOwner);
-
+    
+    CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"TemooRSound.wav"), SOUND_PLAYERTALK, 0.4f);
     CGameObject* pObj = nullptr;
     if (FAILED(CGameInstance::GetInstance()->Add_GameObject_Out(
         TEXT("Prototype_GameObject_TemooMushroom"),

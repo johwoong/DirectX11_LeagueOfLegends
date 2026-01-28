@@ -111,6 +111,9 @@ void CVayneSkillStateQ::Enter()
     m_bQFxSpawned = false;
     m_QFxList.clear();
 
+    m_pOwner->Play_VayneSFX(TEXT("VayneQTalk.wav"), SOUND_VAYNE_TALK, 0.70f);
+    m_pOwner->Play_VayneSFX(TEXT("VayneQSound.wav"), SOUND_VAYNE, 0.70f);
+   
     m_pOwner->m_bQEmpowered = true;
     m_pOwner->m_fQEmpoweredTime = m_pOwner->Q_EMPOWER_DURATION;
 

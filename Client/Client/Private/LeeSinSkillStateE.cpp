@@ -29,20 +29,21 @@ void CLeeSinSkillStateE::Enter()
     m_bDidHit = false;
     m_bAnimFinished = false;
     m_bColliderEventPlaying = false;
-
     Destroy_E1Collider();
 
     // ★ E2는 "표식이 남아있을 때만" 진입 가능
     if (m_pLeeSin->Can_ERecast())
     {
         m_ePhase = PHASE::CAST_E2;
-        m_pLeeSin->Consume_ERecast();                 // 아이콘 닫기
+        m_pLeeSin->Consume_ERecast();          
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinESound.wav"), SOUND_PLAYERTALK, 0.4f);
         m_pLeeSin->Get_Model()->Set_CurrentAnimIndex(CLeeSin::ANIM::E_B);
     }
     else
     {
         m_ePhase = PHASE::CAST_E1;
-
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinETalkSound.wav"), SOUND_PLAYERTALK, 0.4f);
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"62_blindmonk_tempistfist_oh_02.wav"), SOUND_PLAYER, 0.4f);
         // 새 E1 시작이면 이전 표식 비움
         m_pLeeSin->Clear_EMarkTargets();
 
@@ -65,7 +66,6 @@ void CLeeSinSkillStateE::Create_E1Collider()
     desc.vScale = m_vE1BoxScale;
     desc.vRotation = _float3(0.f, 0.f, 0.f);
     desc.vPosition = _float3(0.f, 0.f, 0.f);
-
     m_pE1Collider =
         CCollision_Manager::GetInstance()->Reuse_Collider(
             CColider::TYPE_AABB,
@@ -238,7 +238,7 @@ void CLeeSinSkillStateE::Do_Tempest()
         _vector vPos = m_pLeeSin->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
         vPos = XMVectorSetW(vPos, 1.f);
         world.r[3] = vPos;
-        CEffect::PlayEffectAtLocation(TEXT("LeeSin_E1.dat"), world);
+        CEffect::PlayEffectAtLocation(TEXT("LeeSin_E.dat"), world);
     }
 
     if (!m_pE1Collider) return;
@@ -265,7 +265,7 @@ void CLeeSinSkillStateE::Do_Tempest()
                 TEXT("LeeSin_EMark.dat"),
                 _float3(0.f, 1.1f, 0.f)   // 타겟 머리 위(원하는 높이로 튜닝)
             );
-
+            CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"59_blindmonk_tempistfist_oc_01.wav"), SOUND_PLAYER, 0.4f);
             bAnyHit = true;
         };
 

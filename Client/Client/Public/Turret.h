@@ -49,7 +49,8 @@ private:
 	float   m_fAttackTimer = 0.f;
 	float   m_fAttackCoolTime = 0.f;
 	CActor* m_pTarget = nullptr;
-
+private:
+	bool m_bDeathSfxPlayed = false;
 public:
 	static CTurret* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg = nullptr);

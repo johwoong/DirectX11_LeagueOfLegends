@@ -37,7 +37,7 @@ HRESULT CTurret::Initialize(void* pArg)
     m_eState = IDLE;
     m_pModelCom->Set_CurrentAnimIndex(m_eState);
     Set_Scale(_float3(0.01f, 0.01f, 0.01f));
-
+    m_bDeathSfxPlayed = false;   // ★ 추가
     // 공격 쿨타임
     m_fAttackCoolTime = (m_tStats.fAttackSpeed > 0.f)
         ? 1.f / m_tStats.fAttackSpeed : 1.f;
@@ -221,7 +221,7 @@ _int CTurret::Update(_float fTimeDelta)
             Desc.bPrewarm = false;
             CPoolManager* PM = CPoolManager::GetInstance();
             CGameInstance* GI = CGameInstance::GetInstance();
-
+            m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"Turret_Attack.wav"), SOUND_TURRET, 0.2f);
             if (!PM->Reuse_Pooling_Object(
                 LEVEL_GAMEPLAY,
                 TEXT("Layer_Projectile_Turret"),
@@ -367,8 +367,17 @@ _int CTurret::Take_Damage(int iDamage, CActor* DamageCauser)
     if (m_bDead && m_eState != DEATH && m_eState != DESTORY)
     {
         m_eState = DEATH;
+
         if (m_pModelCom)
-            m_pModelCom->Set_CurrentAnimIndex(DEATH); // ★ 여기에서 딱 한 번만 세팅
+            m_pModelCom->Set_CurrentAnimIndex(DEATH);
+
+        // ★ 여기서 딱 1번만 재생
+        if (!m_bDeathSfxPlayed)
+        {
+            m_bDeathSfxPlayed = true;
+            m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"Turret_Destory.wav"), SOUND_TURRET, 0.2f);
+            m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"Turret_DestoryMessage.wav"), SOUND_SISTER, 0.2f);
+        }
 
         m_pTarget = nullptr;
         if (m_pAttackRange)

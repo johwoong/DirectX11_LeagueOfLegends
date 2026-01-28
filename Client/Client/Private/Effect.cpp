@@ -30,9 +30,17 @@ HRESULT CEffect::Initialize(void* pArg)
 
 int CEffect::Update(_float fTimeDelta)
 {
-	// ★ 핵심: 죽음 처리
-	if (m_bDead || m_bPreDead)
-		return OBJ_POOL;
+	// 죽음 처리: 레이어가 Safe_Release 하도록 OBJ_DEAD로 보낸다
+	if (m_bDead)
+		return OBJ_DEAD;
+
+	// PreDead는 "곧 죽을 예정" 상태면 여기서 Dead로 승격시키거나,
+	// 그냥 즉시 Dead 처리해도 됨(지금은 즉시 Dead로 처리)
+	if (m_bPreDead)
+	{
+		m_bDead = true;
+		return OBJ_DEAD;
+	}
 
 	return OBJ_NOEVENT;
 }

@@ -166,7 +166,8 @@ void CEzrealSkillStateE::Enter()
         anim = CEzreal::ANIM::E_MINUS_180;  // 거의 정반대 (뒤)
 
     m_pOwner->Get_Model()->Set_CurrentAnimIndex(anim);
-
+    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+    pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealESound.wav"), SOUND_PLAYER, 0.4f);
     // ===== 5) 현재 프레임부터 바로 대쉬 방향으로 바라보게 회전 =====
     _vector vLook = dir;
     _vector vUp = XMVectorSet(0, 1, 0, 0);

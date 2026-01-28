@@ -179,10 +179,53 @@ bool CVayneProjectile::Is_BlueTarget(CActor* pActor) const
 
 void CVayneProjectile::Collision_Check()
 {
-        // 이미 처리된 투사체는 다시 처리 X
     if (m_bDead || m_bHitOnce)
         return;
 
+    // =========================
+    // 1. 타겟 기반 충돌 (BASE / Q)
+    // =========================
+    if (m_ProjectileDesc.eProjType != E_CONDEMN)
+    {
+        CActor* pTarget = m_ProjectileDesc.pTarget;
+        if (!pTarget)
+            return;
+
+        // 타겟 죽었으면 투사체 종료
+        if (pTarget->Get_Dead())
+        {
+            m_bDead = true;
+            Dead_Effect();
+            return;
+        }
+
+        // 팀 필터 (베인은 블루만 때림)
+        if (!Is_BlueTarget(pTarget))
+            return;
+
+        CColider* pMyCol = m_pOBBCom;
+        CColider* pTargetCol = pTarget->Get_OBBCollider();
+        if (!pTargetCol)
+            pTargetCol = pTarget->Get_Collider();
+
+        if (pMyCol && pTargetCol && pMyCol->Collision(pTargetCol))
+        {
+            m_bHitOnce = true;
+
+            // 데미지
+            pTarget->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
+            pTarget->Apply_VayneSilverMark(m_ProjectileDesc.pOwner);
+
+            Spawn_Effect(pTarget);
+            m_bDead = true;
+            Dead_Effect();
+        }
+        return;
+    }
+
+    // =========================
+    // 2. E (Condemn) : 라인 충돌
+    // =========================
     CActor* pHit = nullptr;
 
     if (!(CCollision_Manager::GetInstance()->CollisionwithGroup(
@@ -191,10 +234,8 @@ void CVayneProjectile::Collision_Check()
             CCollision_Manager::COLLISION_MINION, m_pOBBCom, &pHit)))
         return;
 
-    // ? 여기서 바로 1회 확정
     m_bHitOnce = true;
 
-    // 블루팀 아니면 연출만 하고 종료
     if (!Is_BlueTarget(pHit))
     {
         Spawn_Effect(pHit);
@@ -203,45 +244,23 @@ void CVayneProjectile::Collision_Check()
         return;
     }
 
-    // =================================================
-    // ? 공통: 데미지 + W 스택 (평타 / Q / E 전부)
-    // =================================================
     pHit->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
     pHit->Apply_VayneSilverMark(m_ProjectileDesc.pOwner);
 
-    // =================================================
-    // ? E 전용 처리
-    // =================================================
-    if (m_ProjectileDesc.eProjType == E_CONDEMN)
+    // 넉백
+    if (CTransform* pTr = pHit->Get_Transform())
     {
-        CTransform* pTr = pHit->Get_Transform();
-        if (pTr)
+        _vector vDir = XMVectorSetY(m_ProjectileDesc.vTargetDir, 0.f);
+        if (XMVectorGetX(XMVector3LengthSq(vDir)) > 0.0001f)
         {
-            _vector vDir = XMVectorSetY(m_ProjectileDesc.vTargetDir, 0.f);
-
-            if (XMVectorGetX(XMVector3LengthSq(vDir)) > 0.0001f)
-            {
-                vDir = XMVector3Normalize(vDir);
-
-                _vector hitPos =
-                    pTr->Get_State(CTransform::STATE_TRANSLATION);
-                hitPos += vDir * 3.5f;
-
-                pTr->Set_State(
-                    CTransform::STATE_TRANSLATION,
-                    XMVectorSetW(hitPos, 1.f));
-            }
+            vDir = XMVector3Normalize(vDir);
+            _vector hitPos = pTr->Get_State(CTransform::STATE_TRANSLATION);
+            hitPos += vDir * 3.5f;
+            pTr->Set_State(CTransform::STATE_TRANSLATION, XMVectorSetW(hitPos, 1.f));
         }
     }
 
-    // =================================================
-    // ? 히트 FX
-    // =================================================
     Spawn_Effect(pHit);
-
-    // =================================================
-    // ? 종료
-    // =================================================
     m_bDead = true;
     Dead_Effect();
 }

@@ -255,7 +255,7 @@ int CEnemy::Update(_float fTimeDelta)
 
 		if (m_fRespawnAcc >= 5.f)
 		{
-			Respawn();
+			//Respawn();
 		}
 
 		return OBJ_NOEVENT;

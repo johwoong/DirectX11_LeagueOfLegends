@@ -141,7 +141,7 @@ void CLeeSinProjectile::Collision_Check()
         if (pHit)
         {
             pHit->Take_Damage(m_ProjectileDesc.iDamage, m_ProjectileDesc.pOwner);
-
+            m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"LeeSinQHitSound.wav"), SOUND_EFFECT, 0.2f);
             // 표식 (dat 이름은 네가 가진 걸로 바꿔)
             pHit->Apply_Mark(
                 CActor::MARK_TYPE::LEE_SIN_Q,

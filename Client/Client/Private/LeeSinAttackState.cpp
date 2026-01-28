@@ -49,7 +49,22 @@ void CLeeSinAttackState::Enter()
         case 1: pModel->Set_CurrentAnimIndex(CLeeSin::ATTACK_R_KICK);  break;
         }
     }
-
+    const int pick = rand() % 3;
+    switch (pick)
+    {
+    case 0:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinAttack2.wav"), SOUND_PLAYERTALK, 0.4f);
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinAttackSound.wav"), SOUND_PLAYER, 0.05f);
+        break;
+    case 1:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinAttack3.wav"), SOUND_PLAYERTALK, 0.4f);
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinAttackSound2.wav"), SOUND_PLAYER, 0.05f);
+        break;
+    case 2:
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinAttackSound1.wav"), SOUND_PLAYERTALK, 0.4f);
+        CGameInstance::GetInstance()->PlaySounds(const_cast<TCHAR*>(L"LeeSinAttack4.wav"), SOUND_PLAYER, 0.05f);
+        break;
+    }
     // 다음 공격은 반대편
     m_pOwner->Toggle_LeeSinAttackSide();
 }
@@ -140,7 +155,6 @@ CPlayerState* CLeeSinAttackState::Update(_float fTimeDelta)
         if (evt.isPlay && evt.eType == ANIMEVENT::EVENT_COLLIDER)
         {
             bColliderEventPlaying = true;
-
             if (!m_pAttackCollider)
             {
                 CColider::COLLIDERDESC desc{};

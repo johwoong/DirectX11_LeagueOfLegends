@@ -162,11 +162,9 @@ void CActor::Update_TeemoPoison(float dt)
 
 void CActor::Clear_TeemoPoison()
 {
-	// ? 독 FX 제거
 	for (auto& fx : m_vecTeemoPoisonFX)
-		if (fx) fx->Set_Dead(true);
+		if (fx) { fx->Set_AttachObject(nullptr); fx->Set_Dead(true); }
 	m_vecTeemoPoisonFX.clear();
-
 	m_tTeemoPoison = TEEMO_POISON_DATA{};
 }
 
@@ -225,9 +223,6 @@ void CActor::Apply_Mark(MARK_TYPE eType, CActor* pCaster, float fDuration,
 			// 기존대로 붙여도 되고(회전/추적 필요하면)
 			fx->Set_AttachObject(this);
 			fx->Set_WorldPosition(world);
-
-			// ★ 여기 핵심: 마크가 들고 있을 거면 참조 잡아둬야 안 터짐
-			Safe_AddRef(fx);
 			m_tMark.fx.push_back(fx);
 		}
 	}
@@ -257,7 +252,6 @@ void CActor::Apply_Mark(MARK_TYPE eType, CActor* pCaster, float fDuration,
 
 			fx->Set_WorldPosition(downWorld);
 
-			Safe_AddRef(fx);
 			m_tMark.fxDown.push_back(fx);
 		}
 	}
@@ -283,7 +277,7 @@ bool CActor::Pop_EzrealW_Mark(CActor* pDamageCauser, int iPopDamage, const _tcha
 
 		_matrix world = Get_Transform()->Get_WorldMatrix();
 		world.r[3] = vPos;
-
+		m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealWBurstSound.wav"), SOUND_EFFECT, g_fSoundVolume);
 		CEffect::PlayEffectAtLocation(pPopDat, world);
 	}
 
@@ -361,7 +355,6 @@ void CActor::Update_Mark(float dt)
 				if (fx->Get_PreDead() || fx->Get_Dead())
 				{
 					fx->Set_AttachObject(nullptr);
-					Safe_Release(fx);
 					fx = nullptr;
 				}
 			}
@@ -438,7 +431,7 @@ void CActor::Apply_VayneSilverMark(CActor* pCaster)
 		if (m_tMark.iHitCount >= 3)
 		{
 			Take_Damage(60, pCaster);
-
+			m_pGameInstance->PlaySounds(const_cast<TCHAR*>(L"VayneStackBurstSound.wav"), SOUND_EFFECT, g_fSoundVolume);
 			auto burstFx = CEffect::PlayEffectAtLocation(TEXT("Vayne_WBurst.dat"), world);
 			for (auto& fx : burstFx)
 			{
@@ -561,35 +554,33 @@ void CActor::Update_TeemoBlind(float dt)
 void CActor::Clear_TeemoBlind()
 {
 	for (auto& fx : m_vecTeemoBlindFX)
-		if (fx) fx->Set_Dead(true);
+		if (fx) { fx->Set_AttachObject(nullptr); fx->Set_Dead(true); }
 	m_vecTeemoBlindFX.clear();
-
 	m_tTeemoBlind = TEEMO_BLIND_DATA{};
 }
 
 void CActor::Clear_Mark()
 {
-	// bActive가 false여도 혹시 남아있으면 정리(안전)
-	if (m_tMark.fx.empty() && m_tMark.fxDown.empty() && !m_tMark.bActive)
-		return;
+	// FX는 레이어가 소유/해제한다. Actor는 죽이기만 한다(Release 금지).
+	for (auto& fx : m_tMark.fx)
+	{
+		if (!fx) continue;
+		fx->Set_AttachObject(nullptr);
+		fx->Set_Dead(true);
+		// Safe_Release(fx); // ? 금지 (레이어가 Release 함)
+		fx = nullptr;
+	}
+	m_tMark.fx.clear();
 
-	auto KillAndRelease = [](std::vector<CEffect*>& v)
-		{
-			for (auto& fx : v)
-			{
-				if (!fx) continue;
-
-				fx->Set_AttachObject(nullptr);
-				fx->Set_Dead(true);
-
-				Safe_Release(fx);
-				fx = nullptr;
-			}
-			v.clear();
-		};
-
-	KillAndRelease(m_tMark.fx);
-	KillAndRelease(m_tMark.fxDown);
+	for (auto& fx : m_tMark.fxDown)
+	{
+		if (!fx) continue;
+		fx->Set_AttachObject(nullptr);
+		fx->Set_Dead(true);
+		// Safe_Release(fx); // ? 금지
+		fx = nullptr;
+	}
+	m_tMark.fxDown.clear();
 
 	m_tMark = MARK_DATA{};
 }

@@ -261,6 +261,7 @@
     <ClInclude Include="..\Public\UI_Text.h" />
     <ClInclude Include="..\Public\UI_LoadingBar.h" />
     <ClInclude Include="..\Public\UI_Manager.h" />
+    <ClInclude Include="..\Public\UI_TextImage.h" />
     <ClInclude Include="..\Public\Vayne.h" />
     <ClInclude Include="..\Public\VayneAttackState.h" />
     <ClInclude Include="..\Public\VayneDeadState.h" />
@@ -382,6 +383,7 @@
     <ClCompile Include="..\Private\UI_Text.cpp" />
     <ClCompile Include="..\Private\UI_LoadingBar.cpp" />
     <ClCompile Include="..\Private\UI_Manager.cpp" />
+    <ClCompile Include="..\Private\UI_TextImage.cpp" />
     <ClCompile Include="..\Private\Vayne.cpp" />
     <ClCompile Include="..\Private\VayneAttackState.cpp" />
     <ClCompile Include="..\Private\VayneDeadState.cpp" />

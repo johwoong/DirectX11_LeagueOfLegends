@@ -159,11 +159,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }      
 
-   //SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);    // 테두리, 타이틀바 제거
-   //SetWindowPos(hWnd, HWND_TOP,
-   //    0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
-   //    SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
+   SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);    // 테두리, 타이틀바 제거
+   SetWindowPos(hWnd, HWND_TOP,
+       0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+       SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+   ShowCursor(false);
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -174,16 +174,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 }
 
-//
-//  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  용도: 주 창의 메시지를 처리합니다.
-//
-//  WM_COMMAND  - 애플리케이션 메뉴를 처리합니다.
-//  WM_PAINT    - 주 창을 그립니다.
-//  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
-//
-//
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)

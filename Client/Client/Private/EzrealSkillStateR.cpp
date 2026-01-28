@@ -104,7 +104,9 @@ CPlayerState* CEzrealSkillStateR::Update(_float fDeltaTime)
             desc.pOwner = m_pOwner;
             desc.vPos = vSpawn;
             desc.vDir = vBowDir;
-
+            CGameInstance* pGameInstance = CGameInstance::GetInstance();
+            pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealRTalk.wav"), SOUND_PLAYERTALK, 0.4f);
+            pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealRRedaySound.wav"), SOUND_PLAYER, 0.4f);
             CGameObject* pObj = nullptr;
             if (FAILED(CGameInstance::GetInstance()->Add_GameObject_Out(
                 TEXT("Prototype_GameObject_Bow"),

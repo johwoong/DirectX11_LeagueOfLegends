@@ -188,7 +188,16 @@ void CTemooSkillStateQ::Spawn_TemooQProjectile(CActor* pTarget)
 
 	CPoolManager* PM = CPoolManager::GetInstance();
 	CGameInstance* GI = CGameInstance::GetInstance();
-
+	const int pick = rand() % 2;
+	switch (pick)
+	{
+	case 0:
+		GI->PlaySounds(const_cast<TCHAR*>(L"04_teemo_blindingdart_OML_2.wav"), SOUND_PLAYER, 0.4f);
+		break;
+	case 1:
+		GI->PlaySounds(const_cast<TCHAR*>(L"05_teemo_blindingdart_OML_3.wav"), SOUND_PLAYER, 0.4f);
+		break;
+	}
 	// 풀 우선 재사용
 	if (!PM->Reuse_Pooling_Object(LEVEL_GAMEPLAY, TEXT("Layer_TemooProjectile"), &ProjDesc))
 	{

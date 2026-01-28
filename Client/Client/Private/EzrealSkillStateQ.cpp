@@ -96,6 +96,21 @@ CPlayerState* CEzrealSkillStateQ::Update(_float fDeltaTime)
                 mWorld.r[3] = vPos;
 
                 CEffect::PlayEffectAtLocation(TEXT("Ezreal_QWait.dat"), mWorld);
+                // Q 강화 Attack 사운드 2개 랜덤 1개 재생
+               // rand()는 이미 너 코드에서 쓰고 있으니 그대로 사용
+                CGameInstance* pGameInstance = CGameInstance::GetInstance();
+                
+                const int pick = rand() % 2;
+                switch (pick)
+                {
+                case 0:
+                    pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealkQAttack2.wav"), SOUND_PLAYERTALK, 0.4f);
+                    break;
+                case 1:
+                    pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealQAttack1.wav"), SOUND_PLAYERTALK, 0.4f);
+                    break;
+                }
+                pGameInstance->PlaySounds(const_cast<TCHAR*>(L"EzrealQSound3.wav"), SOUND_PLAYER, 0.4f);
             }
 
             // 투사체 생성

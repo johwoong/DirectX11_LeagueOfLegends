@@ -29,7 +29,6 @@ HRESULT CTerrian::Initialize(void* pArg)
 
     if (FAILED(Ready_Components(pArg)))
         return E_FAIL;
-
     CPickingManager::GetInstance()->Add_PickingGroup(this);
 
     return S_OK;
@@ -71,7 +70,7 @@ int CTerrian::Update(_float fTimeDelta)
 
     if (GetAsyncKeyState(VK_F3) & 0x0001)
         m_bDebugShow = !m_bDebugShow;
-
+    m_bDebugShow = false;
     return OBJ_NOEVENT;
 }
 

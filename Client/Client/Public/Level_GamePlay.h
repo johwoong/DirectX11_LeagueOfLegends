@@ -39,7 +39,9 @@ private:
 	bool   m_bGameOver = false;
 	bool   m_bVictoryUISpawned = false;
 	CNexus* m_pRedNexus = nullptr; // ★ 레드 넥서스 포인터
-
+private:
+	float m_fWelcomeAcc = 0.f;
+	bool  m_bWelcomePlayed = false;
 public:
 	static CLevel_GamePlay* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual void Free() override;
