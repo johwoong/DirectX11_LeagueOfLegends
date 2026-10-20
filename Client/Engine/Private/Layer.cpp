@@ -79,7 +79,10 @@ void CLayer::Update(_float fTimeDelta)
 
             if (iEvent == OBJ_DEAD)
             {
-                // ★ 핵심: Update 중 절대 Safe_Release 하지 마라
+                // Update 중에는 Release 하지 않고 묘지로 보낸다. (유예 시간 뒤 아래에서 Release)
+                DEADOBJECT tDead;
+                tDead.pObject = *iter;
+                m_Graveyard.push_back(tDead);
                 iter = m_GameObjects.erase(iter);
             }
             else if (iEvent == OBJ_POOL)
@@ -95,6 +98,18 @@ void CLayer::Update(_float fTimeDelta)
         {
             ++iter;
         }
+    }
+
+    for (auto iter = m_Graveyard.begin(); iter != m_Graveyard.end();)
+    {
+        iter->fElapsed += fTimeDelta;
+        if (iter->fElapsed >= DEAD_RELEASE_DELAY)
+        {
+            Safe_Release(iter->pObject);
+            iter = m_Graveyard.erase(iter);
+        }
+        else
+            ++iter;
     }
 }
 
@@ -128,5 +143,9 @@ void CLayer::Free()
     }
 
     m_GameObjects.clear();
+
+    for (auto& tDead : m_Graveyard)
+        Safe_Release(tDead.pObject);
+    m_Graveyard.clear();
 }
 

@@ -855,6 +855,9 @@ HRESULT CRenderer::Render_UI_Glow()
         if (FAILED(m_pTarget_Manager->End_MRT(m_pContext)))
             return E_FAIL;
 
+        /* 위에서 Release 한 포인터가 리스트에 남아 다음 프레임에 이중 Release 되지 않도록 비운다. */
+        m_GameObjects[RENDER_UI_GLOW].clear();
+
         return S_OK;
     }
 }
@@ -945,6 +948,14 @@ CComponent* CRenderer::Clone(void* pArg)
 void CRenderer::Free()
 {
     __super::Free();
+
+    /* 마지막 프레임에 Add_RenderGroup 으로 AddRef 된 채 남아있는 오브젝트 정리 */
+    for (auto& List : m_GameObjects)
+    {
+        for (auto& pGameObject : List)
+            Safe_Release(pGameObject);
+        List.clear();
+    }
 
     Safe_Release(m_pLight_Manager);
     Safe_Release(m_pTarget_Manager);
