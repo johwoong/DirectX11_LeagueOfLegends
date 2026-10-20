@@ -84,6 +84,7 @@ private:
 	HRESULT Render_UI();
 	HRESULT Render_UI_Glow();
 	HRESULT Render_UI_PostProcessing();
+	HRESULT Set_PostProcessingMatrices();   // 후처리 전체 화면 사각형에 쓰는 행렬 설정
 
 #ifdef _DEBUG
 private:

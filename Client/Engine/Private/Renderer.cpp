@@ -668,6 +668,18 @@ HRESULT CRenderer::Render_Distortion()
     return S_OK;
 }
 
+HRESULT CRenderer::Set_PostProcessingMatrices()
+{
+    if (FAILED(m_pShaderPostProcessing->Set_RawValue("g_WorldMatrix", &m_worldMatrix, sizeof(_float4x4))))
+        return E_FAIL;
+    if (FAILED(m_pShaderPostProcessing->Set_RawValue("g_ViewMatrix", &m_ViewMatrix, sizeof(_float4x4))))
+        return E_FAIL;
+    if (FAILED(m_pShaderPostProcessing->Set_RawValue("g_ProjMatrix", &m_ProjMatrix, sizeof(_float4x4))))
+        return E_FAIL;
+
+    return S_OK;
+}
+
 HRESULT CRenderer::Render_EdgeDetection()
 {
     /* If there are not Edge Detection Objects return. */
@@ -675,6 +687,11 @@ HRESULT CRenderer::Render_EdgeDetection()
         return S_OK;
     else
     {
+        /* 후처리 셰이더의 행렬은 Glow/Distortion 이 자기 패스에서만 설정한다. 여기서도 설정하지 않으면
+           글로우/디스토션 이펙트가 없는 동안(스킬을 쓰기 전)은 행렬이 0 이라 전체 화면 사각형이 그려지지 않는다. */
+        if (FAILED(Set_PostProcessingMatrices()))
+            return E_FAIL;
+
         if (FAILED(m_pTarget_Manager->Begin_MRT(m_pContext, TEXT("MRT_Edge_Detection"))))
             return E_FAIL;
 
@@ -723,6 +740,9 @@ HRESULT CRenderer::Render_PostProcessing()
     /* Zoom Blur */
     if (m_bZoomBlur)
     {
+        if (FAILED(Set_PostProcessingMatrices()))
+            return E_FAIL;
+
         m_pTarget_Manager->Copy_BackBufferTexture(m_pDevice, m_pContext);
         if (FAILED(m_pShaderPostProcessing->Set_ShaderResourceView("g_BlurTexture", m_pTarget_Manager->Get_BackBufferCopySRV())))
             return E_FAIL;
