@@ -18,3 +18,8 @@ x64/
 *.ipch
 *.VC.VC.opendb
 Bin/
+
+# Engine 빌드 산출물 (Engine 빌드 -> UpdateLib.bat 으로 생성/복사)
+Engine.dll
+Engine.lib
+*.cso
