@@ -1,3 +1,4 @@
+#include "PlayerManager.h"
 #include "Player.h"
 #include "GameInstance.h"
 
@@ -92,6 +93,16 @@ void CPlayer::Late_Update(_float fTimeDelta)
 	m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NOALPHABLEND, this);
 	m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_SHADOWDEPTH, this);
 	m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_EDGE_DETECTION, this);
+
+	/* 발밑 접촉 그림자. 그림자 맵만으로는 탑뷰에서 그림자가 몸에 가려 거의 안 보인다. */
+	/* 챔피언 3종이 모두 레이어에 있으므로, 현재 조종 중인 챔피언만 설정해야 다른 챔피언 위치로 덮어써지지 않는다. */
+	if (CPlayerManager::GetInstance()->Get_ActivePlayer() == dynamic_cast<CChampion*>(this))
+	{
+		_float3 vFoot;
+		XMStoreFloat3(&vFoot, m_pTransformCom->Get_State(CTransform::STATE_TRANSLATION));
+		vFoot.x += 0.35f; vFoot.z -= 0.2f;   // 그림자가 떨어지는 쪽(오른쪽 아래)으로 살짝 치우친다
+		m_pRendererCom->Set_BlobShadow(vFoot, 1.1f, 0.5f);   // 월드 단위: 1 단위가 화면에서 약 50픽셀
+	}
 #ifdef _DEBUG
 	m_pRendererCom->Add_Debug(m_pNavigationCom);
 	__super::Late_Update(fTimeDelta);

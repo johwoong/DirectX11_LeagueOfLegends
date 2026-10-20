@@ -480,6 +480,11 @@ HRESULT CRenderer::Render_Blend()
     if (FAILED(m_pShaderDeferred->Set_RawValue("g_ProjMatrixInv", &ProjInv, sizeof(ProjInv))))
         return E_FAIL;
 
+    /* 접촉 그림자. 셰이더에 해당 변수가 없어도(구버전 셰이더) 렌더링은 계속한다. */
+    m_pShaderDeferred->Set_RawValue("g_vBlobPos", &m_vBlobPos, sizeof(_float3));
+    m_pShaderDeferred->Set_RawValue("g_fBlobRadius", &m_fBlobRadius, sizeof(_float));
+    m_pShaderDeferred->Set_RawValue("g_fBlobStrength", &m_fBlobStrength, sizeof(_float));
+
     if (FAILED(m_pShaderDeferred->Set_RawValue("g_WorldMatrix", &m_worldMatrix, sizeof(_float4x4))))
         return E_FAIL;
     if (FAILED(m_pShaderDeferred->Set_RawValue("g_ViewMatrix", &m_ViewMatrix, sizeof(_float4x4))))

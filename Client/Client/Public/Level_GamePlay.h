@@ -29,6 +29,7 @@ public:
 	HRESULT Ready_Layer_Projectile();
 
 private:
+	void Update_ShadowLight();   // 그림자 카메라를 플레이어에 맞춘다
 	void Check_GameOver_RedNexus();
 	void Start_GameOver_Victory();
 	

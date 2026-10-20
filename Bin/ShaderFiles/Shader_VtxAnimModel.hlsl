@@ -362,7 +362,7 @@ technique11 DefaultTechnique
     {
         SetRasterizerState(RS_Default);
         SetBlendState(BS_Default, float4(0.f, 0.f, 0.f, 1.f), 0xffffffff);
-        SetDepthStencilState(DSS_Priority, 0);
+        SetDepthStencilState(DSS_Default, 0);   // 그림자 맵은 광원에서 가장 가까운 면만 남겨야 하므로 깊이 테스트가 필요하다
 
         VertexShader = compile vs_5_0 VS_MAIN();
         GeometryShader = NULL;

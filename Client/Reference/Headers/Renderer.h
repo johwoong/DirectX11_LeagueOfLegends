@@ -37,6 +37,13 @@ public:
 	void Set_ZoomBlur(_bool bZoomBlur, _float fFocusPower = 3.f, _uint iFocusDetail = 0);
 	void Set_Saturation(_bool bSaturation, _float fSaturationPower = 1.f);
 
+	/* 캐릭터 발밑 접촉 그림자(블롭 섀도). 그림자 맵과 별개로, 바닥에 부드러운 원형 그림자를 그린다.
+	   fStrength 가 0 이면 그리지 않는다. 매 프레임 설정해야 한다. */
+	void Set_BlobShadow(_float3 vPos, _float fRadius, _float fStrength)
+	{
+		m_vBlobPos = vPos; m_fBlobRadius = fRadius; m_fBlobStrength = fStrength;
+	}
+
 public:
 	HRESULT Add_RenderGroup(RENDERGROUP eRenderGroup, class CGameObject* pGameObject);
 	HRESULT Render_GameObjects();
@@ -92,6 +99,11 @@ private:
 	bool m_bRenderDebug = false;
 	bool m_bRenderComponentDebug = false;
 #endif // DEBUG
+
+	/* 접촉 그림자 */
+	_float3 m_vBlobPos = _float3(0.f, 0.f, 0.f);
+	_float m_fBlobRadius = 1.f;
+	_float m_fBlobStrength = 0.f;
 
 	/* Distortion Objects */
 	class CTexture* m_pDistortionTexture = nullptr;

@@ -13,6 +13,19 @@
 #include "Nexus.h"
 #include "GameFlow.h"
 #include "UI_TextImage.h"
+namespace
+{
+	/* 광원 방향. 그림자 카메라도 이 방향으로 맞춘다. */
+	const _float3 g_vLightDir = _float3(0.6f, -1.f, -0.15f);
+
+	/* 그림자 맵이 덮는 범위(월드 단위). 좁을수록 그림자가 선명하다. */
+	const _float g_fShadowRange = 120.f;
+	/* 그림자 카메라와 플레이어 사이 거리, 그리고 깊이 범위 */
+	const _float g_fShadowDistance = 300.f;
+	const _float g_fShadowNear = 100.f;
+	const _float g_fShadowFar = 500.f;
+}
+
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CLevel { pDevice, pContext } 
 {
@@ -155,8 +168,30 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
 void CLevel_GamePlay::Late_Update(_float fTimeDelta)
 {
+	Update_ShadowLight();
+
 	const float fWorldDT = (m_bGameOver) ? 0.f : fTimeDelta;
 	__super::Late_Update(fWorldDT);
+}
+
+/* 그림자 맵은 한 방향의 직교 투영이라 범위가 한정되어 있다.
+   범위를 맵 중앙에 고정하면 플레이어가 그 밖에 있을 때 그림자가 전혀 계산되지 않는다.
+   그래서 매 프레임 플레이어를 중심으로 그림자 카메라를 옮긴다. */
+void CLevel_GamePlay::Update_ShadowLight()
+{
+	CChampion* pPlayer = CPlayerManager::GetInstance()->Get_ActivePlayer();
+	if (nullptr == pPlayer)
+		return;
+
+	_vector vAt = pPlayer->Get_Transform()->Get_State(CTransform::STATE_TRANSLATION);
+	_vector vDir = XMVector3Normalize(XMVectorSet(g_vLightDir.x, g_vLightDir.y, g_vLightDir.z, 0.f));
+	_vector vEye = vAt - vDir * g_fShadowDistance;
+
+	_float4 vAtF, vEyeF;
+	XMStoreFloat4(&vAtF, XMVectorSetW(vAt, 1.f));
+	XMStoreFloat4(&vEyeF, XMVectorSetW(vEye, 1.f));
+
+	m_pGameInstance->Set_ShadowLightView(vEyeF, vAtF);
 }
 
 void CLevel_GamePlay::Check_GameOver_RedNexus()
@@ -191,27 +226,31 @@ HRESULT CLevel_GamePlay::Ready_Lights()
 {
 	m_pGameInstance->Clear_AllLight();
 
+	/* 수직 하향이면 바닥은 과노출되고 벽/캐릭터 옆면은 평평해진다.
+	   방향을 살짝 기울여 입체감을 주고, 앰비언트는 낮춰 대비를 확보한다. */
 	LIGHTDESC LightDesc{};
 	LightDesc.eTYPE = LIGHTDESC::TYPE_DIRECTIONAL;
-
-	// ★ 발 바로 아래로 떨어지게: 수직 하향(Top-Down)
-	LightDesc.vDirection = _float4(0.f, -1.f, 0.f, 0.f);
+	LightDesc.vDirection = _float4(g_vLightDir.x, g_vLightDir.y, g_vLightDir.z, 0.f);
 
 	LightDesc.vDiffuse = _float4(1.1f, 1.1f, 1.1f, 1.f);
 	LightDesc.vAmbient = _float4(0.55f, 0.55f, 0.55f, 1.f);
-	LightDesc.vSpecular = _float4(0.25f, 0.25f, 0.25f, 1.f);
+	LightDesc.vSpecular = _float4(0.5f, 0.5f, 0.5f, 1.f);   // 디렉셔널 라이트는 스페큘러를 쓰지 않는다
 
 	if (FAILED(m_pGameInstance->Add_Light(m_pDevice, m_pContext, LightDesc)))
 		return E_FAIL;
 
-	_float4 vLightEye = _float4(36.f, 300.f, 200.f, 1.f);
+	/* 그림자 카메라. 플레이어가 생성되기 전의 기본 위치이고, 이후 Update_ShadowLight 가 매 프레임 갱신한다. */
 	_float4 vLightAt = _float4(36.f, 0.f, 200.f, 1.f);
+	_vector vDir = XMVector3Normalize(XMVectorSet(g_vLightDir.x, g_vLightDir.y, g_vLightDir.z, 0.f));
+	_float4 vLightEye = _float4(
+		vLightAt.x - XMVectorGetX(vDir) * g_fShadowDistance,
+		vLightAt.y - XMVectorGetY(vDir) * g_fShadowDistance,
+		vLightAt.z - XMVectorGetZ(vDir) * g_fShadowDistance, 1.f);
 
 	m_pGameInstance->Set_ShadowLightView(vLightEye, vLightAt);
-	m_pGameInstance->Set_ShadowLightProj_Ortho(400.f, 400.f, 1.f, 1000.f);
+	m_pGameInstance->Set_ShadowLightProj_Ortho(g_fShadowRange, g_fShadowRange, g_fShadowNear, g_fShadowFar);
 
 	return S_OK;
-
 }
 HRESULT CLevel_GamePlay::Ready_Layer_MapObject(const _tchar* pLayerTag)
 {
