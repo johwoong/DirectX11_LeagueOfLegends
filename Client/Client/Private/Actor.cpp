@@ -588,5 +588,4 @@ void CActor::Clear_Mark()
 void CActor::Free()
 {
 	__super::Free();
-	Safe_Release(m_pRendererCom);
 }

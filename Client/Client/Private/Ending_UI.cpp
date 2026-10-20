@@ -171,6 +171,5 @@ CGameObject* CEnding_UI::Clone(void* pArg)
 
 void CEnding_UI::Free()
 {
-    Safe_Release(m_pTextureTextCom);
     __super::Free();
 }

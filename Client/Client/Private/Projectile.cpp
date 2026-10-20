@@ -294,7 +294,6 @@ void CProjectile::On_ReturnToPool()
 void CProjectile::Free()
 {
 	__super::Free();
-	Safe_Release(m_pModelCom);
 
 	// ? 여기서도 Out은 등록된 경우만
 	if (m_bCollisionRegistered)

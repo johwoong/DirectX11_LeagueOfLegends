@@ -658,6 +658,4 @@ void CParticleSystem::Free()
 
 	Safe_Delete_Array(m_Particles);
 
-	Safe_Release(m_pTextureCom);
-	Safe_Release(m_pVIBufferPointInstance);
 }

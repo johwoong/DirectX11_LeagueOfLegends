@@ -99,5 +99,7 @@ CGameObject* CUI_ChampionIcon::Clone(void* pArg)
 
 void CUI_ChampionIcon::Free()
 {
+    // m_pTextureCom 은 Set_Icon 에서 직접 Clone 한 것이라 m_Components 에 없다. 여기서 직접 해제한다.
+    Safe_Release(m_pTextureCom);
     __super::Free();
 }

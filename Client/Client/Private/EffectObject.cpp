@@ -246,5 +246,4 @@ CGameObject* CEffectObject::Clone(void* pArg)
 void CEffectObject::Free()
 {
 	__super::Free();
-	Safe_Release(m_pModelCom);
 }

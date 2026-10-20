@@ -354,10 +354,5 @@ void CEffect::Free()
 {
 	__super::Free();
 
-	Safe_Release(m_pShaderCom);
-	Safe_Release(m_pRendererCom);
-	Safe_Release(m_pTransformCom);
 
-	Safe_Release(m_pMaskTexture);
-	Safe_Release(m_pNoiseTexture);
 }

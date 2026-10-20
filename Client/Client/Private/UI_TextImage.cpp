@@ -207,7 +207,6 @@ CGameObject* CUI_TextImage::Clone(void* pArg)
 
 void CUI_TextImage::Free()
 {
-    Safe_Release(m_pTextureTextCom);
     __super::Free();
 }
 

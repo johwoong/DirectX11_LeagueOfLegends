@@ -208,6 +208,5 @@ CGameObject* CUI_ChampionImage::Clone(void* pArg)
 
 void CUI_ChampionImage::Free()
 {
-	Safe_Release(m_pFrameTextureCom);
 	__super::Free();
 }
