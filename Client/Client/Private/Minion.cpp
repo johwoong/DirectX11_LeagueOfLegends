@@ -97,12 +97,22 @@ HRESULT CMinion::Initialize(void* pArg)
 
 int CMinion::Update(_float fTimeDelta)
 {
-    // ★ 풀 요청이면 매니저가 OBJ_POOL 처리
-    if (m_bRequestPool)
-        return OBJ_POOL;
+    // ★ 풀 요청이면 풀에 돌려놓고 OBJ_POOL 을 반환한다.
+    //   (Layer 는 OBJ_POOL 을 받으면 리스트에서 빼기만 한다. 보관은 PoolManager 의 몫이다.
+    //    여기서 Add_Pooling_Object 를 하지 않으면 미니언이 풀에도 레이어에도 없어 누수 + 풀 고갈이 된다.)
+    if (m_bRequestPool || m_bDead)
+    {
+        m_bRequestPool = false;
 
-    if (m_bDead)
+        const _tchar* pPoolTag = nullptr;
+        if (m_eTeam == TEAM_BLUE)
+            pPoolTag = (m_eMinionType == MINION_MELEE) ? TEXT("Layer_Minion_Blue_Melee") : TEXT("Layer_Minion_Blue_Range");
+        else
+            pPoolTag = (m_eMinionType == MINION_MELEE) ? TEXT("Layer_Minion_Red_Melee") : TEXT("Layer_Minion_Red_Range");
+
+        CPoolManager::GetInstance()->Add_Pooling_Object(LEVEL_GAMEPLAY, pPoolTag, this);
         return OBJ_POOL;
+    }
 
     if (FAILED(__super::Update(fTimeDelta)))
         return -1;
@@ -682,6 +692,7 @@ void CMinion::ReUse_Setting(void* pArg)
     m_tStats.m_fCurrentHp = m_tStats.m_fMaxHp;
     m_eState = STATE_MOVE;
     m_bDead = false;
+    m_bRequestPool = false;
     m_pTarget = nullptr;
     m_pOrginDamageCauser = nullptr;
     m_bDying = false;
