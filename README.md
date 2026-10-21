@@ -71,7 +71,7 @@
 
 ## 1. 플레이어
 
-<img src="docs/images/03_player.png" width="40%"/> <img src="docs/images/04_recall.png" width="40%"/>
+<img src="docs/images/03_player.png" width="40%"/>
 
 플레이어 챔피언은 3종(이즈리얼, 리신, 티모)이며 `F4`로 실행 중에 교체할 수 있습니다. 모든 동작은 **상태(State) 패턴**으로 분리했습니다.
 
